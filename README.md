@@ -1,2 +1,2 @@
 # prequel
-Prequel parser and interpreter
+[Prequel](https://prequel-lang.org) parser and interpreter
