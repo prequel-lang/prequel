@@ -489,6 +489,9 @@ CLASS `Lexer:
   METHOD `isCompoundToken(`token):
     return (`indexof(THIS.`_reserved_vlast_words, `token) >= 0)
 
+  METHOD `isModuleNameCharStart(`c):
+    return (((`c >= "a") AND (`c <= "z")) OR ((`c >= "A") AND (`c <= "Z")) OR (`c == "_"))
+
   METHOD `isModuleNameChar(`c):
     return (((`c >= "0") AND (`c <= "9")) OR ((`c >= "a") AND (`c <= "z")) OR ((`c >= "A") AND (`c <= "Z")) OR (`c == "_") OR (`c == "."))
 
@@ -500,7 +503,10 @@ CLASS `Lexer:
     IF `length(`module_name) == 0:
       return FALSE
     ENDIF
-    FORINCR `j(0 `length(`module_name)):
+    IF `not(THIS.`isModuleNameCharStart(`module_name[0])):
+      return FALSE
+    ENDIF
+    FORINCR `j(1 `length(`module_name)):
       IF `not(THIS.`isModuleNameChar(`module_name[`j])):
         return FALSE
       ENDIF
@@ -1051,9 +1057,12 @@ CLASS `Lexer:
       IF `line[`col] == "@":
         `start = `col
         `col += 1
-        WHILE THIS.`isModuleNameChar(`line[`col]):
+        IF THIS.`isModuleNameCharStart(`line[`col]):
           `col += 1
-        ENDWHILE
+          WHILE THIS.`isModuleNameChar(`line[`col]):
+            `col += 1
+          ENDWHILE
+        ENDIF
         IF `start+1 == `col:
           `push(`tokens, ["ERROR", `start, `substring(`line, `start, `col), "MISSING"+" "+"MODULE"+" "+"NAME"])
           `start = `col
