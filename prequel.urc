@@ -1509,12 +1509,12 @@ CLASS `Parser:
       return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "ASSIGN_OP_PLUS":
-      `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+      `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_expr) == 1:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
         `expr = ["PLUS", ["VAR", `vvar], `lidx_expr[1]]
@@ -2228,6 +2228,43 @@ CLASS `Parser:
     return [`lidx_ariexpr2[0], [`rel_op, `lidx_ariexpr[1], `lidx_ariexpr2[1]]]
 
   METHOD `_parseArithmeticOrListExpression(`tokens `lidxs `lidx):
+    IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "PLUS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MINUS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_NOT"):
+      return THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx)
+    ENDIF
+    VAR `lidx_term = THIS.`_parseArithmeticOrListTerm(`tokens, `lidxs, `lidx)
+    IF `length(`lidx_term) == 1:
+      return `lidx_term
+    ENDIF
+    VAR `expr = `lidx_term[1]
+    `lidx = `lidx_term[0]
+    WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "PLUS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MINUS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_OR") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_XOR"):
+      `lidx_term = THIS.`_parseArithmeticOrListTerm(`tokens, `lidxs, `lidx+1)
+      IF `length(`lidx_term) == 1:
+        return `lidx_term
+      ENDIF
+      `expr = [`lexer.`tokenName(`tokens[`lidxs[`lidx]]), `expr, `lidx_term[1]]
+      `lidx = `lidx_term[0]
+    ENDWHILE
+    return [`lidx, `expr]
+
+  METHOD `_parseArithmeticOrListTerm(`tokens `lidxs `lidx):
+    VAR `lidx_factor = THIS.`_parseArithmeticOrListFactor(`tokens, `lidxs, `lidx)
+    IF `length(`lidx_factor) == 1:
+      return `lidx_factor
+    ENDIF
+    VAR `term = `lidx_factor[1]
+    `lidx = `lidx_factor[0]
+    WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MUL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DIV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MOD") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_AND") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHR"):
+      `lidx_factor = THIS.`_parseArithmeticOrListFactor(`tokens, `lidxs, `lidx+1)
+      IF `length(`lidx_factor) == 1:
+        return `lidx_factor
+      ENDIF
+      `term = [`lexer.`tokenName(`tokens[`lidxs[`lidx]]), `term, `lidx_factor[1]]
+      `lidx = `lidx_factor[0]
+    ENDWHILE
+    return [`lidx, `term]
+
+  METHOD `_parseArithmeticOrListFactor(`tokens `lidxs `lidx):
     VAR `exprs
     VAR `lidx_expr
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
@@ -2258,7 +2295,61 @@ CLASS `Parser:
       ENDIF
       return [`lidx+1, ["LIST", `exprs]]
     ENDIF
-    return THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx)
+    VAR `lidx_ariexpr
+    VAR `length_var
+    VAR `size_var
+    VAR `isize_var
+    VAR `lsize_var
+    VAR `indexof_var
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DECIMAL":
+      return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "HEXADECIMAL":
+      return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LPAR":
+      `lidx_ariexpr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
+      IF `length(`lidx_ariexpr) == 1:
+        return `lidx_ariexpr
+      ENDIF
+      IF `lexer.`tokenName(`tokens[`lidxs[`lidx_ariexpr[0]]]) == "RPAR":
+        return [`lidx_ariexpr[0]+1, `lidx_ariexpr[1]]
+      ENDIF
+      return [["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LENGTH":
+      `length_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, ["LENGTH_VAR", [TERNARY{`indexof(`length_var, ".") < 0}{"VAR"}{"QUALVAR"}, `length_var]]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "SIZE":
+      `size_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, ["SIZE_VAR", [TERNARY{`indexof(`size_var, ".") < 0}{"VAR"}{"QUALVAR"}, `size_var]]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "ISIZE":
+      `isize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, ["ISIZE_VAR", [TERNARY{`indexof(`isize_var, ".") < 0}{"VAR"}{"QUALVAR"}, `isize_var]]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSIZE":
+      `lsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, ["LSIZE_VAR", [TERNARY{`indexof(`lsize_var, ".") < 0}{"VAR"}{"QUALVAR"}, `lsize_var]]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "INDEXOF":
+      `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
+      IF `length(`lidx_expr) == 1:
+        return `lidx_expr
+      ENDIF
+      `indexof_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
+      IF `length(`lidx_ariexpr) == 1:
+        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["INTEGER", 0]]]
+      ENDIF
+      return [`lidx_ariexpr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
+    ENDIF
+    VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
+    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == "") OR (`lidx_sfxexpr[1][1] == "LENGTH") OR (`lidx_sfxexpr[1][1] == "SIZE") OR (`lidx_sfxexpr[1][1] == "ISIZE") OR (`lidx_sfxexpr[1][1] == "LSIZE") OR (`lidx_sfxexpr[1][1] == "INDEXOF")):
+      return [`lidx_sfxexpr[0], `lidx_sfxexpr[1][2]]
+    ENDIF
+    return [["ERROR", NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
 
   METHOD `_parseArithmeticExpression(`tokens `lidxs `lidx):
     VAR `unary_op
@@ -3409,7 +3500,7 @@ CLASS `InterpM:
       return `that.`_iexprUnaryOp(`expression, `func_iexpr_unary_op_bit_not)
     ENDCLOSURE
     CLOSURE `closure_iexpr_add_op_plus(`expression):
-      return `that.`_iexprAddOp(`expression, `func_iexpr_add_op_plus)
+      return `that.`_iexprConcatAddOp(`expression, `func_iexpr_add_op_plus)
     ENDCLOSURE
     CLOSURE `closure_iexpr_add_op_minus(`expression):
       return `that.`_iexprAddOp(`expression, `func_iexpr_add_op_minus)
@@ -3421,7 +3512,7 @@ CLASS `InterpM:
       return `that.`_iexprAddOp(`expression, `func_iexpr_add_op_bit_xor)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_mul(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mul, NULL)
+      return `that.`_iexprRepeatMulOp(`expression, `func_iexpr_mul_op_mul)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_div(`expression):
       return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_div, "DIVISION"+" "+"BY"+" "+"ZERO")
@@ -4449,6 +4540,104 @@ CLASS `InterpM:
     VAR `value = `binOp(`evalue1i, `evalue2[1])
     THIS.`_tmpInteger[1] = `value
     return THIS.`_tmpInteger
+
+  METHOD `_iexprConcatAddOp(`expression `binOp):
+    VAR `expr1 = `expression[1]
+    VAR `expr2 = `expression[2]
+    VAR `evalue1 = THIS.`_interpExpr(`expr1)
+    IF `isnull(`evalue1):
+      return NULL
+    ENDIF
+    VAR `evalue1i
+    VAR `evalue2
+    VAR `evalue
+    VAR `value
+    VAR `isize
+    VAR `lsize
+    IF `evalue1[0] == `key_interp_integer:
+      `evalue1i = `evalue1[1]
+      `evalue2 = THIS.`_interpExpr(`expr2)
+      IF `isnull(`evalue2):
+        return NULL
+      ENDIF
+      IF `evalue2[0] != `key_interp_integer:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+        return NULL
+      ENDIF
+      `value = `binOp(`evalue1i, `evalue2[1])
+      THIS.`_tmpInteger[1] = `value
+      return THIS.`_tmpInteger
+    ENDIF
+    IF `evalue1[0] == `key_interp_list:
+      `evalue = `utils.`deepCopy(`evalue1)
+      `evalue2 = THIS.`_interpExpr(`expr2)
+      IF `isnull(`evalue2):
+        return NULL
+      ENDIF
+      IF `evalue2[0] != `key_interp_list:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
+        return NULL
+      ENDIF
+      `isize = `utils.`isizeEvalue(`evalue)
+      `lsize = `utils.`lsizeEvalue(`evalue)
+      `value = `concat(`evalue[1], `utils.`deepCopy(`evalue2[1]))
+      `isize += `utils.`isizeEvalue(`evalue2)
+      `lsize += `utils.`lsizeEvalue(`evalue2)-1
+      return [`key_interp_list, `value, `lsize, `isize]
+    ENDIF
+    THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
+    return NULL
+
+  METHOD `_iexprRepeatMulOp(`expression `binOp):
+    VAR `expr1 = `expression[1]
+    VAR `expr2 = `expression[2]
+    VAR `evalue1 = THIS.`_interpExpr(`expr1)
+    IF `isnull(`evalue1):
+      return NULL
+    ENDIF
+    VAR `evalue1i
+    VAR `evalue2
+    VAR `evalue
+    VAR `value
+    VAR `isize
+    VAR `lsize
+    VAR `j
+    IF `evalue1[0] == `key_interp_integer:
+      `evalue1i = `evalue1[1]
+      `evalue2 = THIS.`_interpExpr(`expr2)
+      IF `isnull(`evalue2):
+        return NULL
+      ENDIF
+      IF `evalue2[0] != `key_interp_integer:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+        return NULL
+      ENDIF
+      `value = `binOp(`evalue1i, `evalue2[1])
+      THIS.`_tmpInteger[1] = `value
+      return THIS.`_tmpInteger
+    ENDIF
+    IF `evalue1[0] == `key_interp_list:
+      `evalue = `utils.`deepCopy(`evalue1)
+      `evalue2 = THIS.`_interpExpr(`expr2)
+      IF `isnull(`evalue2):
+        return NULL
+      ENDIF
+      IF `evalue2[0] != `key_interp_integer:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+        return NULL
+      ENDIF
+      `isize = 0
+      `lsize = 1
+      `value = []
+      FORINCR `j(0 `evalue2[1]):
+        `value = `concat(`value, `utils.`deepCopy(`evalue[1]))
+        `isize += `utils.`isizeEvalue(`evalue)
+        `lsize += `utils.`lsizeEvalue(`evalue)-1
+      ENDFOR
+      return [`key_interp_list, `value, `lsize, `isize]
+    ENDIF
+    THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
+    return NULL
 
   METHOD `_iexprByRef(`expression):
     VAR `vvar = `expression[1][0]
