@@ -5181,7 +5181,7 @@ CLASS Prequel:
   METHOD setCallbacks(`onProcedure `onYieldResume `rnd32b `now):
     VAR `instances = THIS.`_prequel_m.`getInstances()
     IF `length(`instances) > 0:
-      THIS.`_error = "NON-EMPTY"+" "+"INSTANCES"
+      THIS.`_error = "NON"+"-"+"EMPTY"+" "+"INSTANCES"
       return NULL
     ENDIF
     THIS.`_prequel_m.`setCallbacks(`onProcedure, `onYieldResume, `rnd32b, `now)
