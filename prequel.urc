@@ -1166,7 +1166,7 @@ CLASS `Lexer:
         `push(`tokens, ["COMMENT", `start, `substring(`line, `start, `col-1)])
         break
       ENDIF
-      IF (`line[`col] == "0") AND (`line[`col+1] == "x") AND (((`line[`col+2] >= "0") AND (`line[`col+2] <= "9")) OR ((`line[`col+2] >= "a") AND (`line[`col+2] <= "f")) OR ((`line[`col+2] >= "A") AND (`line[`col+2] <= "F"))):
+      IF (`line[`col] == "0") AND (`lowercase(`line[`col+1]) == "x") AND (((`line[`col+2] >= "0") AND (`line[`col+2] <= "9")) OR ((`line[`col+2] >= "a") AND (`line[`col+2] <= "f")) OR ((`line[`col+2] >= "A") AND (`line[`col+2] <= "F"))):
         `start = `col
         `col += 3
         WHILE ((`line[`col] >= "0") AND (`line[`col] <= "9")) OR ((`line[`col] >= "a") AND (`line[`col] <= "f")) OR ((`line[`col] >= "A") AND (`line[`col] <= "F")):
@@ -1182,6 +1182,24 @@ CLASS `Lexer:
           break
         ENDIF
         `push(`tokens, ["HEXADECIMAL", `start, `substring(`line, `start, `col)])
+        continue
+      ENDIF
+      IF (`line[`col] == "0") AND (`lowercase(`line[`col+1]) == "b") AND (`line[`col+2] >= "0") AND (`line[`col+2] <= "1"):
+        `start = `col
+        `col += 3
+        WHILE (`line[`col] >= "0") AND (`line[`col] <= "1"):
+          `col += 1
+        ENDWHILE
+        IF `col-`start > 34:
+          `push(`tokens, ["ERROR", `start, `substring(`line, `start, `col), "BINARY"+" "+"NUMBER"+" "+"GREATER"+" "+"THAN"+" "+"32"+" "+"BITS"])
+          `start = `col
+          WHILE `line[`col] != `chr_lf:
+            `col += 1
+          ENDWHILE
+          `push(`tokens, ["POSTERROR", `start, `substring(`line, `start, `col-1)])
+          break
+        ENDIF
+        `push(`tokens, ["BINARY", `start, `substring(`line, `start, `col)])
         continue
       ENDIF
       IF (`line[`col] >= "0") AND (`line[`col] <= "9"):
@@ -2349,11 +2367,16 @@ CLASS `Parser:
     VAR `isize_var
     VAR `lsize_var
     VAR `indexof_var
+    VAR `literal
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DECIMAL":
       return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "HEXADECIMAL":
       return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BINARY":
+      `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, ["INTEGER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LPAR":
       `lidx_ariexpr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2459,11 +2482,16 @@ CLASS `Parser:
     VAR `lsize_var
     VAR `lidx_expr
     VAR `indexof_var
+    VAR `literal
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DECIMAL":
       return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "HEXADECIMAL":
       return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BINARY":
+      `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, ["INTEGER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LPAR":
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
