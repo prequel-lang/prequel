@@ -2237,8 +2237,14 @@ CLASS `Parser:
     ENDIF
     VAR `expr = `lidx_term[1]
     `lidx = `lidx_term[0]
+    VAR `is_arith_only = FALSE
     WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "PLUS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MINUS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_OR") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_XOR"):
-      `lidx_term = THIS.`_parseArithmeticOrListTerm(`tokens, `lidxs, `lidx+1)
+      `is_arith_only = (`is_arith_only OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) != "PLUS"))
+      IF `is_arith_only:
+        `lidx_term = THIS.`_parseArithmeticTerm(`tokens, `lidxs, `lidx+1)
+      ELSE:
+        `lidx_term = THIS.`_parseArithmeticOrListTerm(`tokens, `lidxs, `lidx+1)
+      ENDIF
       IF `length(`lidx_term) == 1:
         return `lidx_term
       ENDIF
@@ -2255,7 +2261,7 @@ CLASS `Parser:
     VAR `term = `lidx_factor[1]
     `lidx = `lidx_factor[0]
     WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MUL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DIV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MOD") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_AND") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHR"):
-      `lidx_factor = THIS.`_parseArithmeticOrListFactor(`tokens, `lidxs, `lidx+1)
+      `lidx_factor = THIS.`_parseArithmeticFactor(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_factor) == 1:
         return `lidx_factor
       ENDIF
@@ -3512,7 +3518,7 @@ CLASS `InterpM:
       return `that.`_iexprAddOp(`expression, `func_iexpr_add_op_bit_xor)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_mul(`expression):
-      return `that.`_iexprRepeatMulOp(`expression, `func_iexpr_mul_op_mul)
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mul, NULL)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_div(`expression):
       return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_div, "DIVISION"+" "+"BY"+" "+"ZERO")
@@ -4583,57 +4589,6 @@ CLASS `InterpM:
       `value = `concat(`evalue[1], `utils.`deepCopy(`evalue2[1]))
       `isize += `utils.`isizeEvalue(`evalue2)
       `lsize += `utils.`lsizeEvalue(`evalue2)-1
-      return [`key_interp_list, `value, `lsize, `isize]
-    ENDIF
-    THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
-    return NULL
-
-  METHOD `_iexprRepeatMulOp(`expression `binOp):
-    VAR `expr1 = `expression[1]
-    VAR `expr2 = `expression[2]
-    VAR `evalue1 = THIS.`_interpExpr(`expr1)
-    IF `isnull(`evalue1):
-      return NULL
-    ENDIF
-    VAR `evalue1i
-    VAR `evalue2
-    VAR `evalue
-    VAR `value
-    VAR `isize
-    VAR `lsize
-    VAR `j
-    IF `evalue1[0] == `key_interp_integer:
-      `evalue1i = `evalue1[1]
-      `evalue2 = THIS.`_interpExpr(`expr2)
-      IF `isnull(`evalue2):
-        return NULL
-      ENDIF
-      IF `evalue2[0] != `key_interp_integer:
-        THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
-        return NULL
-      ENDIF
-      `value = `binOp(`evalue1i, `evalue2[1])
-      THIS.`_tmpInteger[1] = `value
-      return THIS.`_tmpInteger
-    ENDIF
-    IF `evalue1[0] == `key_interp_list:
-      `evalue = `utils.`deepCopy(`evalue1)
-      `evalue2 = THIS.`_interpExpr(`expr2)
-      IF `isnull(`evalue2):
-        return NULL
-      ENDIF
-      IF `evalue2[0] != `key_interp_integer:
-        THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
-        return NULL
-      ENDIF
-      `isize = 0
-      `lsize = 1
-      `value = []
-      FORINCR `j(0 `evalue2[1]):
-        `value = `concat(`value, `utils.`deepCopy(`evalue[1]))
-        `isize += `utils.`isizeEvalue(`evalue)
-        `lsize += `utils.`lsizeEvalue(`evalue)-1
-      ENDFOR
       return [`key_interp_list, `value, `lsize, `isize]
     ENDIF
     THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
