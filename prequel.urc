@@ -463,6 +463,7 @@ CLASS `Lexer:
     `push(THIS.`_reserved_words, "IS")
     `push(THIS.`_reserved_words, "INTEGER")
     `push(THIS.`_reserved_words, "LIST")
+    `push(THIS.`_reserved_words, "EMPTY")
     `push(THIS.`_reserved_words, "PROCEDURE")
     `push(THIS.`_reserved_words, "RANDOM")
     `push(THIS.`_reserved_words, "UNDEFINED")
@@ -839,6 +840,13 @@ CLASS `Lexer:
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, ["ELSIF", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "EMPTY"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, ["EMPTY", `col, `substring(`line, `col, `col+`tlen)])
           `col += `tlen
           continue
         ENDIF
@@ -2225,7 +2233,7 @@ CLASS `Parser:
   METHOD `_parseRelationalExpression(`tokens `lidxs `lidx):
     VAR `rel_op
     IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "VAR") AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS_NOT")):
-      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
+      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "EMPTY") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
         return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE":
@@ -2235,7 +2243,7 @@ CLASS `Parser:
       return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
     IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "QUALVAR") AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS_NOT")):
-      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
+      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "EMPTY") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
         return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["QUALVAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
@@ -4707,7 +4715,7 @@ CLASS `InterpM:
       return THIS.`_tmpBoolean
     ENDIF
     IF `evalue[0] == `key_interp_list:
-      THIS.`_tmpBoolean[1] = (`vvar_typestr == "LIST")
+      THIS.`_tmpBoolean[1] = ((`vvar_typestr == "LIST") OR ((`vvar_typestr == "EMPTY") AND (`length(`evalue[1]) == 0)))
       return THIS.`_tmpBoolean
     ENDIF
     IF `evalue[0] == `key_interp_procedure:
@@ -4741,7 +4749,7 @@ CLASS `InterpM:
       return THIS.`_tmpBoolean
     ENDIF
     IF `evalue[0] == `key_interp_list:
-      THIS.`_tmpBoolean[1] = (`vvar_typestr != "LIST")
+      THIS.`_tmpBoolean[1] = ((`vvar_typestr != "LIST") AND ((`vvar_typestr != "EMPTY") OR (`length(`evalue[1]) > 0)))
       return THIS.`_tmpBoolean
     ENDIF
     IF `evalue[0] == `key_interp_procedure:
