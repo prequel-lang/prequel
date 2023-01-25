@@ -664,8 +664,8 @@ CLASS `Lexer:
 
   METHOD `isTokenEndSpace(`l `start `token):
     VAR `j
-    FORINCR `j(0 `length(`token)):
-      IF `l[`start+`j] != `token[`j]:
+    FORINCR `j(1 `length(`token)):
+      IF `uppercase(`l[`start+`j]) != `token[`j]:
         return FALSE
       ENDIF
     ENDFOR
@@ -673,8 +673,8 @@ CLASS `Lexer:
 
   METHOD `isTokenEndOther(`l `start `token):
     VAR `j
-    FORINCR `j(0 `length(`token)):
-      IF `l[`start+`j] != `token[`j]:
+    FORINCR `j(1 `length(`token)):
+      IF `uppercase(`l[`start+`j]) != `token[`j]:
         return FALSE
       ENDIF
     ENDFOR
@@ -682,7 +682,9 @@ CLASS `Lexer:
 
   METHOD `lexLine(`line):
     `line += " "+`chr_lf
+    VAR `ic
     VAR `tname
+    VAR `tlen
     VAR `textra
     VAR `col = 0
     VAR `start
@@ -714,137 +716,157 @@ CLASS `Lexer:
         ENDIF
         `push(`tokens, ["SPACES", `start, `substring(`line, `start, `col)])
       ENDIF
-      IF `line[`col] == "I":
+      `ic = `uppercase(`line[`col])
+      IF `ic == "I":
         `tname = "IF"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["IF", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["IF", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "IS"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
           `tname = "NOT"
-          IF THIS.`isTokenEndSpace(`line, `col+3, `tname):
+          IF (`line[`col+3] == "N") AND THIS.`isTokenEndSpace(`line, `col+3, `tname):
             `tname = "IS_NOT"
-            `push(`tokens, ["IS_NOT", `col, `substring(`line, `col, `col+`length(`tname))])
-            `col += `length(`tname)
+            `tlen = `length(`tname)
+            `push(`tokens, ["IS_NOT", `col, `substring(`line, `col, `col+`tlen)])
+            `col += `tlen
             continue
           ENDIF
           `tname = "IS"
-          `push(`tokens, ["IS", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["IS", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "INTEGER"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `push(`tokens, ["INTEGER", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["INTEGER", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "R":
+      IF `ic == "R":
         `tname = "REPEAT"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["REPEAT", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["REPEAT", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "REPNEXT"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["REPNEXT", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["REPNEXT", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "REPSTOP"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["REPSTOP", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["REPSTOP", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "RANDOM"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["RANDOM", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["RANDOM", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "L":
+      IF `ic == "L":
         `tname = "LOG"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["LOG", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["LOG", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "LIST"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `push(`tokens, ["LIST", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["LIST", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "A":
+      IF `ic == "A":
         `tname = "AND"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["AND", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["AND", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "P":
+      IF `ic == "P":
         `tname = "PROCEDURE"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `push(`tokens, ["PROCEDURE", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["PROCEDURE", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "E":
+      IF `ic == "E":
         `tname = "ENDIF"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["ENDIF", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["ENDIF", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "ENDREP"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["ENDREP", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["ENDREP", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "ELSE"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["ELSE", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["ELSE", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
         `tname = "ELSIF"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["ELSIF", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["ELSIF", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "N":
+      IF `ic == "N":
         `tname = "NOT"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["NOT", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["NOT", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "O":
+      IF `ic == "O":
         `tname = "OR"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `push(`tokens, ["OR", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["OR", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
-      IF `line[`col] == "U":
+      IF `ic == "U":
         `tname = "UNDEFINED"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `push(`tokens, ["UNDEFINED", `col, `tname])
-          `col += `length(`tname)
+          `tlen = `length(`tname)
+          `push(`tokens, ["UNDEFINED", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
@@ -981,10 +1003,10 @@ CLASS `Lexer:
         IF `line[`col] == ".":
           `start = `col
           `col += 1
-          WHILE (`line[`col] >= "A") AND (`line[`col] <= "Z"):
+          WHILE ((`line[`col] >= "A") AND (`line[`col] <= "Z")) OR ((`line[`col] >= "a") AND (`line[`col] <= "z")):
             `col += 1
           ENDWHILE
-          `textra = `substring(`line, `start+1, `col)
+          `textra = `uppercase(`substring(`line, `start+1, `col))
           IF `indexof(THIS.`_reserved_vlast_words, `textra) < 0:
             `push(`tokens, ["ERROR", `start, `substring(`line, `start, `col), "UNEXPECTED"+" "+"SUFFIX"])
             `start = `col
@@ -1072,7 +1094,7 @@ CLASS `Lexer:
           `push(`tokens, ["POSTERROR", `start, `substring(`line, `start, `col-1)])
           break
         ENDIF
-        `textra = `substring(`line, `start+1, `col)
+        `textra = `uppercase(`substring(`line, `start+1, `col))
         `push(`tokens, ["MODULE_NAME", `start, `substring(`line, `start, `col), `textra])
         continue
       ENDIF
@@ -1180,7 +1202,7 @@ CLASS `Lexer:
         `push(`tokens, ["DECIMAL", `start, `substring(`line, `start, `col)])
         continue
       ENDIF
-      IF ((`line[`col] >= "a") AND (`line[`col] <= "z")) OR ((`line[`col] >= "A") AND (`line[`col] <= "Z")) OR (`line[`col] == "_"):
+      IF ((`ic >= "A") AND (`ic <= "Z")) OR (`line[`col] == "_"):
         `start = `col
         `col += 1
         WHILE ((`line[`col] >= "0") AND (`line[`col] <= "9")) OR ((`line[`col] >= "a") AND (`line[`col] <= "z")) OR ((`line[`col] >= "A") AND (`line[`col] <= "Z")) OR (`line[`col] == "_") OR (`line[`col] == "."):
@@ -1199,6 +1221,7 @@ CLASS `Lexer:
             `error_msg = "INVALID"+" "+"VARIABLE"
             break
           ENDIF
+          `subtextras[`j] = `uppercase(`subtextras[`j])
           IF `indexof(THIS.`_reserved_words, `subtextras[`j]) >= 0:
             `error_msg = "RESERVED"+" "+"WORD"
             break
@@ -1215,9 +1238,20 @@ CLASS `Lexer:
             ELSE:
               `var_op = `subtextras[`length(`subtextras)-1]
               `textra = `substring(`textra, 0, `length(`textra)-`length(`var_op)-1)
+              IF `length(`subtextras) > 2:
+                `textra = `uppercase(`textra)
+              ELSE:
+                `textra = `lowercase(`textra)
+              ENDIF
             ENDIF
           ELSE:
-              `var_op = TERNARY{`length(`subtextras) > 1}{"QUALVAR"}{"VAR"}
+            IF `length(`subtextras) > 1:
+              `var_op = "QUALVAR"
+              `textra = `uppercase(`textra)
+            ELSE:
+              `var_op = "VAR"
+              `textra = `lowercase(`textra)
+            ENDIF
           ENDIF
         ENDIF
         IF `not(`isnull(`error_msg)):
@@ -1319,7 +1353,7 @@ CLASS `Parser:
     return ["ERROR", NULL, "INVALID"+" "+"INSTRUCTION", `lexer.`tokenColumn(`tokens[`lidxs[0]]), []]
 
   METHOD `_parseAssign(`tokens `lidxs):
-    VAR `vvar = `lexer.`tokenValue(`tokens[`lidxs[0]])
+    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
     VAR `exprs = []
     VAR `lidx_expr
     VAR `lidx = 1
@@ -1355,7 +1389,7 @@ CLASS `Parser:
         IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) != "VAR":
           return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
         ENDIF
-        `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
         `lidx += 1
         WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1378,7 +1412,7 @@ CLASS `Parser:
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) != "QUALVAR":
         return ["ERROR", NULL, "EXPECTED"+" "+"PROCEDURE"+" "+"IN"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
       ENDIF
-      `qualvar = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
+      `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) != "LPAR":
         return ["ERROR", NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"PROCEDURE"+" "+"NAME", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
@@ -1393,7 +1427,7 @@ CLASS `Parser:
           return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ENDIF
         `lidx += 3
-        `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
         `lidx += 1
         WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1432,7 +1466,7 @@ CLASS `Parser:
             return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
           ENDIF
           `lidx += 2
-          `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
           `lidx += 1
           WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
             `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1680,7 +1714,7 @@ CLASS `Parser:
       ENDFOR
       `push(`proc_exprs, ["BY_REF", `byref_exprs])
       `lidx += 1
-      `qualvar = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
+      `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "RPAR":
         IF `lexer.`tokenName(`tokens[`lidxs[`lidx+3]]) != "NEWLINE":
           return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
@@ -1692,7 +1726,7 @@ CLASS `Parser:
           return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ENDIF
         `lidx += 3
-        `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
         `lidx += 1
         WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1731,7 +1765,7 @@ CLASS `Parser:
             return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
           ENDIF
           `lidx += 2
-          `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
           `lidx += 1
           WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
             `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1853,7 +1887,7 @@ CLASS `Parser:
 
   METHOD `_parseRepeat(`tokens `lidxs):
     IF `length(`lidxs) == 3 AND `lexer.`tokenName(`tokens[`lidxs[1]]) == "VAR":
-      return ["REPEAT", NULL, NULL, `lexer.`tokenValue(`tokens[`lidxs[1]])]
+      return ["REPEAT", NULL, NULL, `lexer.`tokenExtra(`tokens[`lidxs[1]])]
     ENDIF
     IF `length(`lidxs) < 3 OR `lexer.`tokenName(`tokens[`lidxs[1]]) != "VAR":
       return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
@@ -1879,7 +1913,7 @@ CLASS `Parser:
     return ["ENDREP", NULL, NULL]
 
   METHOD `_parseProcedure(`tokens `lidxs):
-    VAR `qualvar = `lexer.`tokenValue(`tokens[`lidxs[0]])
+    VAR `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
     IF `lexer.`tokenName(`tokens[`lidxs[1]]) != "LPAR":
       return ["ERROR", NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"PROCEDURE"+" "+"NAME", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
@@ -1899,7 +1933,7 @@ CLASS `Parser:
         return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[3]]), []]
       ENDIF
       `lidx = 3
-      `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+      `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
       `lidx += 1
       WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1938,7 +1972,7 @@ CLASS `Parser:
           return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
         ENDIF
         `lidx += 2
-        `byref_exprs = [`lexer.`tokenValue(`tokens[`lidxs[`lidx]])]
+        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
         `lidx += 1
         WHILE `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LSQR":
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2192,7 +2226,7 @@ CLASS `Parser:
     VAR `rel_op
     IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "VAR") AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS_NOT")):
       IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
-        return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["VAR", `lexer.`tokenValue(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
+        return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE":
         `rel_op = TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"NE"}{"EQ"}
@@ -2202,7 +2236,7 @@ CLASS `Parser:
     ENDIF
     IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "QUALVAR") AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS_NOT")):
       IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
-        return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["QUALVAR", `lexer.`tokenValue(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
+        return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["QUALVAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
@@ -2475,7 +2509,7 @@ CLASS `Parser:
     VAR `lidx_expr
     VAR `qualvar
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "VAR":
-      `vvar = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
+      `vvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) != "LSQR":
         return [`lidx+1, ["SUFFIX", "", ["VAR", `vvar]]]
       ENDIF
@@ -2528,7 +2562,7 @@ CLASS `Parser:
       return [`lidx, ["SUFFIX", "", ["LIST_AT_VAR", `vvar, `exprs]]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "QUALVAR":
-      `qualvar = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
+      `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) != "LSQR":
         return [`lidx+1, ["SUFFIX", "", ["QUALVAR", `qualvar]]]
       ENDIF
@@ -5517,8 +5551,8 @@ CLASS Prequel:
       `token_value = `lexer.`tokenValue(`raw_tokens[`j])
       IF `lexer.`isCompoundToken(`token_name):
         `token_extra = `lexer.`tokenExtra(`raw_tokens[`j])
-        `push(`tokens, [TERNARY{`indexof(`token_extra, ".") >= 0}{"QUALVAR"}{"VAR"}, `token_extra])
-        `push(`tokens, [`token_name, "."+`token_name])
+        `push(`tokens, [TERNARY{`indexof(`token_extra, ".") >= 0}{"QUALVAR"}{"VAR"}, `substring(`token_value, 0, `length(`token_extra))])
+        `push(`tokens, [`token_name, "."+`substring(`token_value, `length(`token_value)-`length(`token_name), `length(`token_value))])
       ELSE:
         `push(`tokens, [`token_name, `token_value])
       ENDIF
