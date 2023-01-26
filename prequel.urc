@@ -2268,7 +2268,7 @@ CLASS `Parser:
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
     IF (`length(`lidx_sfxexpr) > 1) AND (`lidx_sfxexpr[1][1] == "") AND ((`lidx_sfxexpr[1][2][0] == "LIST_AT_VAR") OR (`lidx_sfxexpr[1][2][0] == "LIST_AT_QUALVAR")) AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == "IS_NOT")):
-      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "LIST"):
+      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "EMPTY"):
         return [`lidx_sfxexpr[0]+2, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, `lidx_sfxexpr[1][2], `lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]])]]
       ENDIF
       return [["ERROR", NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
