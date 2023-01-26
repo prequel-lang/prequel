@@ -729,7 +729,7 @@ CLASS `Lexer:
         `tname = "IS"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
           `tname = "NOT"
-          IF (`line[`col+3] == "N") AND THIS.`isTokenEndSpace(`line, `col+3, `tname):
+          IF (`uppercase(`line[`col+3]) == "N") AND THIS.`isTokenEndSpace(`line, `col+3, `tname):
             `tname = "IS_NOT"
             `tlen = `length(`tname)
             `push(`tokens, ["IS_NOT", `col, `substring(`line, `col, `col+`tlen)])
@@ -1127,7 +1127,7 @@ CLASS `Lexer:
             continue
           ENDIF
           `col += 1
-          IF `line[`col] == "n":
+          IF `lowercase(`line[`col]) == "n":
             `textra += `chr_lf
             `col += 1
             continue
