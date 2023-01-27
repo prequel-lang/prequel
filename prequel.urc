@@ -27,7 +27,7 @@ CLASS `ResourceIds:
 
 ENDCLASS
 
-VAR `ARG_TYPE_INTEGER = 0
+VAR `ARG_TYPE_NUMBER = 0
 VAR `ARG_TYPE_LIST = 1
 VAR `ARG_TYPE_STRING = 2
 VAR `ARG_TYPE_VARNAME = 3
@@ -42,7 +42,7 @@ VAR `key_limits_time = 5
 
 VAR `key_interp_boolean = 0
 VAR `key_interp_by_ref = 1
-VAR `key_interp_integer = 2
+VAR `key_interp_number = 2
 VAR `key_interp_list = 3
 VAR `key_interp_module_name = 4
 VAR `key_interp_procedure = 5
@@ -111,7 +111,7 @@ CLASS `Utils:
     return (`is_type_num(`get_type(`val)) AND `trunc(`val) == `val AND `val >= -2147483648 AND `val <= 2147483647)
 
   METHOD `isArgData(`arg):
-    return (`is_type_list(`get_type(`arg)) AND `length(`arg) == 2 AND `is_type_num(`get_type(`arg[0])) AND `arg[0] >= `ARG_TYPE_INTEGER AND `arg[0] <= `ARG_TYPE_MODNAME)
+    return (`is_type_list(`get_type(`arg)) AND `length(`arg) == 2 AND `is_type_num(`get_type(`arg[0])) AND `arg[0] >= `ARG_TYPE_NUMBER AND `arg[0] <= `ARG_TYPE_MODNAME)
 
   METHOD `getNormalizedLimits(`limits_):
     VAR `limits = {}
@@ -225,7 +225,7 @@ CLASS `Utils:
     IF `is_type_num(`data_type) OR `is_type_bool(`data_type):
       `isize = 1
       `lsize = 0
-      return [`key_interp_integer, `trunc(`data), `lsize, `isize]
+      return [`key_interp_number, `trunc(`data), `lsize, `isize]
     ENDIF
     VAR `j
     IF `is_type_list(`data_type):
@@ -257,15 +257,15 @@ CLASS `Utils:
       IF `length(`evalue) == 0:
         `isize = 1
         `lsize = 0
-        `push(`evalue, `key_interp_integer)
+        `push(`evalue, `key_interp_number)
         `push(`evalue, `trunc(`data))
         `push(`evalue, `lsize)
         `push(`evalue, `isize)
       ELSE:
-        IF `evalue[0] != `key_interp_integer:
+        IF `evalue[0] != `key_interp_number:
           `isize = 1
           `lsize = 0
-          `evalue[0] = `key_interp_integer
+          `evalue[0] = `key_interp_number
           `evalue[2] = `lsize
           `evalue[3] = `isize
         ENDIF
@@ -360,8 +360,8 @@ CLASS `Utils:
       `warning("Prequel"+" "+"Utils"+" "+"decodeData"+":"+" "+"invalid"+" "+"data"+":", `edata)
       return NULL
     ENDIF
-    IF `edata[0] == `key_interp_integer:
-      return [`ARG_TYPE_INTEGER, `trunc(`edata[1])]
+    IF `edata[0] == `key_interp_number:
+      return [`ARG_TYPE_NUMBER, `trunc(`edata[1])]
     ENDIF
     IF `edata[0] == `key_interp_list:
       IF `not(`is_type_list(`get_type(`edata[1]))):
@@ -416,7 +416,7 @@ CLASS `Utils:
     IF `isnull(`evalue):
       return "<NULL>"
     ENDIF
-    IF `evalue[0] == `key_interp_integer:
+    IF `evalue[0] == `key_interp_number:
       return `str(`evalue[1])
     ENDIF
     IF `evalue[0] == `key_interp_list:
@@ -461,7 +461,7 @@ CLASS `Lexer:
     `push(THIS.`_reserved_words, "AND")
     `push(THIS.`_reserved_words, "NOT")
     `push(THIS.`_reserved_words, "IS")
-    `push(THIS.`_reserved_words, "INTEGER")
+    `push(THIS.`_reserved_words, "NUMBER")
     `push(THIS.`_reserved_words, "LIST")
     `push(THIS.`_reserved_words, "EMPTY")
     `push(THIS.`_reserved_words, "PROCEDURE")
@@ -742,13 +742,6 @@ CLASS `Lexer:
           `col += `tlen
           continue
         ENDIF
-        `tname = "INTEGER"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, ["INTEGER", `col, `substring(`line, `col, `col+`tlen)])
-          `col += `tlen
-          continue
-        ENDIF
       ENDIF
       IF `ic == "R":
         `tname = "REPEAT"
@@ -856,6 +849,13 @@ CLASS `Lexer:
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, ["NOT", `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "NUMBER"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, ["NUMBER", `col, `substring(`line, `col, `col+`tlen)])
           `col += `tlen
           continue
         ENDIF
@@ -1217,7 +1217,7 @@ CLASS `Lexer:
           break
         ENDFOR
         IF (`col-`nonzero > 10) OR (`parse_int(`substring(`line, `start, `col), 10) > 0xffffffff):
-          `push(`tokens, ["ERROR", `start, `substring(`line, `start, `col), "INTEGER"+" "+"GREATER"+" "+"THAN"+" "+"32"+" "+"BITS"])
+          `push(`tokens, ["ERROR", `start, `substring(`line, `start, `col), "NUMBER"+" "+"GREATER"+" "+"THAN"+" "+"32"+" "+"BITS"])
           `start = `col
           WHILE `line[`col] != `chr_lf:
             `col += 1
@@ -1551,9 +1551,9 @@ CLASS `Parser:
         return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"INCREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["PLUS", ["VAR", `vvar], ["INTEGER", 1]]
+        `expr = ["PLUS", ["VAR", `vvar], ["NUMBER", 1]]
       ELSE:
-        `expr = ["PLUS", ["LIST_AT_VAR", `vvar, `exprs], ["INTEGER", 1]]
+        `expr = ["PLUS", ["LIST_AT_VAR", `vvar, `exprs], ["NUMBER", 1]]
       ENDIF
       return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -1562,9 +1562,9 @@ CLASS `Parser:
         return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"DECREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["MINUS", ["VAR", `vvar], ["INTEGER", 1]]
+        `expr = ["MINUS", ["VAR", `vvar], ["NUMBER", 1]]
       ELSE:
-        `expr = ["MINUS", ["LIST_AT_VAR", `vvar, `exprs], ["INTEGER", 1]]
+        `expr = ["MINUS", ["LIST_AT_VAR", `vvar, `exprs], ["NUMBER", 1]]
       ENDIF
       return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -2251,24 +2251,24 @@ CLASS `Parser:
   METHOD `_parseRelationalExpression(`tokens `lidxs `lidx):
     VAR `rel_op
     IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "VAR") AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS_NOT")):
-      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "EMPTY") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
+      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "NUMBER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "EMPTY") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
         return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       IF `lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE":
         `rel_op = TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"NE"}{"EQ"}
-        return [`lidx+3, [`rel_op, ["INTEGER", 1], ["INTEGER", 1]]]
+        return [`lidx+3, [`rel_op, ["NUMBER", 1], ["NUMBER", 1]]]
       ENDIF
       return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
     IF (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "QUALVAR") AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS_NOT")):
-      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "EMPTY") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
+      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "NUMBER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "EMPTY") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "PROCEDURE") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx+2]]) == "UNDEFINED"):
         return [`lidx+3, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx+1]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, ["QUALVAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenName(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
     IF (`length(`lidx_sfxexpr) > 1) AND (`lidx_sfxexpr[1][1] == "") AND ((`lidx_sfxexpr[1][2][0] == "LIST_AT_VAR") OR (`lidx_sfxexpr[1][2][0] == "LIST_AT_QUALVAR")) AND ((`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == "IS") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == "IS_NOT")):
-      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "INTEGER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "EMPTY"):
+      IF (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "NUMBER") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "LIST") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == "EMPTY"):
         return [`lidx_sfxexpr[0]+2, [TERNARY{`lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == "IS"}{"IS_VAR"}{"IS_NOT_VAR"}, `lidx_sfxexpr[1][2], `lexer.`tokenName(`tokens[`lidxs[`lidx_sfxexpr[0]+1]])]]
       ENDIF
       return [["ERROR", NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
@@ -2369,14 +2369,14 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `literal
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DECIMAL":
-      return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "HEXADECIMAL":
-      return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BINARY":
       `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["INTEGER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
+      return [`lidx+1, ["NUMBER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LPAR":
       `lidx_ariexpr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2412,7 +2412,7 @@ CLASS `Parser:
       `indexof_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
       IF `length(`lidx_ariexpr) == 1:
-        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["INTEGER", 0]]]
+        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["NUMBER", 0]]]
       ENDIF
       return [`lidx_ariexpr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
@@ -2484,14 +2484,14 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `literal
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DECIMAL":
-      return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "HEXADECIMAL":
-      return [`lidx+1, ["INTEGER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BINARY":
       `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["INTEGER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
+      return [`lidx+1, ["NUMBER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "LPAR":
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2527,7 +2527,7 @@ CLASS `Parser:
       `indexof_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
       IF `length(`lidx_ariexpr) == 1:
-        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["INTEGER", 0]]]
+        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["NUMBER", 0]]]
       ENDIF
       return [`lidx_ariexpr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
@@ -2582,7 +2582,7 @@ CLASS `Parser:
         ENDIF
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
         IF `length(`lidx_ariexpr) == 1:
-          return [`lidx_expr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1], ["INTEGER", 0]]]]
+          return [`lidx_expr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1], ["NUMBER", 0]]]]
         ENDIF
         return [`lidx_ariexpr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
       ENDIF
@@ -2635,7 +2635,7 @@ CLASS `Parser:
         ENDIF
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
         IF `length(`lidx_ariexpr) == 1:
-          return [`lidx_expr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs], `lidx_expr[1], ["INTEGER", 0]]]]
+          return [`lidx_expr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs], `lidx_expr[1], ["NUMBER", 0]]]]
         ENDIF
         return [`lidx_ariexpr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
       ENDIF
@@ -3452,7 +3452,7 @@ CLASS `InterpM:
     THIS.`_count[`key_limits_memory_i] = NULL
     THIS.`_count[`key_limits_memory_l] = NULL
     THIS.`_count[`key_limits_time] = NULL
-    THIS.`_tmpInteger = [`key_interp_integer, 0, 0, 1]
+    THIS.`_tmpNumber = [`key_interp_number, 0, 0, 1]
     THIS.`_tmpBoolean = [`key_interp_boolean, TRUE]
     THIS.`_tmpByRef = [`key_interp_by_ref, NULL]
     THIS.`_tmpModuleName = [`key_interp_module_name, NULL]
@@ -3527,8 +3527,8 @@ CLASS `InterpM:
     THIS.`_dispatch_stmt["QUEUE"] = `closure_istmt_queue
     THIS.`_dispatch_stmt["UNASSIGN"] = `closure_istmt_unassign
     THIS.`_dispatch_stmt["LOG"] = `closure_istmt_log
-    CLOSURE `closure_iexpr_integer(`expression):
-      return `that.`_iexprInteger(`expression)
+    CLOSURE `closure_iexpr_number(`expression):
+      return `that.`_iexprNumber(`expression)
     ENDCLOSURE
     CLOSURE `closure_iexpr_list(`expression):
       return `that.`_iexprList(`expression)
@@ -3639,7 +3639,7 @@ CLASS `InterpM:
       return `that.`_iexprListAtQualvar(`expression)
     ENDCLOSURE
     THIS.`_dispatch_expr = {}
-    THIS.`_dispatch_expr["INTEGER"] = `closure_iexpr_integer
+    THIS.`_dispatch_expr["NUMBER"] = `closure_iexpr_number
     THIS.`_dispatch_expr["LIST"] = `closure_iexpr_list
     THIS.`_dispatch_expr["BY_REF"] = `closure_iexpr_by_ref
     THIS.`_dispatch_expr["MODULE_NAME"] = `closure_iexpr_module_name
@@ -3947,8 +3947,8 @@ CLASS `InterpM:
       IF `isnull(`evalue):
         return NULL
       ENDIF
-      IF `evalue[0] != `key_interp_integer:
-        `that.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"IN"+" "+"RHS")
+      IF `evalue[0] != `key_interp_number:
+        `that.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"IN"+" "+"RHS")
         return NULL
       ENDIF
       IF `evalue[1] < 2:
@@ -3995,7 +3995,7 @@ CLASS `InterpM:
         IF `isnull(`lindex):
           return NULL
         ENDIF
-        IF `lindex[0] != `key_interp_integer:
+        IF `lindex[0] != `key_interp_number:
           `that.`_setRuntimeError("INVALID"+" "+"INDEX")
           return NULL
         ENDIF
@@ -4138,7 +4138,7 @@ CLASS `InterpM:
     IF `isnull(`lindex):
       return
     ENDIF
-    IF `lindex[0] != `key_interp_integer:
+    IF `lindex[0] != `key_interp_number:
       THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
       return
     ENDIF
@@ -4158,7 +4158,7 @@ CLASS `InterpM:
       IF `isnull(`lindex):
         return
       ENDIF
-      IF `lindex[0] != `key_interp_integer:
+      IF `lindex[0] != `key_interp_number:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
         return
       ENDIF
@@ -4236,8 +4236,8 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("UNDEFINED"+" "+"VARIABLE")
       return
     ENDIF
-    IF `evalue[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return
     ENDIF
     `push(THIS.`_repeat_vars, `vvar)
@@ -4324,7 +4324,7 @@ CLASS `InterpM:
       IF `isnull(`lindex):
         return
       ENDIF
-      IF `lindex[0] != `key_interp_integer:
+      IF `lindex[0] != `key_interp_number:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return
       ENDIF
@@ -4461,10 +4461,10 @@ CLASS `InterpM:
     VAR `opcode = `expression[0]
     return THIS.`_dispatch_expr[`opcode](`expression)
 
-  METHOD `_iexprInteger(`expression):
+  METHOD `_iexprNumber(`expression):
     VAR `n = `expression[1]
-    THIS.`_tmpInteger[1] = `n
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `n
+    return THIS.`_tmpNumber
 
   METHOD `_iexprList(`expression):
     VAR `exprs = `expression[1]
@@ -4534,8 +4534,8 @@ CLASS `InterpM:
     IF `isnull(`evalue1):
       return NULL
     ENDIF
-    IF `evalue1[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue1[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `evalue1i = `evalue1[1]
@@ -4543,8 +4543,8 @@ CLASS `InterpM:
     IF `isnull(`evalue2):
       return NULL
     ENDIF
-    IF `evalue2[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue2[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `value = `binOp(`evalue1i, `evalue2[1])
@@ -4557,13 +4557,13 @@ CLASS `InterpM:
     IF `isnull(`evalue):
       return NULL
     ENDIF
-    IF `evalue[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `value = `unaryOp(`evalue[1])
-    THIS.`_tmpInteger[1] = `value
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `value
+    return THIS.`_tmpNumber
 
   METHOD `_iexprAddOp(`expression `binOp):
     VAR `expr1 = `expression[1]
@@ -4572,8 +4572,8 @@ CLASS `InterpM:
     IF `isnull(`evalue1):
       return NULL
     ENDIF
-    IF `evalue1[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue1[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `evalue1i = `evalue1[1]
@@ -4581,13 +4581,13 @@ CLASS `InterpM:
     IF `isnull(`evalue2):
       return NULL
     ENDIF
-    IF `evalue2[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue2[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `value = `binOp(`evalue1i, `evalue2[1])
-    THIS.`_tmpInteger[1] = `value
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `value
+    return THIS.`_tmpNumber
 
   METHOD `_iexprMulOp(`expression `binOp `zero_error):
     VAR `expr1 = `expression[1]
@@ -4596,8 +4596,8 @@ CLASS `InterpM:
     IF `isnull(`evalue1):
       return NULL
     ENDIF
-    IF `evalue1[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue1[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `evalue1i = `evalue1[1]
@@ -4605,8 +4605,8 @@ CLASS `InterpM:
     IF `isnull(`evalue2):
       return NULL
     ENDIF
-    IF `evalue2[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `evalue2[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     IF (`evalue2[1] == 0) AND `not(`isnull(`zero_error)):
@@ -4614,8 +4614,8 @@ CLASS `InterpM:
       return NULL
     ENDIF
     VAR `value = `binOp(`evalue1i, `evalue2[1])
-    THIS.`_tmpInteger[1] = `value
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `value
+    return THIS.`_tmpNumber
 
   METHOD `_iexprConcatAddOp(`expression `binOp):
     VAR `expr1 = `expression[1]
@@ -4630,19 +4630,19 @@ CLASS `InterpM:
     VAR `value
     VAR `isize
     VAR `lsize
-    IF `evalue1[0] == `key_interp_integer:
+    IF `evalue1[0] == `key_interp_number:
       `evalue1i = `evalue1[1]
       `evalue2 = THIS.`_interpExpr(`expr2)
       IF `isnull(`evalue2):
         return NULL
       ENDIF
-      IF `evalue2[0] != `key_interp_integer:
-        THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+      IF `evalue2[0] != `key_interp_number:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
         return NULL
       ENDIF
       `value = `binOp(`evalue1i, `evalue2[1])
-      THIS.`_tmpInteger[1] = `value
-      return THIS.`_tmpInteger
+      THIS.`_tmpNumber[1] = `value
+      return THIS.`_tmpNumber
     ENDIF
     IF `evalue1[0] == `key_interp_list:
       `evalue = `utils.`deepCopy(`evalue1)
@@ -4661,7 +4661,7 @@ CLASS `InterpM:
       `lsize += `utils.`lsizeEvalue(`evalue2)-1
       return [`key_interp_list, `value, `lsize, `isize]
     ENDIF
-    THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
+    THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
     return NULL
 
   METHOD `_iexprByRef(`expression):
@@ -4674,7 +4674,7 @@ CLASS `InterpM:
       IF `isnull(`lindex):
         return NULL
       ENDIF
-      IF `lindex[0] != `key_interp_integer:
+      IF `lindex[0] != `key_interp_number:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
@@ -4700,8 +4700,8 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("UNDEFINED"+" "+"VARIABLE")
       return NULL
     ENDIF
-    IF (`evalue[0] != `key_interp_integer) AND (`evalue[0] != `key_interp_list):
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
+    IF (`evalue[0] != `key_interp_number) AND (`evalue[0] != `key_interp_list):
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
       return NULL
     ENDIF
     return `evalue
@@ -4713,8 +4713,8 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("UNDEFINED"+" "+"VARIABLE")
       return NULL
     ENDIF
-    IF (`evalue[0] != `key_interp_integer) AND (`evalue[0] != `key_interp_list):
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
+    IF (`evalue[0] != `key_interp_number) AND (`evalue[0] != `key_interp_list):
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
       return NULL
     ENDIF
     return `evalue
@@ -4738,8 +4738,8 @@ CLASS `InterpM:
       THIS.`_tmpBoolean[1] = (`vvar_typestr == "UNDEFINED")
       return THIS.`_tmpBoolean
     ENDIF
-    IF `evalue[0] == `key_interp_integer:
-      THIS.`_tmpBoolean[1] = (`vvar_typestr == "INTEGER")
+    IF `evalue[0] == `key_interp_number:
+      THIS.`_tmpBoolean[1] = (`vvar_typestr == "NUMBER")
       return THIS.`_tmpBoolean
     ENDIF
     IF `evalue[0] == `key_interp_list:
@@ -4772,8 +4772,8 @@ CLASS `InterpM:
       THIS.`_tmpBoolean[1] = (`vvar_typestr != "UNDEFINED")
       return THIS.`_tmpBoolean
     ENDIF
-    IF `evalue[0] == `key_interp_integer:
-      THIS.`_tmpBoolean[1] = (`vvar_typestr != "INTEGER")
+    IF `evalue[0] == `key_interp_number:
+      THIS.`_tmpBoolean[1] = (`vvar_typestr != "NUMBER")
       return THIS.`_tmpBoolean
     ENDIF
     IF `evalue[0] == `key_interp_list:
@@ -4797,8 +4797,8 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
       return NULL
     ENDIF
-    THIS.`_tmpInteger[1] = `length(`evalue[1])
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `length(`evalue[1])
+    return THIS.`_tmpNumber
 
   METHOD `_iexprSizeVar(`expression `projection):
     VAR `vvarexprs = `expression[1]
@@ -4806,13 +4806,13 @@ CLASS `InterpM:
     IF `isnull(`evalue):
       return NULL
     ENDIF
-    IF (`evalue[0] != `key_interp_integer) AND (`evalue[0] != `key_interp_list):
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER"+" "+"OR"+" "+"LIST")
+    IF (`evalue[0] != `key_interp_number) AND (`evalue[0] != `key_interp_list):
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
       return NULL
     ENDIF
     VAR `value = `projection(`utils.`lsizeEvalue(`evalue), `utils.`isizeEvalue(`evalue))
-    THIS.`_tmpInteger[1] = `value
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `value
+    return THIS.`_tmpNumber
 
   METHOD `_iexprIndexofVar(`expression):
     VAR `vvarexprs = `expression[1]
@@ -4831,8 +4831,8 @@ CLASS `InterpM:
     IF `isnull(`from):
       return NULL
     ENDIF
-    IF `from[0] != `key_interp_integer:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"INTEGER")
+    IF `from[0] != `key_interp_number:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
     VAR `fromi = `from[1]
@@ -4840,7 +4840,7 @@ CLASS `InterpM:
     IF `isnull(`indexof_):
       return NULL
     ENDIF
-    IF (`indexof_[0] != `key_interp_integer) AND (`indexof_[0] != `key_interp_list):
+    IF (`indexof_[0] != `key_interp_number) AND (`indexof_[0] != `key_interp_list):
       THIS.`_setRuntimeError("INVALID"+" "+"INDEXOF"+" "+"EXPRESSION")
       return NULL
     ENDIF
@@ -4851,8 +4851,8 @@ CLASS `InterpM:
     ELSE:
       `result = `utils.`structuralIndexOf(`varvalue[1], `indexofvalue[1], `fromi)
     ENDIF
-    THIS.`_tmpInteger[1] = `result
-    return THIS.`_tmpInteger
+    THIS.`_tmpNumber[1] = `result
+    return THIS.`_tmpNumber
 
   METHOD `_iexprListAtVar(`expression):
     VAR `vvar = `expression[1]
@@ -4873,7 +4873,7 @@ CLASS `InterpM:
       IF `isnull(`lindex):
         return NULL
       ENDIF
-      IF `lindex[0] != `key_interp_integer:
+      IF `lindex[0] != `key_interp_number:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
@@ -4904,7 +4904,7 @@ CLASS `InterpM:
       IF `isnull(`lindex):
         return NULL
       ENDIF
-      IF `lindex[0] != `key_interp_integer:
+      IF `lindex[0] != `key_interp_number:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
@@ -6350,12 +6350,12 @@ CLASS Prequel:
   METHOD isInstanceStateEnded(`instance_state):
     return (`instance_state == `INTERP_STATE_ENDED)
 
-  METHOD isArgTypeInteger(`arg):
+  METHOD isArgTypeNumber(`arg):
     IF `not(`utils.`isArgData(`arg)):
       THIS.`_error = "INVALID"+" "+"ARG"
       return NULL
     ENDIF
-    return (`arg[0] == `ARG_TYPE_INTEGER)
+    return (`arg[0] == `ARG_TYPE_NUMBER)
 
   METHOD isArgTypeList(`arg):
     IF `not(`utils.`isArgData(`arg)):
