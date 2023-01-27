@@ -1613,7 +1613,7 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
@@ -1651,7 +1651,7 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
@@ -1690,7 +1690,7 @@ CLASS `Parser:
             ENDIF
             `lidx = `lidx_ariexpr[0]
             IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-              return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+              return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
             ENDIF
             `push(`byref_exprs, `lidx_ariexpr[1])
             `lidx += 1
@@ -1965,7 +1965,7 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
@@ -2004,7 +2004,7 @@ CLASS `Parser:
             ENDIF
             `lidx = `lidx_ariexpr[0]
             IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-              return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+              return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
             ENDIF
             `push(`byref_exprs, `lidx_ariexpr[1])
             `lidx += 1
@@ -2172,7 +2172,7 @@ CLASS `Parser:
         ENDIF
         `lidx = `lidx_ariexpr[0]
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-          return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+          return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
         ENDIF
         `push(`byref_exprs, `lidx_ariexpr[1])
         `lidx += 1
@@ -2211,7 +2211,7 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
