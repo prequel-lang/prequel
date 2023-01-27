@@ -940,6 +940,16 @@ CLASS `Lexer:
         `col += 1
         continue
       ENDIF
+      IF `line[`col] == "\\":
+        IF `line[`col+1] == "=":
+          `push(`tokens, ["ASSIGN_OP_IDV", `col, "\\="])
+          `col += 2
+          continue
+        ENDIF
+        `push(`tokens, ["IDV", `col, "\\"])
+        `col += 1
+        continue
+      ENDIF
       IF `line[`col] == "%":
         IF `line[`col+1] == "=":
           `push(`tokens, ["ASSIGN_OP_MOD", `col, "%="])
@@ -1625,6 +1635,21 @@ CLASS `Parser:
         `expr = ["DIV", ["VAR", `vvar], `lidx_expr[1]]
       ELSE:
         `expr = ["DIV", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+      ENDIF
+      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+    ENDIF
+    IF `lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "ASSIGN_OP_IDV":
+      `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+      IF `length(`lidx_expr) == 1:
+        return `lidx_expr[0]
+      ENDIF
+      IF `lidx_expr[0] != `length(`lidxs)-1:
+        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+      ENDIF
+      IF `length(`exprs) == 0:
+        `expr = ["IDV", ["VAR", `vvar], `lidx_expr[1]]
+      ELSE:
+        `expr = ["IDV", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
       ENDIF
       return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -2320,7 +2345,7 @@ CLASS `Parser:
     ENDIF
     VAR `term = `lidx_factor[1]
     `lidx = `lidx_factor[0]
-    WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MUL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DIV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MOD") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_AND") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHR"):
+    WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MUL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DIV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "IDV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MOD") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_AND") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHR"):
       `lidx_factor = THIS.`_parseArithmeticFactor(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_factor) == 1:
         return `lidx_factor
@@ -2464,7 +2489,7 @@ CLASS `Parser:
     ENDIF
     VAR `term = `lidx_factor[1]
     `lidx = `lidx_factor[0]
-    WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MUL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DIV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MOD") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_AND") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHR"):
+    WHILE (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MUL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "DIV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "IDV") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "MOD") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_AND") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHL") OR (`lexer.`tokenName(`tokens[`lidxs[`lidx]]) == "BIT_SHR"):
       `lidx_factor = THIS.`_parseArithmeticFactor(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_factor) == 1:
         return `lidx_factor
@@ -3373,6 +3398,10 @@ FUNC `func_iexpr_mul_op_div(`v1 `v2):
   return `int32(`trunc(`v1 / `v2) & 0xffffffff)
 ENDFUNC
 
+FUNC `func_iexpr_mul_op_idv(`v1 `v2):
+  return `int32(`trunc(`v1 / `v2) & 0xffffffff)
+ENDFUNC
+
 FUNC `func_iexpr_mul_op_mod(`v1 `v2):
   return `int32((`v1 % `v2) & 0xffffffff)
 ENDFUNC
@@ -3593,6 +3622,9 @@ CLASS `InterpM:
     CLOSURE `closure_iexpr_mul_op_div(`expression):
       return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_div, "DIVISION"+" "+"BY"+" "+"ZERO")
     ENDCLOSURE
+    CLOSURE `closure_iexpr_mul_op_idv(`expression):
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_idv, "DIVISION"+" "+"BY"+" "+"ZERO")
+    ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_mod(`expression):
       return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mod, "MODULO"+" "+"BY"+" "+"ZERO")
     ENDCLOSURE
@@ -3661,6 +3693,7 @@ CLASS `InterpM:
     THIS.`_dispatch_expr["BIT_XOR"] = `closure_iexpr_add_op_bit_xor
     THIS.`_dispatch_expr["MUL"] = `closure_iexpr_mul_op_mul
     THIS.`_dispatch_expr["DIV"] = `closure_iexpr_mul_op_div
+    THIS.`_dispatch_expr["IDV"] = `closure_iexpr_mul_op_idv
     THIS.`_dispatch_expr["MOD"] = `closure_iexpr_mul_op_mod
     THIS.`_dispatch_expr["BIT_AND"] = `closure_iexpr_mul_op_bit_and
     THIS.`_dispatch_expr["BIT_SHL"] = `closure_iexpr_mul_op_bit_shl
