@@ -528,6 +528,17 @@ VAR `key_token_UNDEFINED = 81
 VAR `key_token_UNQUEUE = 82
 VAR `key_token_VAR = 83
 
+VAR `SUFFIX_ = 0
+VAR `SUFFIX_LENGTH = 1
+VAR `SUFFIX_SIZE = 2
+VAR `SUFFIX_ISIZE = 3
+VAR `SUFFIX_LSIZE = 4
+VAR `SUFFIX_PUSH = 5
+VAR `SUFFIX_QUEUE = 6
+VAR `SUFFIX_POP = 7
+VAR `SUFFIX_UNQUEUE = 8
+VAR `SUFFIX_INDEXOF = 9
+
 CLASS `Lexer:
 
   METHOD_INIT():
@@ -1497,6 +1508,69 @@ ENDCLASS
 
 VAR `lexer = NEW `Lexer()
 
+VAR `UNARYOP_ = 0
+VAR `UNARYOP_PLUS = 1
+VAR `UNARYOP_MINUS = 2
+VAR `UNARYOP_BIT_NOT = 3
+
+VAR `OPCODE_ERROR = 0
+VAR `OPCODE_SUFFIX = 1
+VAR `OPCODE_AND = 2
+VAR `OPCODE_ASSIGN_OP = 3
+VAR `OPCODE_ASSIGN_OP_RANDOM = 4
+VAR `OPCODE_ASSIGN_POP = 5
+VAR `OPCODE_ASSIGN_UNQUEUE = 6
+VAR `OPCODE_BIT_AND = 7
+VAR `OPCODE_BIT_NOT = 8
+VAR `OPCODE_BIT_OR = 9
+VAR `OPCODE_BIT_SHL = 10
+VAR `OPCODE_BIT_SHR = 11
+VAR `OPCODE_BIT_XOR = 12
+VAR `OPCODE_BY_REF = 13
+VAR `OPCODE_DIV = 14
+VAR `OPCODE_ELSE = 15
+VAR `OPCODE_ELSIF = 16
+VAR `OPCODE_ENDIF = 17
+VAR `OPCODE_ENDREP = 18
+VAR `OPCODE_EQ = 19
+VAR `OPCODE_GE = 20
+VAR `OPCODE_GT = 21
+VAR `OPCODE_IDV = 22
+VAR `OPCODE_IF = 23
+VAR `OPCODE_INDEXOF_VAR = 24
+VAR `OPCODE_ISIZE_VAR = 25
+VAR `OPCODE_IS_NOT_VAR = 26
+VAR `OPCODE_IS_VAR = 27
+VAR `OPCODE_LE = 28
+VAR `OPCODE_LENGTH_VAR = 29
+VAR `OPCODE_LIST = 30
+VAR `OPCODE_LIST_AT_QUALVAR = 31
+VAR `OPCODE_LIST_AT_VAR = 32
+VAR `OPCODE_LOG = 33
+VAR `OPCODE_LSIZE_VAR = 34
+VAR `OPCODE_LT = 35
+VAR `OPCODE_MINUS = 36
+VAR `OPCODE_MOD = 37
+VAR `OPCODE_MODULE_NAME = 38
+VAR `OPCODE_MUL = 39
+VAR `OPCODE_NE = 40
+VAR `OPCODE_NEG = 41
+VAR `OPCODE_NOT = 42
+VAR `OPCODE_NUMBER = 43
+VAR `OPCODE_OR = 44
+VAR `OPCODE_PLUS = 45
+VAR `OPCODE_PROCEDURE = 46
+VAR `OPCODE_PUSH = 47
+VAR `OPCODE_QUALVAR = 48
+VAR `OPCODE_QUEUE = 49
+VAR `OPCODE_REPEAT = 50
+VAR `OPCODE_REPNEXT = 51
+VAR `OPCODE_REPSTOP = 52
+VAR `OPCODE_SIZE_VAR = 53
+VAR `OPCODE_STRING = 54
+VAR `OPCODE_UNASSIGN = 55
+VAR `OPCODE_VAR = 56
+
 CLASS `Parser:
 
   METHOD_INIT():
@@ -1507,7 +1581,7 @@ CLASS `Parser:
 
   METHOD `parseLine(`tokens):
     IF `lexer.`tokenId(`tokens[`length(`tokens)-2]) == `key_token_POSTERROR:
-      return ["ERROR", NULL, `lexer.`tokenExtra(`tokens[`length(`tokens)-3]), `lexer.`tokenColumn(`tokens[`length(`tokens)-3]), []]
+      return [`OPCODE_ERROR, NULL, `lexer.`tokenExtra(`tokens[`length(`tokens)-3]), `lexer.`tokenColumn(`tokens[`length(`tokens)-3]), []]
     ENDIF
     VAR `lidxs = []
     VAR `j
@@ -1521,13 +1595,13 @@ CLASS `Parser:
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, 0)
     IF `length(`lidx_sfxexpr) > 1:
-      IF `lidx_sfxexpr[1][1] == "PUSH":
+      IF `lidx_sfxexpr[1][1] == `SUFFIX_PUSH:
         return THIS.`_parsePush(`tokens, `lidxs, `lidx_sfxexpr)
-      ELSIF `lidx_sfxexpr[1][1] == "QUEUE":
+      ELSIF `lidx_sfxexpr[1][1] == `SUFFIX_QUEUE:
         return THIS.`_parseQueue(`tokens, `lidxs, `lidx_sfxexpr)
-      ELSIF `lidx_sfxexpr[1][1] == "POP":
+      ELSIF `lidx_sfxexpr[1][1] == `SUFFIX_POP:
         return THIS.`_parsePop(`tokens, `lidxs, `lidx_sfxexpr)
-      ELSIF `lidx_sfxexpr[1][1] == "UNQUEUE":
+      ELSIF `lidx_sfxexpr[1][1] == `SUFFIX_UNQUEUE:
         return THIS.`_parseUnqueue(`tokens, `lidxs, `lidx_sfxexpr)
       ENDIF
     ENDIF
@@ -1565,7 +1639,7 @@ CLASS `Parser:
     ELSIF `token_id == `key_token_LOG:
       return THIS.`_parseLog(`tokens, `lidxs)
     ENDIF
-    return ["ERROR", NULL, "INVALID"+" "+"INSTRUCTION", `lexer.`tokenColumn(`tokens[`lidxs[0]]), []]
+    return [`OPCODE_ERROR, NULL, "INVALID"+" "+"INSTRUCTION", `lexer.`tokenColumn(`tokens[`lidxs[0]]), []]
 
   METHOD `_parseAssign(`tokens `lidxs):
     VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
@@ -1584,7 +1658,7 @@ CLASS `Parser:
       IF `length(`lidx_expr) == 1:
         return `lidx_expr[0]
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx_expr[0]]]) != `key_token_RSQR:
-        return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       `push(`exprs, `lidx_expr[1])
       `lidx = `lidx_expr[0]+1
@@ -1595,14 +1669,14 @@ CLASS `Parser:
       FORINCR `j(0 `length(`exprs)):
         `push(`byref_exprs, `exprs[`j])
       ENDFOR
-      `push(`proc_exprs, ["BY_REF", `byref_exprs])
+      `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
       WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_COMMA:
         `lidx += 1
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP:
           break
         ENDIF
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_VAR:
-          return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+          return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
         ENDIF
         `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
         `lidx += 1
@@ -1613,33 +1687,33 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+            return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
         ENDWHILE
-        `push(`proc_exprs, ["BY_REF", `byref_exprs])
+        `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
       ENDWHILE
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_ASSIGN_OP:
-        return ["ERROR", NULL, "EXPECTED"+" "+"ASSIGNMENT"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ASSIGNMENT"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
       ENDIF
       `lidx += 1
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_QUALVAR:
-        return ["ERROR", NULL, "EXPECTED"+" "+"PROCEDURE"+" "+"IN"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"PROCEDURE"+" "+"IN"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
       ENDIF
       `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) != `key_token_LPAR:
-        return ["ERROR", NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"PROCEDURE"+" "+"NAME", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"PROCEDURE"+" "+"NAME", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_RPAR:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_NEWLINE:
-          return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+          return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ENDIF
-        return ["PROCEDURE", NULL, `qualvar, `proc_exprs]
+        return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_BIT_AND:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
-          return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+          return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ENDIF
         `lidx += 3
         `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
@@ -1651,17 +1725,17 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+            return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
         ENDWHILE
-        `push(`proc_exprs, ["BY_REF", `byref_exprs])
+        `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_MODULE_NAME:
-        `push(`proc_exprs, ["MODULE_NAME", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
+        `push(`proc_exprs, [`OPCODE_MODULE_NAME, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
         `lidx += 3
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_STRING:
-        `push(`proc_exprs, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
+        `push(`proc_exprs, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
         `lidx += 3
       ELSE:
         `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+2)
@@ -1678,7 +1752,7 @@ CLASS `Parser:
         ENDIF
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_BIT_AND:
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
-            return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+            return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
           ENDIF
           `lidx += 2
           `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
@@ -1690,17 +1764,17 @@ CLASS `Parser:
             ENDIF
             `lidx = `lidx_ariexpr[0]
             IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-              return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+              return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
             ENDIF
             `push(`byref_exprs, `lidx_ariexpr[1])
             `lidx += 1
           ENDWHILE
-          `push(`proc_exprs, ["BY_REF", `byref_exprs])
+          `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
         ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_MODULE_NAME:
-          `push(`proc_exprs, ["MODULE_NAME", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
+          `push(`proc_exprs, [`OPCODE_MODULE_NAME, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
           `lidx = `lidx+2
         ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_STRING:
-          `push(`proc_exprs, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
+          `push(`proc_exprs, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
           `lidx = `lidx+2
         ELSE:
           `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -1712,50 +1786,50 @@ CLASS `Parser:
         ENDIF
       ENDWHILE
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RPAR:
-        return ["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"CLOSING"+" "+"PROCEDURE"+" "+"PARAMETERS", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"CLOSING"+" "+"PROCEDURE"+" "+"PARAMETERS", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
       ENDIF
       IF `lidx+1 != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
-      return ["PROCEDURE", NULL, `qualvar, `proc_exprs]
+      return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_RANDOM:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_RANDOM:
         IF `lidx+2 != `length(`lidxs)-1:
-          return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"RANDOM", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+          return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"RANDOM", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
         ENDIF
-        return ["ASSIGN_OP_RANDOM", NULL, `vvar, `exprs, NULL]
+        return [`OPCODE_ASSIGN_OP_RANDOM, NULL, `vvar, `exprs, NULL]
       ENDIF
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_expr) == 1:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return ["ASSIGN_OP_RANDOM", NULL, `vvar, `exprs, `lidx_expr[1]]
+      return [`OPCODE_ASSIGN_OP_RANDOM, NULL, `vvar, `exprs, `lidx_expr[1]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_INCR:
       IF `lidx+1 != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"INCREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"INCREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["PLUS", ["VAR", `vvar], ["NUMBER", 1]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, 1]]
       ELSE:
-        `expr = ["PLUS", ["LIST_AT_VAR", `vvar, `exprs], ["NUMBER", 1]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, 1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_DECR:
       IF `lidx+1 != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"DECREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"DECREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["MINUS", ["VAR", `vvar], ["NUMBER", 1]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, 1]]
       ELSE:
-        `expr = ["MINUS", ["LIST_AT_VAR", `vvar, `exprs], ["NUMBER", 1]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, 1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_PLUS:
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -1763,14 +1837,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["PLUS", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["PLUS", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_MINUS:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1778,14 +1852,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["MINUS", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["MINUS", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_MUL:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1793,14 +1867,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["MUL", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_MUL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["MUL", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_MUL, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_DIV:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1808,14 +1882,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["DIV", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_DIV, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["DIV", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_DIV, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_IDV:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1823,14 +1897,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["IDV", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_IDV, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["IDV", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_IDV, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_MOD:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1838,14 +1912,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["MOD", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_MOD, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["MOD", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_MOD, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_AND:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1853,14 +1927,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["BIT_AND", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_AND, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["BIT_AND", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_AND, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_OR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1868,14 +1942,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["BIT_OR", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_OR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["BIT_OR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_OR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_XOR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1883,14 +1957,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["BIT_XOR", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_XOR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["BIT_XOR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_XOR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_SHL:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1898,14 +1972,14 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["BIT_SHL", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_SHL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["BIT_SHL", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_SHL, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_SHR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1913,28 +1987,28 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["BIT_SHR", ["VAR", `vvar], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_SHR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
       ELSE:
-        `expr = ["BIT_SHR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1]]
+        `expr = [`OPCODE_BIT_SHR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_TOGGLE:
       IF `lidx+1 != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"TOGGLE"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"TOGGLE"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = ["BIT_NOT", ["VAR", `vvar]]
+        `expr = [`OPCODE_BIT_NOT, [`OPCODE_VAR, `vvar]]
       ELSE:
-        `expr = ["BIT_NOT", ["LIST_AT_VAR", `vvar, `exprs]]
+        `expr = [`OPCODE_BIT_NOT, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]
       ENDIF
-      return ["ASSIGN_OP", NULL, `vvar, `exprs, `expr]
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_ASSIGN_OP:
-      return ["ERROR", NULL, "EXPECTED"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+      return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
     ENDIF
     IF (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_QUALVAR) AND (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_LPAR):
       `proc_exprs = []
@@ -1942,18 +2016,18 @@ CLASS `Parser:
       FORINCR `j(0 `length(`exprs)):
         `push(`byref_exprs, `exprs[`j])
       ENDFOR
-      `push(`proc_exprs, ["BY_REF", `byref_exprs])
+      `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
       `lidx += 1
       `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_RPAR:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_NEWLINE:
-          return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+          return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ENDIF
-        return ["PROCEDURE", NULL, `qualvar, `proc_exprs]
+        return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_BIT_AND:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
-          return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+          return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ENDIF
         `lidx += 3
         `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
@@ -1965,17 +2039,17 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+            return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
         ENDWHILE
-        `push(`proc_exprs, ["BY_REF", `byref_exprs])
+        `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_MODULE_NAME:
-        `push(`proc_exprs, ["MODULE_NAME", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
+        `push(`proc_exprs, [`OPCODE_MODULE_NAME, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
         `lidx += 3
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_STRING:
-        `push(`proc_exprs, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
+        `push(`proc_exprs, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])])
         `lidx += 3
       ELSE:
         `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+2)
@@ -1992,7 +2066,7 @@ CLASS `Parser:
         ENDIF
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_BIT_AND:
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
-            return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+            return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
           ENDIF
           `lidx += 2
           `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
@@ -2004,17 +2078,17 @@ CLASS `Parser:
             ENDIF
             `lidx = `lidx_ariexpr[0]
             IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-              return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+              return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
             ENDIF
             `push(`byref_exprs, `lidx_ariexpr[1])
             `lidx += 1
           ENDWHILE
-          `push(`proc_exprs, ["BY_REF", `byref_exprs])
+          `push(`proc_exprs, [`OPCODE_BY_REF, `byref_exprs])
         ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_MODULE_NAME:
-          `push(`proc_exprs, ["MODULE_NAME", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
+          `push(`proc_exprs, [`OPCODE_MODULE_NAME, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
           `lidx = `lidx+2
         ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_STRING:
-          `push(`proc_exprs, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
+          `push(`proc_exprs, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
           `lidx = `lidx+2
         ELSE:
           `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2026,52 +2100,52 @@ CLASS `Parser:
         ENDIF
       ENDWHILE
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RPAR:
-        return ["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"CLOSING"+" "+"PROCEDURE"+" "+"PARAMETERS", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"CLOSING"+" "+"PROCEDURE"+" "+"PARAMETERS", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
       ENDIF
       IF `lidx+1 != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
-      return ["PROCEDURE", NULL, `qualvar, `proc_exprs]
+      return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_POP:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_NEWLINE:
-        return ["ASSIGN_POP", NULL, `vvar, `exprs, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])], NULL]
+        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])], NULL]
       ENDIF
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+2)
       IF `length(`lidx_expr) == 1:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return ["ASSIGN_POP", NULL, `vvar, `exprs, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])], `lidx_expr[1]]
+      return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])], `lidx_expr[1]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_UNQUEUE:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_NEWLINE:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
       ENDIF
-      return ["ASSIGN_UNQUEUE", NULL, `vvar, `exprs, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])]]
+      return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])]]
     ENDIF
     `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx+1)
     IF `length(`lidx_sfxexpr) > 1:
-      IF `lidx_sfxexpr[1][1] == "POP":
+      IF `lidx_sfxexpr[1][1] == `SUFFIX_POP:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_NEWLINE:
-          return ["ASSIGN_POP", NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], NULL]
+          return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], NULL]
         ENDIF
         `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_sfxexpr[0])
         IF `length(`lidx_expr) == 1:
           return `lidx_expr[0]
         ENDIF
         IF `lidx_expr[0] != `length(`lidxs)-1:
-          return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+          return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
         ENDIF
-        return ["ASSIGN_POP", NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], `lidx_expr[1]]
+        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], `lidx_expr[1]]
       ENDIF
-      IF `lidx_sfxexpr[1][1] == "UNQUEUE":
+      IF `lidx_sfxexpr[1][1] == `SUFFIX_UNQUEUE:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) != `key_token_NEWLINE:
-          return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]]]), []]
+          return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]]]), []]
         ENDIF
-        return ["ASSIGN_UNQUEUE", NULL, `vvar, `exprs, `lidx_sfxexpr[1][2]]
+        return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2]]
       ENDIF
     ENDIF
     `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2079,9 +2153,9 @@ CLASS `Parser:
       return `lidx_expr[0]
     ENDIF
     IF `lidx_expr[0] != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return ["ASSIGN_OP", NULL, `vvar, `exprs, `lidx_expr[1]]
+    return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `lidx_expr[1]]
 
   METHOD `_parseIf(`tokens `lidxs):
     VAR `lidx_expr = THIS.`_parseLogicalExpression(`tokens, `lidxs, 1)
@@ -2089,9 +2163,9 @@ CLASS `Parser:
       return `lidx_expr[0]
     ENDIF
     IF `lidx_expr[0] != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"LOGICAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"LOGICAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return ["IF", NULL, NULL, `lidx_expr[1]]
+    return [`OPCODE_IF, NULL, NULL, `lidx_expr[1]]
 
   METHOD `_parseElsif(`tokens `lidxs):
     VAR `lidx_expr = THIS.`_parseLogicalExpression(`tokens, `lidxs, 1)
@@ -2099,59 +2173,59 @@ CLASS `Parser:
       return `lidx_expr[0]
     ENDIF
     IF `lidx_expr[0] != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"LOGICAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"LOGICAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return ["ELSIF", NULL, NULL, `lidx_expr[1]]
+    return [`OPCODE_ELSIF, NULL, NULL, `lidx_expr[1]]
 
   METHOD `_parseElse(`tokens `lidxs):
     IF `length(`lidxs) != 2:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ELSE", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ELSE", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["ELSE", NULL]
+    return [`OPCODE_ELSE, NULL]
 
   METHOD `_parseEndif(`tokens `lidxs):
     IF `length(`lidxs) != 2:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ENDIF", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ENDIF", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["ENDIF", NULL]
+    return [`OPCODE_ENDIF, NULL]
 
   METHOD `_parseRepeat(`tokens `lidxs):
     IF `length(`lidxs) == 3 AND `lexer.`tokenId(`tokens[`lidxs[1]]) == `key_token_VAR:
-      return ["REPEAT", NULL, NULL, `lexer.`tokenExtra(`tokens[`lidxs[1]])]
+      return [`OPCODE_REPEAT, NULL, NULL, `lexer.`tokenExtra(`tokens[`lidxs[1]])]
     ENDIF
     IF `length(`lidxs) < 3 OR `lexer.`tokenId(`tokens[`lidxs[1]]) != `key_token_VAR:
-      return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[2]]), []]
+    return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[2]]), []]
 
   METHOD `_parseRepnext(`tokens `lidxs):
     IF `length(`lidxs) != 2:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPNEXT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPNEXT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["REPNEXT", NULL]
+    return [`OPCODE_REPNEXT, NULL]
 
   METHOD `_parseRepstop(`tokens `lidxs):
     IF `length(`lidxs) != 2:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPSTOP", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPSTOP", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["REPSTOP", NULL]
+    return [`OPCODE_REPSTOP, NULL]
 
   METHOD `_parseEndrep(`tokens `lidxs):
     IF `length(`lidxs) != 2:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ENDREP", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ENDREP", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["ENDREP", NULL, NULL]
+    return [`OPCODE_ENDREP, NULL, NULL]
 
   METHOD `_parseProcedure(`tokens `lidxs):
     VAR `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
     IF `lexer.`tokenId(`tokens[`lidxs[1]]) != `key_token_LPAR:
-      return ["ERROR", NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"PROCEDURE"+" "+"NAME", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"PROCEDURE"+" "+"NAME", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[2]]) == `key_token_RPAR:
       IF `lexer.`tokenId(`tokens[`lidxs[3]]) != `key_token_NEWLINE:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[3]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[3]]), []]
       ENDIF
-      return ["PROCEDURE", NULL, `qualvar, []]
+      return [`OPCODE_PROCEDURE, NULL, `qualvar, []]
     ENDIF
     VAR `exprs = []
     VAR `lidx_expr
@@ -2160,7 +2234,7 @@ CLASS `Parser:
     VAR `lidx_ariexpr
     IF `lexer.`tokenId(`tokens[`lidxs[2]]) == `key_token_BIT_AND:
       IF `lexer.`tokenId(`tokens[`lidxs[3]]) != `key_token_VAR:
-        return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[3]]), []]
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[3]]), []]
       ENDIF
       `lidx = 3
       `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
@@ -2172,17 +2246,17 @@ CLASS `Parser:
         ENDIF
         `lidx = `lidx_ariexpr[0]
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-          return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+          return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
         ENDIF
         `push(`byref_exprs, `lidx_ariexpr[1])
         `lidx += 1
       ENDWHILE
-      `push(`exprs, ["BY_REF", `byref_exprs])
+      `push(`exprs, [`OPCODE_BY_REF, `byref_exprs])
     ELSIF `lexer.`tokenId(`tokens[`lidxs[2]]) == `key_token_MODULE_NAME:
-      `push(`exprs, ["MODULE_NAME", `lexer.`tokenExtra(`tokens[`lidxs[2]])])
+      `push(`exprs, [`OPCODE_MODULE_NAME, `lexer.`tokenExtra(`tokens[`lidxs[2]])])
       `lidx = 3
     ELSIF `lexer.`tokenId(`tokens[`lidxs[2]]) == `key_token_STRING:
-      `push(`exprs, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[2]])])
+      `push(`exprs, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[2]])])
       `lidx = 3
     ELSE:
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, 2)
@@ -2199,7 +2273,7 @@ CLASS `Parser:
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_BIT_AND:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
-          return ["ERROR", NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+          return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
         ENDIF
         `lidx += 2
         `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
@@ -2211,17 +2285,17 @@ CLASS `Parser:
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-            return ["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+            return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
           ENDIF
           `push(`byref_exprs, `lidx_ariexpr[1])
           `lidx += 1
         ENDWHILE
-        `push(`exprs, ["BY_REF", `byref_exprs])
+        `push(`exprs, [`OPCODE_BY_REF, `byref_exprs])
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_MODULE_NAME:
-        `push(`exprs, ["MODULE_NAME", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
+        `push(`exprs, [`OPCODE_MODULE_NAME, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
         `lidx = `lidx+2
       ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_STRING:
-        `push(`exprs, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
+        `push(`exprs, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])])
         `lidx = `lidx+2
       ELSE:
         `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2233,12 +2307,12 @@ CLASS `Parser:
       ENDIF
     ENDWHILE
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RPAR:
-      return ["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"CLOSING"+" "+"PROCEDURE"+" "+"PARAMETERS", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+      return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"CLOSING"+" "+"PROCEDURE"+" "+"PARAMETERS", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
     ENDIF
     IF `lidx+1 != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PROCEDURE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
     ENDIF
-    return ["PROCEDURE", NULL, `qualvar, `exprs]
+    return [`OPCODE_PROCEDURE, NULL, `qualvar, `exprs]
 
   METHOD `_parsePush(`tokens `lidxs `lidx_sfxexpr):
     VAR `lidx_expr
@@ -2249,32 +2323,32 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] == `length(`lidxs)-1:
-        return ["PUSH", NULL, `lidx_sfxexpr[1][2], `lidx_expr[1], NULL]
+        return [`OPCODE_PUSH, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1], NULL]
       ENDIF
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
       IF `length(`lidx_ariexpr) == 1:
         return `lidx_ariexpr[0]
       ENDIF
       IF `lidx_ariexpr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PUSH", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PUSH", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]
       ENDIF
-      return ["PUSH", NULL, `lidx_sfxexpr[1][2], `lidx_expr[1], `lidx_ariexpr[1]]
+      return [`OPCODE_PUSH, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1], `lidx_ariexpr[1]]
     ENDIF
     `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, 1)
     IF `length(`lidx_expr) == 1:
       return `lidx_expr[0]
     ENDIF
     IF `lidx_expr[0] == `length(`lidxs)-1:
-      return ["PUSH", NULL, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1], NULL]
+      return [`OPCODE_PUSH, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1], NULL]
     ENDIF
     `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
     IF `length(`lidx_ariexpr) == 1:
       return `lidx_ariexpr[0]
     ENDIF
     IF `lidx_ariexpr[0] != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PUSH", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PUSH", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]
     ENDIF
-    return ["PUSH", NULL, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1], `lidx_ariexpr[1]]
+    return [`OPCODE_PUSH, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1], `lidx_ariexpr[1]]
 
   METHOD `_parseQueue(`tokens `lidxs `lidx_sfxexpr):
     VAR `lidx_expr
@@ -2284,74 +2358,74 @@ CLASS `Parser:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"QUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"QUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return ["QUEUE", NULL, `lidx_sfxexpr[1][2], `lidx_expr[1]]
+      return [`OPCODE_QUEUE, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1]]
     ENDIF
     `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, 1)
     IF `length(`lidx_expr) == 1:
       return `lidx_expr[0]
     ENDIF
     IF `lidx_expr[0] != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"QUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"QUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return ["QUEUE", NULL, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1]]
+    return [`OPCODE_QUEUE, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1]]
 
   METHOD `_parsePop(`tokens `lidxs `lidx_sfxexpr):
     VAR `lidx_expr
     IF `not(`isnull(`lidx_sfxexpr)):
       IF `lidx_sfxexpr[0] == `length(`lidxs)-1:
-        return ["ASSIGN_POP", NULL, NULL, NULL, `lidx_sfxexpr[1][2], NULL]
+        return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, `lidx_sfxexpr[1][2], NULL]
       ENDIF
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_sfxexpr[0])
       IF `length(`lidx_expr) == 1:
         return `lidx_expr[0]
       ENDIF
       IF `lidx_expr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return ["ASSIGN_POP", NULL, NULL, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1]]
+      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1]]
     ENDIF
     IF `length(`lidxs) == 2:
-      return ["ASSIGN_POP", NULL, NULL, NULL, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[0]])], NULL]
+      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], NULL]
     ENDIF
     `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, 1)
     IF `length(`lidx_expr) == 1:
       return `lidx_expr[0]
     ENDIF
     IF `lidx_expr[0] != `length(`lidxs)-1:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return ["ASSIGN_POP", NULL, NULL, NULL, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1]]
+    return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1]]
 
   METHOD `_parseUnqueue(`tokens `lidxs `lidx_sfxexpr):
     IF `not(`isnull(`lidx_sfxexpr)):
       IF `lidx_sfxexpr[0] != `length(`lidxs)-1:
-        return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]]]), []]
+        return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]]]), []]
       ENDIF
-      return ["ASSIGN_UNQUEUE", NULL, NULL, NULL, `lidx_sfxexpr[1][2]]
+      return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, `lidx_sfxexpr[1][2]]
     ENDIF
     IF `length(`lidxs) != 2:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["ASSIGN_UNQUEUE", NULL, NULL, NULL, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[0]])]]
+    return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])]]
 
   METHOD `_parseUnassign(`tokens `lidxs):
     IF `lexer.`tokenId(`tokens[`lidxs[1]]) != `key_token_NEWLINE:
-      return ["ERROR", NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return ["UNASSIGN", NULL, `lexer.`tokenExtra(`tokens[`lidxs[0]])]
+    return [`OPCODE_UNASSIGN, NULL, `lexer.`tokenExtra(`tokens[`lidxs[0]])]
 
   METHOD `_parseLog(`tokens `lidxs):
     IF `length(`lidxs) <= 2:
-      return ["ERROR", NULL, "EXPECTED"+" "+"STRING"+" "+"OR"+" "+"EXPRESSION"+" "+"AFTER"+" "+"LOG", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"STRING"+" "+"OR"+" "+"EXPRESSION"+" "+"AFTER"+" "+"LOG", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
     VAR `log_message = []
     VAR `lidx_expr
     VAR `j = 1
     WHILE `j < `length(`lidxs)-1:
       IF `lexer.`tokenId(`tokens[`lidxs[`j]]) == `key_token_STRING:
-        `push(`log_message, ["STRING", `lexer.`tokenExtra(`tokens[`lidxs[`j]])])
+        `push(`log_message, [`OPCODE_STRING, `lexer.`tokenExtra(`tokens[`lidxs[`j]])])
         `j += 1
         continue
       ENDIF
@@ -2368,7 +2442,7 @@ CLASS `Parser:
       `push(`log_message, `lidx_expr[1])
       `j = `lidx_expr[0]
     ENDWHILE
-    return ["LOG", NULL, `log_message]
+    return [`OPCODE_LOG, NULL, `log_message]
 
   METHOD `_parseLogicalExpression(`tokens `lidxs `lidx):
     VAR `terms = []
@@ -2386,7 +2460,7 @@ CLASS `Parser:
       `push(`terms, `lidx_term[1])
       `lidx = `lidx_term[0]
     ENDWHILE
-    VAR `logical_expression = TERNARY{`length(`terms) == 1}{`terms[0]}{["OR", `terms]}
+    VAR `logical_expression = TERNARY{`length(`terms) == 1}{`terms[0]}{[`OPCODE_OR, `terms]}
     return [`lidx, `logical_expression]
 
   METHOD `_parseLogicalTerm(`tokens `lidxs `lidx):
@@ -2405,7 +2479,7 @@ CLASS `Parser:
       `push(`factors, `lidx_factor[1])
       `lidx = `lidx_factor[0]
     ENDWHILE
-    VAR `logical_term = TERNARY{`length(`factors) == 1}{`factors[0]}{["AND", `factors]}
+    VAR `logical_term = TERNARY{`length(`factors) == 1}{`factors[0]}{[`OPCODE_AND, `factors]}
     return [`lidx, `logical_term]
 
   METHOD `_parseLogicalFactor(`tokens `lidxs `lidx):
@@ -2417,26 +2491,26 @@ CLASS `Parser:
       IF `length(`lidx_factor) == 1:
         return `lidx_factor
       ENDIF
-      IF `lidx_factor[1][0] == "NOT":
+      IF `lidx_factor[1][0] == `OPCODE_NOT:
         `logical_factor = `lidx_factor[1][1]
-      ELSIF `lidx_factor[1][0] == "EQ":
-        `logical_factor = ["NE", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "NE":
-        `logical_factor = ["EQ", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "LT":
-        `logical_factor = ["GE", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "LE":
-        `logical_factor = ["GT", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "GT":
-        `logical_factor = ["LE", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "GE":
-        `logical_factor = ["LT", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "IS_VAR":
-        `logical_factor = ["IS_NOT_VAR", `lidx_factor[1][1], `lidx_factor[1][2]]
-      ELSIF `lidx_factor[1][0] == "IS_NOT_VAR":
-        `logical_factor = ["IS_VAR", `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_EQ:
+        `logical_factor = [`OPCODE_NE, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_NE:
+        `logical_factor = [`OPCODE_EQ, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_LT:
+        `logical_factor = [`OPCODE_GE, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_LE:
+        `logical_factor = [`OPCODE_GT, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_GT:
+        `logical_factor = [`OPCODE_LE, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_GE:
+        `logical_factor = [`OPCODE_LT, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_IS_VAR:
+        `logical_factor = [`OPCODE_IS_NOT_VAR, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_IS_NOT_VAR:
+        `logical_factor = [`OPCODE_IS_VAR, `lidx_factor[1][1], `lidx_factor[1][2]]
       ELSE:
-        `logical_factor = ["NOT", `lidx_factor[1]]
+        `logical_factor = [`OPCODE_NOT, `lidx_factor[1]]
       ENDIF
       return `logical_factor
     ENDIF
@@ -2448,7 +2522,7 @@ CLASS `Parser:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx_logexpr[0]]]) == `key_token_RPAR:
         return [`lidx_logexpr[0]+1, `lidx_logexpr[1]]
       ENDIF
-      return [["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"LOGICAL"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_logexpr[0]]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"LOGICAL"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_logexpr[0]]]), []]]
     ENDIF
     return THIS.`_parseRelationalExpression(`tokens, `lidxs, `lidx)
 
@@ -2456,26 +2530,26 @@ CLASS `Parser:
     VAR `rel_op_opcode
     IF (`lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_VAR) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS_NOT)):
       IF (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_EMPTY) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_UNDEFINED):
-        return [`lidx+3, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{"IS_VAR"}{"IS_NOT_VAR"}, ["VAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenId(`tokens[`lidxs[`lidx+2]])]]
+        return [`lidx+3, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_IS_VAR}{`OPCODE_IS_NOT_VAR}, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenId(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_PROCEDURE:
-        `rel_op_opcode = TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{"NE"}{"EQ"}
-        return [`lidx+3, [`rel_op_opcode, ["NUMBER", 1], ["NUMBER", 1]]]
+        `rel_op_opcode = TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_NE}{`OPCODE_EQ}
+        return [`lidx+3, [`rel_op_opcode, [`OPCODE_NUMBER, 1], [`OPCODE_NUMBER, 1]]]
       ENDIF
-      return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
     IF (`lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_QUALVAR) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS_NOT)):
       IF (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_EMPTY) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_PROCEDURE) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_UNDEFINED):
-        return [`lidx+3, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{"IS_VAR"}{"IS_NOT_VAR"}, ["QUALVAR", `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenId(`tokens[`lidxs[`lidx+2]])]]
+        return [`lidx+3, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_IS_VAR}{`OPCODE_IS_NOT_VAR}, [`OPCODE_QUALVAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenId(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
-      return [["ERROR", NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
-    IF (`length(`lidx_sfxexpr) > 1) AND (`lidx_sfxexpr[1][1] == "") AND ((`lidx_sfxexpr[1][2][0] == "LIST_AT_VAR") OR (`lidx_sfxexpr[1][2][0] == "LIST_AT_QUALVAR")) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS_NOT)):
+    IF (`length(`lidx_sfxexpr) > 1) AND (`lidx_sfxexpr[1][1] == `SUFFIX_) AND ((`lidx_sfxexpr[1][2][0] == `OPCODE_LIST_AT_VAR) OR (`lidx_sfxexpr[1][2][0] == `OPCODE_LIST_AT_QUALVAR)) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS_NOT)):
       IF (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_EMPTY):
-        return [`lidx_sfxexpr[0]+2, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS}{"IS_VAR"}{"IS_NOT_VAR"}, `lidx_sfxexpr[1][2], `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]])]]
+        return [`lidx_sfxexpr[0]+2, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS}{`OPCODE_IS_VAR}{`OPCODE_IS_NOT_VAR}, `lidx_sfxexpr[1][2], `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]])]]
       ENDIF
-      return [["ERROR", NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
     ENDIF
     VAR `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx)
     IF `length(`lidx_ariexpr) == 1:
@@ -2483,19 +2557,19 @@ CLASS `Parser:
     ENDIF
     VAR `rel_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx_ariexpr[0]]])
     IF `rel_op_tokenid == `key_token_EQ:
-      `rel_op_opcode = "EQ"
+      `rel_op_opcode = `OPCODE_EQ
     ELSIF `rel_op_tokenid == `key_token_NE:
-      `rel_op_opcode = "NE"
+      `rel_op_opcode = `OPCODE_NE
     ELSIF `rel_op_tokenid == `key_token_LT:
-      `rel_op_opcode = "LT"
+      `rel_op_opcode = `OPCODE_LT
     ELSIF `rel_op_tokenid == `key_token_LE:
-      `rel_op_opcode = "LE"
+      `rel_op_opcode = `OPCODE_LE
     ELSIF `rel_op_tokenid == `key_token_GT:
-      `rel_op_opcode = "GT"
+      `rel_op_opcode = `OPCODE_GT
     ELSIF `rel_op_tokenid == `key_token_GE:
-      `rel_op_opcode = "GE"
+      `rel_op_opcode = `OPCODE_GE
     ELSE:
-      return [["ERROR", NULL, "EXPECTED"+" "+"OPERATOR"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"OPERATOR"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
     ENDIF
     VAR `lidx_ariexpr2 = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_ariexpr[0]+1)
     IF `length(`lidx_ariexpr2) == 1:
@@ -2519,13 +2593,13 @@ CLASS `Parser:
     WHILE TRUE:
       `add_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx]])
       IF `add_op_tokenid == `key_token_PLUS:
-        `add_op_opcode = "PLUS"
+        `add_op_opcode = `OPCODE_PLUS
       ELSIF `add_op_tokenid == `key_token_MINUS:
-        `add_op_opcode = "MINUS"
+        `add_op_opcode = `OPCODE_MINUS
       ELSIF `add_op_tokenid == `key_token_BIT_OR:
-        `add_op_opcode = "BIT_OR"
+        `add_op_opcode = `OPCODE_BIT_OR
       ELSIF `add_op_tokenid == `key_token_BIT_XOR:
-        `add_op_opcode = "BIT_XOR"
+        `add_op_opcode = `OPCODE_BIT_XOR
       ELSE:
         break
       ENDIF
@@ -2555,19 +2629,19 @@ CLASS `Parser:
     WHILE TRUE:
       `mul_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx]])
       IF `mul_op_tokenid == `key_token_MUL:
-        `mul_op_opcode = "MUL"
+        `mul_op_opcode = `OPCODE_MUL
       ELSIF `mul_op_tokenid == `key_token_DIV:
-        `mul_op_opcode = "DIV"
+        `mul_op_opcode = `OPCODE_DIV
       ELSIF `mul_op_tokenid == `key_token_IDV:
-        `mul_op_opcode = "IDV"
+        `mul_op_opcode = `OPCODE_IDV
       ELSIF `mul_op_tokenid == `key_token_MOD:
-        `mul_op_opcode = "MOD"
+        `mul_op_opcode = `OPCODE_MOD
       ELSIF `mul_op_tokenid == `key_token_BIT_AND:
-        `mul_op_opcode = "BIT_AND"
+        `mul_op_opcode = `OPCODE_BIT_AND
       ELSIF `mul_op_tokenid == `key_token_BIT_SHL:
-        `mul_op_opcode = "BIT_SHL"
+        `mul_op_opcode = `OPCODE_BIT_SHL
       ELSIF `mul_op_tokenid == `key_token_BIT_SHR:
-        `mul_op_opcode = "BIT_SHR"
+        `mul_op_opcode = `OPCODE_BIT_SHR
       ELSE:
         break
       ENDIF
@@ -2585,7 +2659,7 @@ CLASS `Parser:
     VAR `lidx_expr
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_RSQR:
-        return [`lidx+2, ["LIST", []]]
+        return [`lidx+2, [`OPCODE_LIST, []]]
       ENDIF
       `exprs = []
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2607,9 +2681,9 @@ CLASS `Parser:
         `lidx = `lidx_expr[0]
       ENDWHILE
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-        return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
       ENDIF
-      return [`lidx+1, ["LIST", `exprs]]
+      return [`lidx+1, [`OPCODE_LIST, `exprs]]
     ENDIF
     VAR `lidx_ariexpr
     VAR `length_var
@@ -2619,14 +2693,14 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `literal
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_DECIMAL:
-      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_HEXADECIMAL:
-      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_BINARY:
       `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["NUMBER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LPAR:
       `lidx_ariexpr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2636,23 +2710,23 @@ CLASS `Parser:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx_ariexpr[0]]]) == `key_token_RPAR:
         return [`lidx_ariexpr[0]+1, `lidx_ariexpr[1]]
       ENDIF
-      return [["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LENGTH:
       `length_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["LENGTH_VAR", [TERNARY{`indexof(`length_var, ".") < 0}{"VAR"}{"QUALVAR"}, `length_var]]]
+      return [`lidx+1, [`OPCODE_LENGTH_VAR, [TERNARY{`indexof(`length_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `length_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_SIZE:
       `size_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["SIZE_VAR", [TERNARY{`indexof(`size_var, ".") < 0}{"VAR"}{"QUALVAR"}, `size_var]]]
+      return [`lidx+1, [`OPCODE_SIZE_VAR, [TERNARY{`indexof(`size_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `size_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ISIZE:
       `isize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["ISIZE_VAR", [TERNARY{`indexof(`isize_var, ".") < 0}{"VAR"}{"QUALVAR"}, `isize_var]]]
+      return [`lidx+1, [`OPCODE_ISIZE_VAR, [TERNARY{`indexof(`isize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `isize_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSIZE:
       `lsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["LSIZE_VAR", [TERNARY{`indexof(`lsize_var, ".") < 0}{"VAR"}{"QUALVAR"}, `lsize_var]]]
+      return [`lidx+1, [`OPCODE_LSIZE_VAR, [TERNARY{`indexof(`lsize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `lsize_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_INDEXOF:
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2662,39 +2736,39 @@ CLASS `Parser:
       `indexof_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
       IF `length(`lidx_ariexpr) == 1:
-        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["NUMBER", 0]]]
+        return [`lidx_expr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]
       ENDIF
-      return [`lidx_ariexpr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
+      return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
-    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == "") OR (`lidx_sfxexpr[1][1] == "LENGTH") OR (`lidx_sfxexpr[1][1] == "SIZE") OR (`lidx_sfxexpr[1][1] == "ISIZE") OR (`lidx_sfxexpr[1][1] == "LSIZE") OR (`lidx_sfxexpr[1][1] == "INDEXOF")):
+    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_ISIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
       return [`lidx_sfxexpr[0], `lidx_sfxexpr[1][2]]
     ENDIF
-    return [["ERROR", NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+    return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
 
   METHOD `_parseArithmeticExpression(`tokens `lidxs `lidx):
     VAR `unary_op
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_MINUS:
-      `unary_op = "UNARY_MINUS"
+      `unary_op = `UNARYOP_MINUS
       `lidx += 1
     ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_BIT_NOT:
-      `unary_op = "BIT_NOT"
+      `unary_op = `UNARYOP_BIT_NOT
       `lidx += 1
     ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_PLUS:
-      `unary_op = NULL
+      `unary_op = `UNARYOP_PLUS
       `lidx += 1
     ELSE:
-      `unary_op = NULL
+      `unary_op = `UNARYOP_
     ENDIF
     VAR `lidx_term = THIS.`_parseArithmeticTerm(`tokens, `lidxs, `lidx)
     IF `length(`lidx_term) == 1:
       return `lidx_term
     ENDIF
     VAR `expr = `lidx_term[1]
-    IF `unary_op == "UNARY_MINUS":
-      `expr = ["NEG", `expr]
-    ELSIF `unary_op == "BIT_NOT":
-      `expr = ["BIT_NOT", `expr]
+    IF `unary_op == `UNARYOP_MINUS:
+      `expr = [`OPCODE_NEG, `expr]
+    ELSIF `unary_op == `UNARYOP_BIT_NOT:
+      `expr = [`OPCODE_BIT_NOT, `expr]
     ENDIF
     `lidx = `lidx_term[0]
     VAR `add_op_tokenid
@@ -2702,13 +2776,13 @@ CLASS `Parser:
     WHILE TRUE:
       `add_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx]])
       IF `add_op_tokenid == `key_token_PLUS:
-        `add_op_opcode = "PLUS"
+        `add_op_opcode = `OPCODE_PLUS
       ELSIF `add_op_tokenid == `key_token_MINUS:
-        `add_op_opcode = "MINUS"
+        `add_op_opcode = `OPCODE_MINUS
       ELSIF `add_op_tokenid == `key_token_BIT_OR:
-        `add_op_opcode = "BIT_OR"
+        `add_op_opcode = `OPCODE_BIT_OR
       ELSIF `add_op_tokenid == `key_token_BIT_XOR:
-        `add_op_opcode = "BIT_XOR"
+        `add_op_opcode = `OPCODE_BIT_XOR
       ELSE:
         break
       ENDIF
@@ -2733,19 +2807,19 @@ CLASS `Parser:
     WHILE TRUE:
       `mul_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx]])
       IF `mul_op_tokenid == `key_token_MUL:
-        `mul_op_opcode = "MUL"
+        `mul_op_opcode = `OPCODE_MUL
       ELSIF `mul_op_tokenid == `key_token_DIV:
-        `mul_op_opcode = "DIV"
+        `mul_op_opcode = `OPCODE_DIV
       ELSIF `mul_op_tokenid == `key_token_IDV:
-        `mul_op_opcode = "IDV"
+        `mul_op_opcode = `OPCODE_IDV
       ELSIF `mul_op_tokenid == `key_token_MOD:
-        `mul_op_opcode = "MOD"
+        `mul_op_opcode = `OPCODE_MOD
       ELSIF `mul_op_tokenid == `key_token_BIT_AND:
-        `mul_op_opcode = "BIT_AND"
+        `mul_op_opcode = `OPCODE_BIT_AND
       ELSIF `mul_op_tokenid == `key_token_BIT_SHL:
-        `mul_op_opcode = "BIT_SHL"
+        `mul_op_opcode = `OPCODE_BIT_SHL
       ELSIF `mul_op_tokenid == `key_token_BIT_SHR:
-        `mul_op_opcode = "BIT_SHR"
+        `mul_op_opcode = `OPCODE_BIT_SHR
       ELSE:
         break
       ENDIF
@@ -2768,14 +2842,14 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `literal
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_DECIMAL:
-      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_HEXADECIMAL:
-      return [`lidx+1, ["NUMBER", `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_BINARY:
       `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["NUMBER", `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LPAR:
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2785,23 +2859,23 @@ CLASS `Parser:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx_ariexpr[0]]]) == `key_token_RPAR:
         return [`lidx_ariexpr[0]+1, `lidx_ariexpr[1]]
       ENDIF
-      return [["ERROR", NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"ARITHMETIC"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"IN"+" "+"ARITHMETIC"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LENGTH:
       `length_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["LENGTH_VAR", [TERNARY{`indexof(`length_var, ".") < 0}{"VAR"}{"QUALVAR"}, `length_var]]]
+      return [`lidx+1, [`OPCODE_LENGTH_VAR, [TERNARY{`indexof(`length_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `length_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_SIZE:
       `size_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["SIZE_VAR", [TERNARY{`indexof(`size_var, ".") < 0}{"VAR"}{"QUALVAR"}, `size_var]]]
+      return [`lidx+1, [`OPCODE_SIZE_VAR, [TERNARY{`indexof(`size_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `size_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ISIZE:
       `isize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["ISIZE_VAR", [TERNARY{`indexof(`isize_var, ".") < 0}{"VAR"}{"QUALVAR"}, `isize_var]]]
+      return [`lidx+1, [`OPCODE_ISIZE_VAR, [TERNARY{`indexof(`isize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `isize_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSIZE:
       `lsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, ["LSIZE_VAR", [TERNARY{`indexof(`lsize_var, ".") < 0}{"VAR"}{"QUALVAR"}, `lsize_var]]]
+      return [`lidx+1, [`OPCODE_LSIZE_VAR, [TERNARY{`indexof(`lsize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `lsize_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_INDEXOF:
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2811,15 +2885,15 @@ CLASS `Parser:
       `indexof_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
       IF `length(`lidx_ariexpr) == 1:
-        return [`lidx_expr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], ["NUMBER", 0]]]
+        return [`lidx_expr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]
       ENDIF
-      return [`lidx_ariexpr[0], ["INDEXOF_VAR", [TERNARY{`indexof(`indexof_var, ".") < 0}{"VAR"}{"QUALVAR"}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
+      return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
-    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == "") OR (`lidx_sfxexpr[1][1] == "LENGTH") OR (`lidx_sfxexpr[1][1] == "SIZE") OR (`lidx_sfxexpr[1][1] == "ISIZE") OR (`lidx_sfxexpr[1][1] == "LSIZE") OR (`lidx_sfxexpr[1][1] == "INDEXOF")):
+    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_ISIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
       return [`lidx_sfxexpr[0], `lidx_sfxexpr[1][2]]
     ENDIF
-    return [["ERROR", NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+    return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
 
   METHOD `_parseVarSuffix(`tokens `lidxs `lidx):
     VAR `vvar
@@ -2831,7 +2905,7 @@ CLASS `Parser:
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_VAR:
       `vvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) != `key_token_LSQR:
-        return [`lidx+1, ["SUFFIX", "", ["VAR", `vvar]]]
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_VAR, `vvar]]]
       ENDIF
       `lidx += 1
       `exprs = []
@@ -2842,49 +2916,49 @@ CLASS `Parser:
         ENDIF
         `lidx = `lidx_ariexpr[0]
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-          return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+          return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         `push(`exprs, `lidx_ariexpr[1])
         `lidx += 1
       ENDWHILE
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_SUFFIX:
-        return [`lidx, ["SUFFIX", "", ["LIST_AT_VAR", `vvar, `exprs]]]
+        return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
       ENDIF
-      `suffix = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      IF `suffix == "LENGTH":
-        return [`lidx+1, ["SUFFIX", "LENGTH", ["LENGTH_VAR", ["LIST_AT_VAR", `vvar, `exprs]]]]
-      ELSIF `suffix == "SIZE":
-        return [`lidx+1, ["SUFFIX", "SIZE", ["SIZE_VAR", ["LIST_AT_VAR", `vvar, `exprs]]]]
-      ELSIF `suffix == "ISIZE":
-        return [`lidx+1, ["SUFFIX", "ISIZE", ["ISIZE_VAR", ["LIST_AT_VAR", `vvar, `exprs]]]]
-      ELSIF `suffix == "LSIZE":
-        return [`lidx+1, ["SUFFIX", "LSIZE", ["LSIZE_VAR", ["LIST_AT_VAR", `vvar, `exprs]]]]
-      ELSIF `suffix == "INDEXOF":
+      `suffix = `indexof(THIS.`_token_strs, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
+      IF `suffix == `key_token_LENGTH:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
+      ELSIF `suffix == `key_token_SIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_SIZE, [`OPCODE_SIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
+      ELSIF `suffix == `key_token_ISIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_ISIZE, [`OPCODE_ISIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
+      ELSIF `suffix == `key_token_LSIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LSIZE, [`OPCODE_LSIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
+      ELSIF `suffix == `key_token_INDEXOF:
         `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_expr) == 1:
           return `lidx_expr
         ENDIF
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
         IF `length(`lidx_ariexpr) == 1:
-          return [`lidx_expr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1], ["NUMBER", 0]]]]
+          return [`lidx_expr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]]
         ENDIF
-        return [`lidx_ariexpr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_VAR", `vvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
+        return [`lidx_ariexpr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
       ENDIF
-      IF `suffix == "PUSH":
-        return [`lidx+1, ["SUFFIX", "PUSH", ["LIST_AT_VAR", `vvar, `exprs]]]
-      ELSIF `suffix == "QUEUE":
-        return [`lidx+1, ["SUFFIX", "QUEUE", ["LIST_AT_VAR", `vvar, `exprs]]]
-      ELSIF `suffix == "POP":
-        return [`lidx+1, ["SUFFIX", "POP", ["LIST_AT_VAR", `vvar, `exprs]]]
-      ELSIF `suffix == "UNQUEUE":
-        return [`lidx+1, ["SUFFIX", "UNQUEUE", ["LIST_AT_VAR", `vvar, `exprs]]]
+      IF `suffix == `key_token_PUSH:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_PUSH, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
+      ELSIF `suffix == `key_token_QUEUE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_QUEUE, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
+      ELSIF `suffix == `key_token_POP:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_POP, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
+      ELSIF `suffix == `key_token_UNQUEUE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_UNQUEUE, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
       ENDIF
-      return [`lidx, ["SUFFIX", "", ["LIST_AT_VAR", `vvar, `exprs]]]
+      return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_QUALVAR:
       `qualvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) != `key_token_LSQR:
-        return [`lidx+1, ["SUFFIX", "", ["QUALVAR", `qualvar]]]
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_QUALVAR, `qualvar]]]
       ENDIF
       `lidx += 1
       `exprs = []
@@ -2895,37 +2969,37 @@ CLASS `Parser:
         ENDIF
         `lidx = `lidx_ariexpr[0]
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
-          return [["ERROR", NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+          return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         `push(`exprs, `lidx_ariexpr[1])
         `lidx += 1
       ENDWHILE
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_SUFFIX:
-        return [`lidx, ["SUFFIX", "", ["LIST_AT_QUALVAR", `qualvar, `exprs]]]
+        return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]
       ENDIF
-      `suffix = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      IF `suffix == "LENGTH":
-        return [`lidx+1, ["SUFFIX", "LENGTH", ["LENGTH_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs]]]]
-      ELSIF `suffix == "SIZE":
-        return [`lidx+1, ["SUFFIX", "SIZE", ["SIZE_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs]]]]
-      ELSIF `suffix == "ISIZE":
-        return [`lidx+1, ["SUFFIX", "ISIZE", ["ISIZE_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs]]]]
-      ELSIF `suffix == "LSIZE":
-        return [`lidx+1, ["SUFFIX", "LSIZE", ["LSIZE_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs]]]]
-      ELSIF `suffix == "INDEXOF":
+      `suffix = `indexof(THIS.`_token_strs, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
+      IF `suffix == `key_token_LENGTH:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
+      ELSIF `suffix == `key_token_SIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_SIZE, [`OPCODE_SIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
+      ELSIF `suffix == `key_token_ISIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_ISIZE, [`OPCODE_ISIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
+      ELSIF `suffix == `key_token_LSIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LSIZE, [`OPCODE_LSIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
+      ELSIF `suffix == `key_token_INDEXOF:
         `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_expr) == 1:
           return `lidx_expr
         ENDIF
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
         IF `length(`lidx_ariexpr) == 1:
-          return [`lidx_expr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs], `lidx_expr[1], ["NUMBER", 0]]]]
+          return [`lidx_expr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]]
         ENDIF
-        return [`lidx_ariexpr[0], ["SUFFIX", "INDEXOF", ["INDEXOF_VAR", ["LIST_AT_QUALVAR", `qualvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
+        return [`lidx_ariexpr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
       ENDIF
-      return [`lidx, ["SUFFIX", "", ["LIST_AT_QUALVAR", `qualvar, `exprs]]]
+      return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]
     ENDIF
-    return [["ERROR", NULL, "EXPECTED"+" "+"VARIABLE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+    return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
 
 ENDCLASS
 
@@ -3226,7 +3300,7 @@ CLASS `EditorM:
       `lnno = `length(THIS.`_lines_id)
       `tokens = `lexer.`lexLine(`lines[`j1])
       `ast_node = `parser.`parseLine(`tokens)
-      IF `not(`isnull(`ast_node)) AND (`ast_node[0] == "ERROR"):
+      IF `not(`isnull(`ast_node)) AND (`ast_node[0] == `OPCODE_ERROR):
         `push(THIS.`_error_lines, `lnid)
       ENDIF
       `line_indent = THIS.`_lines_indent[`lnno]
@@ -3447,7 +3521,7 @@ CLASS `EditorM:
     FORINCR `j1(0 `length(THIS.`_sets_control)):
       `set_control_j = THIS.`_sets_control[`j1]
       `control_type_j_0 = `set_control_j[0][1]
-      IF `control_type_j_0 == "IF":
+      IF `control_type_j_0 == `key_token_IF:
         `lnid_prev_if = `set_control_j[0][0]
         `ast_node_prev_if = `utils_editor_m.`lineastAst(THIS.`_lines_ast[`lnid_prev_if])
         FORINCR `j2(1 `length(`set_control_j)):
@@ -3455,7 +3529,7 @@ CLASS `EditorM:
           `ast_node_if = `utils_editor_m.`lineastAst(THIS.`_lines_ast[`lnid_if])
           `ast_node_prev_if[2] = `lnid_if
           `type_if = `set_control_j[`j2][1]
-          IF (`type_if != "IF") AND (`type_if != "ELSIF"):
+          IF (`type_if != `key_token_IF) AND (`type_if != `key_token_ELSIF):
             break
           ENDIF
           `lnid_prev_if = `lnid_if
@@ -3473,11 +3547,11 @@ CLASS `EditorM:
               `lnno_prev_elsif_else -= 1
               continue
             ENDIF
-            IF `ast_node_prev_elsif_else[0] == "IF":
+            IF `ast_node_prev_elsif_else[0] == `key_token_IF:
               break
-            ELSIF `ast_node_prev_elsif_else[0] == "REPNEXT":
+            ELSIF `ast_node_prev_elsif_else[0] == `key_token_REPNEXT:
               break
-            ELSIF `ast_node_prev_elsif_else[0] == "REPSTOP":
+            ELSIF `ast_node_prev_elsif_else[0] == `key_token_REPSTOP:
               break
             ENDIF
             `ast_node_prev_elsif_else[1] = `lnid_endif
@@ -3798,23 +3872,23 @@ CLASS `InterpM:
       `that.`_istmtLog(`instruction)
     ENDCLOSURE
     THIS.`_dispatch_stmt = {}
-    THIS.`_dispatch_stmt["ASSIGN_OP"] = `closure_istmt_assign_op
-    THIS.`_dispatch_stmt["ASSIGN_OP_RANDOM"] = `closure_istmt_assign_op_random
-    THIS.`_dispatch_stmt["ASSIGN_POP"] = `closure_istmt_assign_pop
-    THIS.`_dispatch_stmt["ASSIGN_UNQUEUE"] = `closure_istmt_assign_unqueue
-    THIS.`_dispatch_stmt["IF"] = `closure_istmt_if
-    THIS.`_dispatch_stmt["ELSIF"] = `closure_istmt_elsif
-    THIS.`_dispatch_stmt["ELSE"] = `closure_istmt_else
-    THIS.`_dispatch_stmt["ENDIF"] = `closure_istmt_endif
-    THIS.`_dispatch_stmt["REPEAT"] = `closure_istmt_repeat
-    THIS.`_dispatch_stmt["REPNEXT"] = `closure_istmt_repnext
-    THIS.`_dispatch_stmt["REPSTOP"] = `closure_istmt_repstop
-    THIS.`_dispatch_stmt["ENDREP"] = `closure_istmt_endrep
-    THIS.`_dispatch_stmt["PROCEDURE"] = `closure_istmt_procedure
-    THIS.`_dispatch_stmt["PUSH"] = `closure_istmt_push
-    THIS.`_dispatch_stmt["QUEUE"] = `closure_istmt_queue
-    THIS.`_dispatch_stmt["UNASSIGN"] = `closure_istmt_unassign
-    THIS.`_dispatch_stmt["LOG"] = `closure_istmt_log
+    THIS.`_dispatch_stmt[`OPCODE_ASSIGN_OP] = `closure_istmt_assign_op
+    THIS.`_dispatch_stmt[`OPCODE_ASSIGN_OP_RANDOM] = `closure_istmt_assign_op_random
+    THIS.`_dispatch_stmt[`OPCODE_ASSIGN_POP] = `closure_istmt_assign_pop
+    THIS.`_dispatch_stmt[`OPCODE_ASSIGN_UNQUEUE] = `closure_istmt_assign_unqueue
+    THIS.`_dispatch_stmt[`OPCODE_IF] = `closure_istmt_if
+    THIS.`_dispatch_stmt[`OPCODE_ELSIF] = `closure_istmt_elsif
+    THIS.`_dispatch_stmt[`OPCODE_ELSE] = `closure_istmt_else
+    THIS.`_dispatch_stmt[`OPCODE_ENDIF] = `closure_istmt_endif
+    THIS.`_dispatch_stmt[`OPCODE_REPEAT] = `closure_istmt_repeat
+    THIS.`_dispatch_stmt[`OPCODE_REPNEXT] = `closure_istmt_repnext
+    THIS.`_dispatch_stmt[`OPCODE_REPSTOP] = `closure_istmt_repstop
+    THIS.`_dispatch_stmt[`OPCODE_ENDREP] = `closure_istmt_endrep
+    THIS.`_dispatch_stmt[`OPCODE_PROCEDURE] = `closure_istmt_procedure
+    THIS.`_dispatch_stmt[`OPCODE_PUSH] = `closure_istmt_push
+    THIS.`_dispatch_stmt[`OPCODE_QUEUE] = `closure_istmt_queue
+    THIS.`_dispatch_stmt[`OPCODE_UNASSIGN] = `closure_istmt_unassign
+    THIS.`_dispatch_stmt[`OPCODE_LOG] = `closure_istmt_log
     CLOSURE `closure_iexpr_number(`expression):
       return `that.`_iexprNumber(`expression)
     ENDCLOSURE
@@ -3930,44 +4004,44 @@ CLASS `InterpM:
       return `that.`_iexprListAtQualvar(`expression)
     ENDCLOSURE
     THIS.`_dispatch_expr = {}
-    THIS.`_dispatch_expr["NUMBER"] = `closure_iexpr_number
-    THIS.`_dispatch_expr["LIST"] = `closure_iexpr_list
-    THIS.`_dispatch_expr["BY_REF"] = `closure_iexpr_by_ref
-    THIS.`_dispatch_expr["MODULE_NAME"] = `closure_iexpr_module_name
-    THIS.`_dispatch_expr["STRING"] = `closure_iexpr_string
-    THIS.`_dispatch_expr["OR"] = `closure_iexpr_or
-    THIS.`_dispatch_expr["AND"] = `closure_iexpr_and
-    THIS.`_dispatch_expr["NOT"] = `closure_iexpr_not
-    THIS.`_dispatch_expr["EQ"] = `closure_iexpr_rel_op_eq
-    THIS.`_dispatch_expr["NE"] = `closure_iexpr_rel_op_ne
-    THIS.`_dispatch_expr["LT"] = `closure_iexpr_rel_op_lt
-    THIS.`_dispatch_expr["LE"] = `closure_iexpr_rel_op_le
-    THIS.`_dispatch_expr["GT"] = `closure_iexpr_rel_op_gt
-    THIS.`_dispatch_expr["GE"] = `closure_iexpr_rel_op_ge
-    THIS.`_dispatch_expr["NEG"] = `closure_iexpr_unary_op_neg
-    THIS.`_dispatch_expr["BIT_NOT"] = `closure_iexpr_unary_op_bit_not
-    THIS.`_dispatch_expr["PLUS"] = `closure_iexpr_add_op_plus
-    THIS.`_dispatch_expr["MINUS"] = `closure_iexpr_add_op_minus
-    THIS.`_dispatch_expr["BIT_OR"] = `closure_iexpr_add_op_bit_or
-    THIS.`_dispatch_expr["BIT_XOR"] = `closure_iexpr_add_op_bit_xor
-    THIS.`_dispatch_expr["MUL"] = `closure_iexpr_mul_op_mul
-    THIS.`_dispatch_expr["DIV"] = `closure_iexpr_mul_op_div
-    THIS.`_dispatch_expr["IDV"] = `closure_iexpr_mul_op_idv
-    THIS.`_dispatch_expr["MOD"] = `closure_iexpr_mul_op_mod
-    THIS.`_dispatch_expr["BIT_AND"] = `closure_iexpr_mul_op_bit_and
-    THIS.`_dispatch_expr["BIT_SHL"] = `closure_iexpr_mul_op_bit_shl
-    THIS.`_dispatch_expr["BIT_SHR"] = `closure_iexpr_mul_op_bit_shr
-    THIS.`_dispatch_expr["VAR"] = `closure_iexpr_var
-    THIS.`_dispatch_expr["QUALVAR"] = `closure_iexpr_qualvar
-    THIS.`_dispatch_expr["IS_VAR"] = `closure_iexpr_is_var
-    THIS.`_dispatch_expr["IS_NOT_VAR"] = `closure_iexpr_is_not_var
-    THIS.`_dispatch_expr["LENGTH_VAR"] = `closure_iexpr_length_var
-    THIS.`_dispatch_expr["SIZE_VAR"] = `closure_iexpr_size_var_size
-    THIS.`_dispatch_expr["ISIZE_VAR"] = `closure_iexpr_size_var_isize
-    THIS.`_dispatch_expr["LSIZE_VAR"] = `closure_iexpr_size_var_lsize
-    THIS.`_dispatch_expr["INDEXOF_VAR"] = `closure_iexpr_indexof_var
-    THIS.`_dispatch_expr["LIST_AT_VAR"] = `closure_iexpr_list_at_var
-    THIS.`_dispatch_expr["LIST_AT_QUALVAR"] = `closure_iexpr_list_at_qualvar
+    THIS.`_dispatch_expr[`OPCODE_NUMBER] = `closure_iexpr_number
+    THIS.`_dispatch_expr[`OPCODE_LIST] = `closure_iexpr_list
+    THIS.`_dispatch_expr[`OPCODE_BY_REF] = `closure_iexpr_by_ref
+    THIS.`_dispatch_expr[`OPCODE_MODULE_NAME] = `closure_iexpr_module_name
+    THIS.`_dispatch_expr[`OPCODE_STRING] = `closure_iexpr_string
+    THIS.`_dispatch_expr[`OPCODE_OR] = `closure_iexpr_or
+    THIS.`_dispatch_expr[`OPCODE_AND] = `closure_iexpr_and
+    THIS.`_dispatch_expr[`OPCODE_NOT] = `closure_iexpr_not
+    THIS.`_dispatch_expr[`OPCODE_EQ] = `closure_iexpr_rel_op_eq
+    THIS.`_dispatch_expr[`OPCODE_NE] = `closure_iexpr_rel_op_ne
+    THIS.`_dispatch_expr[`OPCODE_LT] = `closure_iexpr_rel_op_lt
+    THIS.`_dispatch_expr[`OPCODE_LE] = `closure_iexpr_rel_op_le
+    THIS.`_dispatch_expr[`OPCODE_GT] = `closure_iexpr_rel_op_gt
+    THIS.`_dispatch_expr[`OPCODE_GE] = `closure_iexpr_rel_op_ge
+    THIS.`_dispatch_expr[`OPCODE_NEG] = `closure_iexpr_unary_op_neg
+    THIS.`_dispatch_expr[`OPCODE_BIT_NOT] = `closure_iexpr_unary_op_bit_not
+    THIS.`_dispatch_expr[`OPCODE_PLUS] = `closure_iexpr_add_op_plus
+    THIS.`_dispatch_expr[`OPCODE_MINUS] = `closure_iexpr_add_op_minus
+    THIS.`_dispatch_expr[`OPCODE_BIT_OR] = `closure_iexpr_add_op_bit_or
+    THIS.`_dispatch_expr[`OPCODE_BIT_XOR] = `closure_iexpr_add_op_bit_xor
+    THIS.`_dispatch_expr[`OPCODE_MUL] = `closure_iexpr_mul_op_mul
+    THIS.`_dispatch_expr[`OPCODE_DIV] = `closure_iexpr_mul_op_div
+    THIS.`_dispatch_expr[`OPCODE_IDV] = `closure_iexpr_mul_op_idv
+    THIS.`_dispatch_expr[`OPCODE_MOD] = `closure_iexpr_mul_op_mod
+    THIS.`_dispatch_expr[`OPCODE_BIT_AND] = `closure_iexpr_mul_op_bit_and
+    THIS.`_dispatch_expr[`OPCODE_BIT_SHL] = `closure_iexpr_mul_op_bit_shl
+    THIS.`_dispatch_expr[`OPCODE_BIT_SHR] = `closure_iexpr_mul_op_bit_shr
+    THIS.`_dispatch_expr[`OPCODE_VAR] = `closure_iexpr_var
+    THIS.`_dispatch_expr[`OPCODE_QUALVAR] = `closure_iexpr_qualvar
+    THIS.`_dispatch_expr[`OPCODE_IS_VAR] = `closure_iexpr_is_var
+    THIS.`_dispatch_expr[`OPCODE_IS_NOT_VAR] = `closure_iexpr_is_not_var
+    THIS.`_dispatch_expr[`OPCODE_LENGTH_VAR] = `closure_iexpr_length_var
+    THIS.`_dispatch_expr[`OPCODE_SIZE_VAR] = `closure_iexpr_size_var_size
+    THIS.`_dispatch_expr[`OPCODE_ISIZE_VAR] = `closure_iexpr_size_var_isize
+    THIS.`_dispatch_expr[`OPCODE_LSIZE_VAR] = `closure_iexpr_size_var_lsize
+    THIS.`_dispatch_expr[`OPCODE_INDEXOF_VAR] = `closure_iexpr_indexof_var
+    THIS.`_dispatch_expr[`OPCODE_LIST_AT_VAR] = `closure_iexpr_list_at_var
+    THIS.`_dispatch_expr[`OPCODE_LIST_AT_QUALVAR] = `closure_iexpr_list_at_qualvar
     THIS.`_data_v = NULL
 
   METHOD `readLog():
@@ -4303,7 +4377,7 @@ CLASS `InterpM:
       VAR `popevalue
       VAR `poplindex
       VAR `j
-      IF `popvarexprs[0] == "VAR":
+      IF `popvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
         `evalue[3] += `delta_cost_i
       ELSE:
@@ -4358,7 +4432,7 @@ CLASS `InterpM:
       VAR `unqevalue
       VAR `unqlindex
       VAR `j
-      IF `unqvarexprs[0] == "VAR":
+      IF `unqvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
         `evalue[3] += `delta_cost_i
       ELSE:
@@ -4634,7 +4708,7 @@ CLASS `InterpM:
     VAR `pevalue
     VAR `plindex
     VAR `j
-    IF `pvarexprs[0] == "VAR":
+    IF `pvarexprs[0] == `OPCODE_VAR:
       `pvalue[2] += `delta_cost_l
       `pvalue[3] += `delta_cost_i
     ELSE:
@@ -4678,7 +4752,7 @@ CLASS `InterpM:
     VAR `qevalue
     VAR `qlindex
     VAR `j
-    IF `qvarexprs[0] == "VAR":
+    IF `qvarexprs[0] == `OPCODE_VAR:
       `qvalue[2] += `delta_cost_l
       `qvalue[3] += `delta_cost_i
     ELSE:
@@ -4727,7 +4801,7 @@ CLASS `InterpM:
     VAR `evalue_j
     FORINCR `j(0 `length(`logexprs)):
       `logexpr_j = `logexprs[`j]
-      IF `logexpr_j[0] == "STRING":
+      IF `logexpr_j[0] == `OPCODE_STRING:
         `log_message += `logexpr_j[1]
         continue
       ENDIF
@@ -5016,15 +5090,15 @@ CLASS `InterpM:
     VAR `vvar_typetokenid = `expression[2]
     VAR `vvar = `vvarexprs[1]
     VAR `evalue
-    IF `vvarexprs[0] == "VAR":
-        `evalue = THIS.`getVar(`vvar)
-    ELSIF `vvarexprs[0] == "QUALVAR":
-        `evalue = THIS.`_getQualvar(`vvar)
+    IF `vvarexprs[0] == `OPCODE_VAR:
+      `evalue = THIS.`getVar(`vvar)
+    ELSIF `vvarexprs[0] == `OPCODE_QUALVAR:
+      `evalue = THIS.`_getQualvar(`vvar)
     ELSE:
-        `evalue = THIS.`_interpExpr(`vvarexprs)
-        IF `isnull(`evalue):
-          return NULL
-        ENDIF
+      `evalue = THIS.`_interpExpr(`vvarexprs)
+      IF `isnull(`evalue):
+        return NULL
+      ENDIF
     ENDIF
     IF `isnull(`evalue):
       THIS.`_tmpBoolean[1] = (`vvar_typetokenid == `key_token_UNDEFINED)
@@ -5050,9 +5124,9 @@ CLASS `InterpM:
     VAR `vvar_typetokenid = `expression[2]
     VAR `vvar = `vvarexprs[1]
     VAR `evalue
-    IF `vvarexprs[0] == "VAR":
+    IF `vvarexprs[0] == `OPCODE_VAR:
       `evalue = THIS.`getVar(`vvar)
-    ELSIF `vvarexprs[0] == "QUALVAR":
+    ELSIF `vvarexprs[0] == `OPCODE_QUALVAR:
       `evalue = THIS.`_getQualvar(`vvar)
     ELSE:
       `evalue = THIS.`_interpExpr(`vvarexprs)
