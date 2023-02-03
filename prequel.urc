@@ -36,7 +36,7 @@ VAR `ARG_TYPE_MODNAME = 4
 VAR `key_limits_instructions = 0
 VAR `key_limits_max_memory = 1
 VAR `key_limits_memory = 2
-VAR `key_limits_memory_i = 3
+VAR `key_limits_memory_n = 3
 VAR `key_limits_memory_l = 4
 VAR `key_limits_time = 5
 
@@ -117,7 +117,7 @@ CLASS `Utils:
     VAR `limits = {}
     `limits[`key_limits_instructions] = NULL
     `limits[`key_limits_memory] = NULL
-    `limits[`key_limits_memory_i] = NULL
+    `limits[`key_limits_memory_n] = NULL
     `limits[`key_limits_memory_l] = NULL
     `limits[`key_limits_time] = NULL
     IF `is_type_dict(`get_type(`limits_)):
@@ -133,11 +133,11 @@ CLASS `Utils:
         ENDIF
         `limits[`key_limits_memory] = `limits_["memory"]
       ENDIF
-      IF "memory_i" in `limits_:
-        IF `not(THIS.`isInt32b(`limits_["memory_i"])):
+      IF "memory_n" in `limits_:
+        IF `not(THIS.`isInt32b(`limits_["memory_n"])):
           return NULL
         ENDIF
-        `limits[`key_limits_memory_i] = `limits_["memory_i"]
+        `limits[`key_limits_memory_n] = `limits_["memory_n"]
       ENDIF
       IF "memory_l" in `limits_:
         IF `not(THIS.`isInt32b(`limits_["memory_l"])):
@@ -161,7 +161,7 @@ CLASS `Utils:
     `limits["instructions"] = `limits_[`key_limits_instructions]
     `limits["max_memory"] = `limits_[`key_limits_max_memory]
     `limits["memory"] = `limits_[`key_limits_memory]
-    `limits["memory_i"] = `limits_[`key_limits_memory_i]
+    `limits["memory_n"] = `limits_[`key_limits_memory_n]
     `limits["memory_l"] = `limits_[`key_limits_memory_l]
     `limits["time"] = `limits_[`key_limits_time]
     return `limits
@@ -204,7 +204,7 @@ CLASS `Utils:
     ENDIF
     return -1
 
-  METHOD `isizeEvalue(`evalue):
+  METHOD `nsizeEvalue(`evalue):
     return `evalue[3]
 
   METHOD `lsizeEvalue(`evalue):
@@ -218,18 +218,18 @@ CLASS `Utils:
 
   METHOD `encodeData(`data):
     VAR `data_type = `get_type(`data)
-    VAR `isize
+    VAR `nsize
     VAR `lsize
     VAR `elist
     VAR `evalue
     IF `is_type_num(`data_type) OR `is_type_bool(`data_type):
-      `isize = 1
+      `nsize = 1
       `lsize = 0
-      return [`key_interp_number, `trunc(`data), `lsize, `isize]
+      return [`key_interp_number, `trunc(`data), `lsize, `nsize]
     ENDIF
     VAR `j
     IF `is_type_list(`data_type):
-      `isize = 0
+      `nsize = 0
       `lsize = 1
       `elist = []
       FORINCR `j(0 `length(`data)):
@@ -238,43 +238,43 @@ CLASS `Utils:
           return NULL
         ENDIF
         `push(`elist, `evalue)
-        `isize += THIS.`isizeEvalue(`evalue)
+        `nsize += THIS.`nsizeEvalue(`evalue)
         `lsize += THIS.`lsizeEvalue(`evalue)
       ENDFOR
-      return [`key_interp_list, `elist, `lsize, `isize]
+      return [`key_interp_list, `elist, `lsize, `nsize]
     ENDIF
     `warning("Prequel"+" "+"Utils"+" "+"encodeData"+":"+" "+"invalid"+" "+"data"+":", `data)
     return NULL
 
   METHOD `encodeOverwriteData(`evalue `data):
     VAR `data_type = `get_type(`data)
-    VAR `isize
+    VAR `nsize
     VAR `lsize
     VAR `elist
     VAR `j
     VAR `evalueE
     IF `is_type_num(`data_type) OR `is_type_bool(`data_type):
       IF `length(`evalue) == 0:
-        `isize = 1
+        `nsize = 1
         `lsize = 0
         `push(`evalue, `key_interp_number)
         `push(`evalue, `trunc(`data))
         `push(`evalue, `lsize)
-        `push(`evalue, `isize)
+        `push(`evalue, `nsize)
       ELSE:
         IF `evalue[0] != `key_interp_number:
-          `isize = 1
+          `nsize = 1
           `lsize = 0
           `evalue[0] = `key_interp_number
           `evalue[2] = `lsize
-          `evalue[3] = `isize
+          `evalue[3] = `nsize
         ENDIF
         `evalue[1] = `trunc(`data)
       ENDIF
       return TRUE
     ENDIF
     IF `is_type_list(`data_type):
-      `isize = 0
+      `nsize = 0
       `lsize = 1
       IF `length(`evalue) == 0:
         `elist = []
@@ -284,13 +284,13 @@ CLASS `Utils:
             return FALSE
           ENDIF
           `push(`elist, `evalueE)
-          `isize += THIS.`isizeEvalue(`evalueE)
+          `nsize += THIS.`nsizeEvalue(`evalueE)
           `lsize += THIS.`lsizeEvalue(`evalueE)
         ENDFOR
         `push(`evalue, `key_interp_list)
         `push(`evalue, `elist)
         `push(`evalue, `lsize)
-        `push(`evalue, `isize)
+        `push(`evalue, `nsize)
       ELSIF `evalue[0] != `key_interp_list:
         `elist = []
         FORINCR `j(0 `length(`data)):
@@ -299,20 +299,20 @@ CLASS `Utils:
             return FALSE
           ENDIF
           `push(`elist, `evalueE)
-          `isize += THIS.`isizeEvalue(`evalueE)
+          `nsize += THIS.`nsizeEvalue(`evalueE)
           `lsize += THIS.`lsizeEvalue(`evalueE)
         ENDFOR
         `evalue[0] = `key_interp_list
         `evalue[1] = `elist
         `evalue[2] = `lsize
-        `evalue[3] = `isize
+        `evalue[3] = `nsize
       ELSE:
         IF `length(`evalue[1]) == `length(`data):
           FORINCR `j(0 `length(`data)):
             IF `not(THIS.`encodeOverwriteData(`evalue[1][`j], `data[`j])):
               return FALSE
             ENDIF
-            `isize += THIS.`isizeEvalue(`evalue[1][`j])
+            `nsize += THIS.`nsizeEvalue(`evalue[1][`j])
             `lsize += THIS.`lsizeEvalue(`evalue[1][`j])
           ENDFOR
         ELSIF `length(`evalue[1]) > `length(`data):
@@ -323,7 +323,7 @@ CLASS `Utils:
             IF `not(THIS.`encodeOverwriteData(`evalue[1][`j], `data[`j])):
               return FALSE
             ENDIF
-            `isize += THIS.`isizeEvalue(`evalue[1][`j])
+            `nsize += THIS.`nsizeEvalue(`evalue[1][`j])
             `lsize += THIS.`lsizeEvalue(`evalue[1][`j])
           ENDFOR
         ELSE:
@@ -331,7 +331,7 @@ CLASS `Utils:
             IF `not(THIS.`encodeOverwriteData(`evalue[1][`j], `data[`j])):
               return FALSE
             ENDIF
-            `isize += THIS.`isizeEvalue(`evalue[1][`j])
+            `nsize += THIS.`nsizeEvalue(`evalue[1][`j])
             `lsize += THIS.`lsizeEvalue(`evalue[1][`j])
           ENDFOR
           FORINCR `j(`length(`evalue[1]) `length(`data)):
@@ -340,12 +340,12 @@ CLASS `Utils:
               return FALSE
             ENDIF
             `push(`evalue[1], `evalueE)
-            `isize += THIS.`isizeEvalue(`evalueE)
+            `nsize += THIS.`nsizeEvalue(`evalueE)
             `lsize += THIS.`lsizeEvalue(`evalueE)
           ENDFOR
         ENDIF
         `evalue[2] = `lsize
-        `evalue[3] = `isize
+        `evalue[3] = `nsize
       ENDIF
       return TRUE
     ENDIF
@@ -487,23 +487,23 @@ VAR `key_token_IF = 40
 VAR `key_token_INDENT = 41
 VAR `key_token_INDEXOF = 42
 VAR `key_token_IS = 43
-VAR `key_token_ISIZE = 44
-VAR `key_token_IS_NOT = 45
-VAR `key_token_LE = 46
-VAR `key_token_LENGTH = 47
-VAR `key_token_LIST = 48
-VAR `key_token_LOG = 49
-VAR `key_token_LPAR = 50
-VAR `key_token_LSIZE = 51
-VAR `key_token_LSQR = 52
-VAR `key_token_LT = 53
-VAR `key_token_MINUS = 54
-VAR `key_token_MOD = 55
-VAR `key_token_MODULE_NAME = 56
-VAR `key_token_MUL = 57
-VAR `key_token_NE = 58
-VAR `key_token_NEWLINE = 59
-VAR `key_token_NOT = 60
+VAR `key_token_IS_NOT = 44
+VAR `key_token_LE = 45
+VAR `key_token_LENGTH = 46
+VAR `key_token_LIST = 47
+VAR `key_token_LOG = 48
+VAR `key_token_LPAR = 49
+VAR `key_token_LSIZE = 50
+VAR `key_token_LSQR = 51
+VAR `key_token_LT = 52
+VAR `key_token_MINUS = 53
+VAR `key_token_MOD = 54
+VAR `key_token_MODULE_NAME = 55
+VAR `key_token_MUL = 56
+VAR `key_token_NE = 57
+VAR `key_token_NEWLINE = 58
+VAR `key_token_NOT = 59
+VAR `key_token_NSIZE = 60
 VAR `key_token_NUMBER = 61
 VAR `key_token_OR = 62
 VAR `key_token_PLUS = 63
@@ -531,7 +531,7 @@ VAR `key_token_VAR = 83
 VAR `SUFFIX_ = 0
 VAR `SUFFIX_LENGTH = 1
 VAR `SUFFIX_SIZE = 2
-VAR `SUFFIX_ISIZE = 3
+VAR `SUFFIX_NSIZE = 3
 VAR `SUFFIX_LSIZE = 4
 VAR `SUFFIX_PUSH = 5
 VAR `SUFFIX_QUEUE = 6
@@ -567,7 +567,7 @@ CLASS `Lexer:
     `push(THIS.`_reserved_vlast_words, "UNASSIGN")
     `push(THIS.`_reserved_vlast_words, "LENGTH")
     `push(THIS.`_reserved_vlast_words, "SIZE")
-    `push(THIS.`_reserved_vlast_words, "ISIZE")
+    `push(THIS.`_reserved_vlast_words, "NSIZE")
     `push(THIS.`_reserved_vlast_words, "LSIZE")
     `push(THIS.`_reserved_vlast_words, "PUSH")
     `push(THIS.`_reserved_vlast_words, "QUEUE")
@@ -578,7 +578,7 @@ CLASS `Lexer:
     THIS.`_reserved_qlast_words = []
     `push(THIS.`_reserved_qlast_words, "LENGTH")
     `push(THIS.`_reserved_qlast_words, "SIZE")
-    `push(THIS.`_reserved_qlast_words, "ISIZE")
+    `push(THIS.`_reserved_qlast_words, "NSIZE")
     `push(THIS.`_reserved_qlast_words, "LSIZE")
     `push(THIS.`_reserved_qlast_words, "INDEXOF")
 
@@ -627,7 +627,6 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "INDENT")
     `push(THIS.`_token_strs, "INDEXOF")
     `push(THIS.`_token_strs, "IS")
-    `push(THIS.`_token_strs, "ISIZE")
     `push(THIS.`_token_strs, "IS_NOT")
     `push(THIS.`_token_strs, "LE")
     `push(THIS.`_token_strs, "LENGTH")
@@ -644,6 +643,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "NE")
     `push(THIS.`_token_strs, "NEWLINE")
     `push(THIS.`_token_strs, "NOT")
+    `push(THIS.`_token_strs, "NSIZE")
     `push(THIS.`_token_strs, "NUMBER")
     `push(THIS.`_token_strs, "OR")
     `push(THIS.`_token_strs, "PLUS")
@@ -1538,24 +1538,24 @@ VAR `OPCODE_GT = 21
 VAR `OPCODE_IDV = 22
 VAR `OPCODE_IF = 23
 VAR `OPCODE_INDEXOF_VAR = 24
-VAR `OPCODE_ISIZE_VAR = 25
-VAR `OPCODE_IS_NOT_VAR = 26
-VAR `OPCODE_IS_VAR = 27
-VAR `OPCODE_LE = 28
-VAR `OPCODE_LENGTH_VAR = 29
-VAR `OPCODE_LIST = 30
-VAR `OPCODE_LIST_AT_QUALVAR = 31
-VAR `OPCODE_LIST_AT_VAR = 32
-VAR `OPCODE_LOG = 33
-VAR `OPCODE_LSIZE_VAR = 34
-VAR `OPCODE_LT = 35
-VAR `OPCODE_MINUS = 36
-VAR `OPCODE_MOD = 37
-VAR `OPCODE_MODULE_NAME = 38
-VAR `OPCODE_MUL = 39
-VAR `OPCODE_NE = 40
-VAR `OPCODE_NEG = 41
-VAR `OPCODE_NOT = 42
+VAR `OPCODE_IS_NOT_VAR = 25
+VAR `OPCODE_IS_VAR = 26
+VAR `OPCODE_LE = 27
+VAR `OPCODE_LENGTH_VAR = 28
+VAR `OPCODE_LIST = 29
+VAR `OPCODE_LIST_AT_QUALVAR = 30
+VAR `OPCODE_LIST_AT_VAR = 31
+VAR `OPCODE_LOG = 32
+VAR `OPCODE_LSIZE_VAR = 33
+VAR `OPCODE_LT = 34
+VAR `OPCODE_MINUS = 35
+VAR `OPCODE_MOD = 36
+VAR `OPCODE_MODULE_NAME = 37
+VAR `OPCODE_MUL = 38
+VAR `OPCODE_NE = 39
+VAR `OPCODE_NEG = 40
+VAR `OPCODE_NOT = 41
+VAR `OPCODE_NSIZE_VAR = 42
 VAR `OPCODE_NUMBER = 43
 VAR `OPCODE_OR = 44
 VAR `OPCODE_PLUS = 45
@@ -2688,7 +2688,7 @@ CLASS `Parser:
     VAR `lidx_ariexpr
     VAR `length_var
     VAR `size_var
-    VAR `isize_var
+    VAR `nsize_var
     VAR `lsize_var
     VAR `indexof_var
     VAR `literal
@@ -2720,9 +2720,9 @@ CLASS `Parser:
       `size_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       return [`lidx+1, [`OPCODE_SIZE_VAR, [TERNARY{`indexof(`size_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `size_var]]]
     ENDIF
-    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ISIZE:
-      `isize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_ISIZE_VAR, [TERNARY{`indexof(`isize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `isize_var]]]
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_NSIZE:
+      `nsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, [`OPCODE_NSIZE_VAR, [TERNARY{`indexof(`nsize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `nsize_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSIZE:
       `lsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
@@ -2741,7 +2741,7 @@ CLASS `Parser:
       return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
-    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_ISIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
+    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_NSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
       return [`lidx_sfxexpr[0], `lidx_sfxexpr[1][2]]
     ENDIF
     return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"OR"+" "+"LIST"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
@@ -2836,7 +2836,7 @@ CLASS `Parser:
     VAR `lidx_ariexpr
     VAR `length_var
     VAR `size_var
-    VAR `isize_var
+    VAR `nsize_var
     VAR `lsize_var
     VAR `lidx_expr
     VAR `indexof_var
@@ -2869,9 +2869,9 @@ CLASS `Parser:
       `size_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       return [`lidx+1, [`OPCODE_SIZE_VAR, [TERNARY{`indexof(`size_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `size_var]]]
     ENDIF
-    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ISIZE:
-      `isize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_ISIZE_VAR, [TERNARY{`indexof(`isize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `isize_var]]]
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_NSIZE:
+      `nsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      return [`lidx+1, [`OPCODE_NSIZE_VAR, [TERNARY{`indexof(`nsize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `nsize_var]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSIZE:
       `lsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
@@ -2890,7 +2890,7 @@ CLASS `Parser:
       return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
-    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_ISIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
+    IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_NSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
       return [`lidx_sfxexpr[0], `lidx_sfxexpr[1][2]]
     ENDIF
     return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ARITHMETIC"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
@@ -2929,8 +2929,8 @@ CLASS `Parser:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
       ELSIF `suffix == `key_token_SIZE:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_SIZE, [`OPCODE_SIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
-      ELSIF `suffix == `key_token_ISIZE:
-        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_ISIZE, [`OPCODE_ISIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
+      ELSIF `suffix == `key_token_NSIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_NSIZE, [`OPCODE_NSIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
       ELSIF `suffix == `key_token_LSIZE:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LSIZE, [`OPCODE_LSIZE_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
       ELSIF `suffix == `key_token_INDEXOF:
@@ -2982,8 +2982,8 @@ CLASS `Parser:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
       ELSIF `suffix == `key_token_SIZE:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_SIZE, [`OPCODE_SIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
-      ELSIF `suffix == `key_token_ISIZE:
-        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_ISIZE, [`OPCODE_ISIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
+      ELSIF `suffix == `key_token_NSIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_NSIZE, [`OPCODE_NSIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
       ELSIF `suffix == `key_token_LSIZE:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LSIZE, [`OPCODE_LSIZE_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
       ELSIF `suffix == `key_token_INDEXOF:
@@ -3765,15 +3765,15 @@ FUNC `func_iexpr_mul_op_bit_shr(`v1 `v2):
   return `int32(`v1 << (-`v2))
 ENDFUNC
 
-FUNC `func_iexpr_size_var_size(`lsize `isize):
-  return (`lsize+`isize)
+FUNC `func_iexpr_size_var_size(`lsize `nsize):
+  return (`lsize+`nsize)
 ENDFUNC
 
-FUNC `func_iexpr_size_var_isize(`lsize `isize):
-  return `isize
+FUNC `func_iexpr_size_var_nsize(`lsize `nsize):
+  return `nsize
 ENDFUNC
 
-FUNC `func_iexpr_size_var_lsize(`lsize `isize):
+FUNC `func_iexpr_size_var_lsize(`lsize `nsize):
   return `lsize
 ENDFUNC
 
@@ -3802,7 +3802,7 @@ CLASS `InterpM:
     THIS.`_changed_vars = []
     THIS.`_error = NULL
     THIS.`_status_code = NULL
-    THIS.`_memory_delta_i = 0
+    THIS.`_memory_delta_n = 0
     THIS.`_memory_delta_l = 0
     THIS.`_yield = FALSE
     THIS.`_procedure = NULL
@@ -3811,7 +3811,7 @@ CLASS `InterpM:
     THIS.`_count[`key_limits_instructions] = NULL
     THIS.`_count[`key_limits_max_memory] = NULL
     THIS.`_count[`key_limits_memory] = NULL
-    THIS.`_count[`key_limits_memory_i] = NULL
+    THIS.`_count[`key_limits_memory_n] = NULL
     THIS.`_count[`key_limits_memory_l] = NULL
     THIS.`_count[`key_limits_time] = NULL
     THIS.`_tmpNumber = [`key_interp_number, 0, 0, 1]
@@ -3988,8 +3988,8 @@ CLASS `InterpM:
     CLOSURE `closure_iexpr_size_var_size(`expression):
       return `that.`_iexprSizeVar(`expression, `func_iexpr_size_var_size)
     ENDCLOSURE
-    CLOSURE `closure_iexpr_size_var_isize(`expression):
-      return `that.`_iexprSizeVar(`expression, `func_iexpr_size_var_isize)
+    CLOSURE `closure_iexpr_size_var_nsize(`expression):
+      return `that.`_iexprSizeVar(`expression, `func_iexpr_size_var_nsize)
     ENDCLOSURE
     CLOSURE `closure_iexpr_size_var_lsize(`expression):
       return `that.`_iexprSizeVar(`expression, `func_iexpr_size_var_lsize)
@@ -4037,7 +4037,7 @@ CLASS `InterpM:
     THIS.`_dispatch_expr[`OPCODE_IS_NOT_VAR] = `closure_iexpr_is_not_var
     THIS.`_dispatch_expr[`OPCODE_LENGTH_VAR] = `closure_iexpr_length_var
     THIS.`_dispatch_expr[`OPCODE_SIZE_VAR] = `closure_iexpr_size_var_size
-    THIS.`_dispatch_expr[`OPCODE_ISIZE_VAR] = `closure_iexpr_size_var_isize
+    THIS.`_dispatch_expr[`OPCODE_NSIZE_VAR] = `closure_iexpr_size_var_nsize
     THIS.`_dispatch_expr[`OPCODE_LSIZE_VAR] = `closure_iexpr_size_var_lsize
     THIS.`_dispatch_expr[`OPCODE_INDEXOF_VAR] = `closure_iexpr_indexof_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_VAR] = `closure_iexpr_list_at_var
@@ -4073,9 +4073,9 @@ CLASS `InterpM:
     return THIS.`_varnames
 
   METHOD `addVar(`varname `evalue):
-    VAR `delta_cost_i = `utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = `utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = `utils.`lsizeEvalue(`evalue)
-    THIS.`_memory_delta_i += `delta_cost_i
+    THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`varname)
     THIS.`_addVar(`varname, `evalue)
@@ -4085,9 +4085,9 @@ CLASS `InterpM:
 
   METHOD `removeVar(`varname):
     VAR `evalue = THIS.`getVar(`varname)
-    VAR `delta_cost_i = -`utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = -`utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = -`utils.`lsizeEvalue(`evalue)
-    THIS.`_memory_delta_i += `delta_cost_i
+    THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`varname)
     THIS.`_removeVar(`varname)
@@ -4123,8 +4123,8 @@ CLASS `InterpM:
       IF `not(`isnull(`limits[`key_limits_memory])):
         `limits[`key_limits_memory] -= THIS.`_count[`key_limits_memory]
       ENDIF
-      IF `not(`isnull(`limits[`key_limits_memory_i])):
-        `limits[`key_limits_memory_i] -= THIS.`_count[`key_limits_memory_i]
+      IF `not(`isnull(`limits[`key_limits_memory_n])):
+        `limits[`key_limits_memory_n] -= THIS.`_count[`key_limits_memory_n]
       ENDIF
       IF `not(`isnull(`limits[`key_limits_memory_l])):
         `limits[`key_limits_memory_l] -= THIS.`_count[`key_limits_memory_l]
@@ -4144,7 +4144,7 @@ CLASS `InterpM:
     THIS.`_changed_vars = []
     THIS.`_error = NULL
     THIS.`_status_code = NULL
-    THIS.`_memory_delta_i = 0
+    THIS.`_memory_delta_n = 0
     THIS.`_memory_delta_l = 0
     THIS.`_yield = FALSE
     THIS.`_procedure = NULL
@@ -4170,7 +4170,7 @@ CLASS `InterpM:
     THIS.`_count[`key_limits_instructions] = 0
     THIS.`_count[`key_limits_max_memory] = 0
     THIS.`_count[`key_limits_memory] = 0
-    THIS.`_count[`key_limits_memory_i] = 0
+    THIS.`_count[`key_limits_memory_n] = 0
     THIS.`_count[`key_limits_memory_l] = 0
     THIS.`_count[`key_limits_time] = 0
     THIS.`_yield = FALSE
@@ -4183,15 +4183,15 @@ CLASS `InterpM:
     IF `resume_yield:
       THIS.`_error = NULL
       THIS.`_status_code = NULL
-      THIS.`_memory_delta_i = 0
+      THIS.`_memory_delta_n = 0
       THIS.`_memory_delta_l = 0
       `time_start = THIS.`_now()
       THIS.`_onYieldResume(`instance)
       IF `not(`isnull(THIS.`_error)):
         return [`INTERP_STATE_ERROR, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter), THIS.`_error]
       ENDIF
-      THIS.`_count[`key_limits_memory] += (THIS.`_memory_delta_l+THIS.`_memory_delta_i)
-      THIS.`_count[`key_limits_memory_i] += THIS.`_memory_delta_i
+      THIS.`_count[`key_limits_memory] += (THIS.`_memory_delta_l+THIS.`_memory_delta_n)
+      THIS.`_count[`key_limits_memory_n] += THIS.`_memory_delta_n
       THIS.`_count[`key_limits_memory_l] += THIS.`_memory_delta_l
       IF THIS.`_count[`key_limits_max_memory] < THIS.`_count[`key_limits_memory]:
         THIS.`_count[`key_limits_max_memory] = THIS.`_count[`key_limits_memory]
@@ -4212,7 +4212,7 @@ CLASS `InterpM:
         `status_code = 0
         return [`INTERP_STATE_ENDED, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter), `status_code]
       ENDIF
-      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_i])) AND (THIS.`_limits[`key_limits_memory_i] <= THIS.`_count[`key_limits_memory_i])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])) OR (`not(`isnull(THIS.`_limits[`key_limits_time])) AND (THIS.`_limits[`key_limits_time] <= THIS.`_count[`key_limits_time])):
+      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_n])) AND (THIS.`_limits[`key_limits_memory_n] <= THIS.`_count[`key_limits_memory_n])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])) OR (`not(`isnull(THIS.`_limits[`key_limits_time])) AND (THIS.`_limits[`key_limits_time] <= THIS.`_count[`key_limits_time])):
         return [`INTERP_STATE_LIMIT, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter)]
       ENDIF
     ENDIF
@@ -4243,8 +4243,8 @@ CLASS `InterpM:
         ENDIF
         `was_procedure = TRUE
       ENDIF
-      THIS.`_count[`key_limits_memory] += (THIS.`_memory_delta_l+THIS.`_memory_delta_i)
-      THIS.`_count[`key_limits_memory_i] += THIS.`_memory_delta_i
+      THIS.`_count[`key_limits_memory] += (THIS.`_memory_delta_l+THIS.`_memory_delta_n)
+      THIS.`_count[`key_limits_memory_n] += THIS.`_memory_delta_n
       THIS.`_count[`key_limits_memory_l] += THIS.`_memory_delta_l
       IF THIS.`_count[`key_limits_max_memory] < THIS.`_count[`key_limits_memory]:
         THIS.`_count[`key_limits_max_memory] = THIS.`_count[`key_limits_memory]
@@ -4267,7 +4267,7 @@ CLASS `InterpM:
         `status_code = 0
         return [`INTERP_STATE_ENDED, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter), `status_code]
       ENDIF
-      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_i])) AND (THIS.`_limits[`key_limits_memory_i] <= THIS.`_count[`key_limits_memory_i])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])) OR (`not(`isnull(THIS.`_limits[`key_limits_time])) AND (THIS.`_limits[`key_limits_time] <= THIS.`_count[`key_limits_time])):
+      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_n])) AND (THIS.`_limits[`key_limits_memory_n] <= THIS.`_count[`key_limits_memory_n])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])) OR (`not(`isnull(THIS.`_limits[`key_limits_time])) AND (THIS.`_limits[`key_limits_time] <= THIS.`_count[`key_limits_time])):
         return [`INTERP_STATE_LIMIT, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter)]
       ENDIF
     ENDWHILE
@@ -4275,7 +4275,7 @@ CLASS `InterpM:
   METHOD `_interpStmt(`instruction):
     THIS.`_error = NULL
     THIS.`_status_code = NULL
-    THIS.`_memory_delta_i = 0
+    THIS.`_memory_delta_n = 0
     THIS.`_memory_delta_l = 0
     THIS.`_procedure = NULL
     VAR `opcode = `instruction[0]
@@ -4371,7 +4371,7 @@ CLASS `InterpM:
         ENDIF
         `popvalue = `pick(`evalue[1], `lindex[1])
       ENDIF
-      VAR `delta_cost_i = -`utils.`isizeEvalue(`popvalue)
+      VAR `delta_cost_n = -`utils.`nsizeEvalue(`popvalue)
       VAR `delta_cost_l = -`utils.`lsizeEvalue(`popvalue)
       VAR `popexprs
       VAR `popevalue
@@ -4379,20 +4379,20 @@ CLASS `InterpM:
       VAR `j
       IF `popvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
-        `evalue[3] += `delta_cost_i
+        `evalue[3] += `delta_cost_n
       ELSE:
         `popexprs = `popvarexprs[2]
         `popevalue = `that.`getVar(`popvar)
         `popevalue[2] += `delta_cost_l
-        `popevalue[3] += `delta_cost_i
+        `popevalue[3] += `delta_cost_n
         FORINCR `j(0 `length(`popexprs)):
           `poplindex = `that.`_interpExpr(`popexprs[`j])
           `popevalue = `popevalue[1][`poplindex[1]]
           `popevalue[2] += `delta_cost_l
-          `popevalue[3] += `delta_cost_i
+          `popevalue[3] += `delta_cost_n
         ENDFOR
       ENDIF
-      `that.`_memory_delta_i += `delta_cost_i
+      `that.`_memory_delta_n += `delta_cost_n
       `that.`_memory_delta_l += `delta_cost_l
       `that.`_addChangedVar(`popvar)
       return `popvalue
@@ -4426,7 +4426,7 @@ CLASS `InterpM:
       ENDIF
       VAR `unqvar = `unqvarexprs[1]
       VAR `unqvalue = `unqueue(`evalue[1])
-      VAR `delta_cost_i = -`utils.`isizeEvalue(`unqvalue)
+      VAR `delta_cost_n = -`utils.`nsizeEvalue(`unqvalue)
       VAR `delta_cost_l = -`utils.`lsizeEvalue(`unqvalue)
       VAR `unqexprs
       VAR `unqevalue
@@ -4434,20 +4434,20 @@ CLASS `InterpM:
       VAR `j
       IF `unqvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
-        `evalue[3] += `delta_cost_i
+        `evalue[3] += `delta_cost_n
       ELSE:
         `unqexprs = `unqvarexprs[2]
         `unqevalue = `that.`getVar(`unqvar)
         `unqevalue[2] += `delta_cost_l
-        `unqevalue[3] += `delta_cost_i
+        `unqevalue[3] += `delta_cost_n
         FORINCR `j(0 `length(`unqexprs)):
           `unqlindex = `that.`_interpExpr(`unqexprs[`j])
           `unqevalue = `unqevalue[1][`unqlindex[1]]
           `unqevalue[2] += `delta_cost_l
-          `unqevalue[3] += `delta_cost_i
+          `unqevalue[3] += `delta_cost_n
         ENDFOR
       ENDIF
-      `that.`_memory_delta_i += `delta_cost_i
+      `that.`_memory_delta_n += `delta_cost_n
       `that.`_memory_delta_l += `delta_cost_l
       `that.`_addChangedVar(`unqvar)
       return `unqvalue
@@ -4476,15 +4476,15 @@ CLASS `InterpM:
     IF `isnull(`evalue):
       return
     ENDIF
-    VAR `delta_cost_i = `utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = `utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = `utils.`lsizeEvalue(`evalue)
     VAR `old_evalue = THIS.`getVar(`vvar)
     IF `not(`isnull(`old_evalue)):
-      `delta_cost_i += -`utils.`isizeEvalue(`old_evalue)
+      `delta_cost_n += -`utils.`nsizeEvalue(`old_evalue)
       `delta_cost_l += -`utils.`lsizeEvalue(`old_evalue)
     ENDIF
     THIS.`_addVar(`vvar, `evalue)
-    THIS.`_memory_delta_i += `delta_cost_i
+    THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`vvar)
     THIS.`_pcounter = `next_pcounter
@@ -4538,16 +4538,16 @@ CLASS `InterpM:
     IF `isnull(`evalue):
       return
     ENDIF
-    VAR `delta_cost_i = -`utils.`isizeEvalue(`vvalue[1][`lindexi])+`utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = -`utils.`nsizeEvalue(`vvalue[1][`lindexi])+`utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = -`utils.`lsizeEvalue(`vvalue[1][`lindexi])+`utils.`lsizeEvalue(`evalue)
     `vvalue[1][`lindexi] = `evalue
-    IF (`delta_cost_i != 0) OR (`delta_cost_l != 0):
+    IF (`delta_cost_n != 0) OR (`delta_cost_l != 0):
       `push(`vvalues, `vvalue)
       FORINCR `j(0 `length(`vvalues)):
         `vvalues[`j][2] += `delta_cost_l
-        `vvalues[`j][3] += `delta_cost_i
+        `vvalues[`j][3] += `delta_cost_n
       ENDFOR
-      THIS.`_memory_delta_i += `delta_cost_i
+      THIS.`_memory_delta_n += `delta_cost_n
       THIS.`_memory_delta_l += `delta_cost_l
     ENDIF
     THIS.`_addChangedVar(`vvar)
@@ -4680,7 +4680,7 @@ CLASS `InterpM:
     IF `isnull(`evalue):
       return
     ENDIF
-    VAR `delta_cost_i = `utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = `utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = `utils.`lsizeEvalue(`evalue)
     VAR `lindex
     IF `isnull(`index):
@@ -4710,20 +4710,20 @@ CLASS `InterpM:
     VAR `j
     IF `pvarexprs[0] == `OPCODE_VAR:
       `pvalue[2] += `delta_cost_l
-      `pvalue[3] += `delta_cost_i
+      `pvalue[3] += `delta_cost_n
     ELSE:
       `pexprs = `pvarexprs[2]
       `pevalue = THIS.`getVar(`pvar)
       `pevalue[2] += `delta_cost_l
-      `pevalue[3] += `delta_cost_i
+      `pevalue[3] += `delta_cost_n
       FORINCR `j(0 `length(`pexprs)):
         `plindex = THIS.`_interpExpr(`pexprs[`j])
         `pevalue = `pevalue[1][`plindex[1]]
         `pevalue[2] += `delta_cost_l
-        `pevalue[3] += `delta_cost_i
+        `pevalue[3] += `delta_cost_n
       ENDFOR
     ENDIF
-    THIS.`_memory_delta_i += `delta_cost_i
+    THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`pvar)
     THIS.`_pcounter = `next_pcounter
@@ -4745,7 +4745,7 @@ CLASS `InterpM:
     IF `isnull(`evalue):
       return
     ENDIF
-    VAR `delta_cost_i = `utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = `utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = `utils.`lsizeEvalue(`evalue)
     `queue(`qvalue[1], `evalue)
     VAR `qexprs
@@ -4754,20 +4754,20 @@ CLASS `InterpM:
     VAR `j
     IF `qvarexprs[0] == `OPCODE_VAR:
       `qvalue[2] += `delta_cost_l
-      `qvalue[3] += `delta_cost_i
+      `qvalue[3] += `delta_cost_n
     ELSE:
       `qexprs = `qvarexprs[2]
       `qevalue = THIS.`getVar(`qvar)
       `qevalue[2] += `delta_cost_l
-      `qevalue[3] += `delta_cost_i
+      `qevalue[3] += `delta_cost_n
       FORINCR `j(0 `length(`qexprs)):
         `qlindex = THIS.`_interpExpr(`qexprs[`j])
         `qevalue = `qevalue[1][`qlindex[1]]
         `qevalue[2] += `delta_cost_l
-        `qevalue[3] += `delta_cost_i
+        `qevalue[3] += `delta_cost_n
       ENDFOR
     ENDIF
-    THIS.`_memory_delta_i += `delta_cost_i
+    THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`qvar)
     THIS.`_pcounter = `next_pcounter
@@ -4784,10 +4784,10 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("UNDEFINED"+" "+"VARIABLE")
       return
     ENDIF
-    VAR `delta_cost_i = -`utils.`isizeEvalue(`evalue)
+    VAR `delta_cost_n = -`utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = -`utils.`lsizeEvalue(`evalue)
     THIS.`_removeVar(`vvar)
-    THIS.`_memory_delta_i += `delta_cost_i
+    THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`vvar)
     THIS.`_pcounter = `next_pcounter
@@ -4834,7 +4834,7 @@ CLASS `InterpM:
 
   METHOD `_iexprList(`expression):
     VAR `exprs = `expression[1]
-    VAR `isize = 0
+    VAR `nsize = 0
     VAR `lsize = 1
     VAR `lvalue = []
     VAR `j
@@ -4845,10 +4845,10 @@ CLASS `InterpM:
         return NULL
       ENDIF
       `push(`lvalue, `evalue)
-      `isize += `utils.`isizeEvalue(`evalue)
+      `nsize += `utils.`nsizeEvalue(`evalue)
       `lsize += `utils.`lsizeEvalue(`evalue)
     ENDFOR
-    return [`key_interp_list, `lvalue, `lsize, `isize]
+    return [`key_interp_list, `lvalue, `lsize, `nsize]
 
   METHOD `_iexprOr(`expression):
     VAR `exprs = `expression[1]
@@ -4994,7 +4994,7 @@ CLASS `InterpM:
     VAR `evalue2
     VAR `evalue
     VAR `value
-    VAR `isize
+    VAR `nsize
     VAR `lsize
     IF `evalue1[0] == `key_interp_number:
       `evalue1i = `evalue1[1]
@@ -5020,12 +5020,12 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
         return NULL
       ENDIF
-      `isize = `utils.`isizeEvalue(`evalue)
+      `nsize = `utils.`nsizeEvalue(`evalue)
       `lsize = `utils.`lsizeEvalue(`evalue)
       `value = `concat(`evalue[1], `utils.`deepCopy(`evalue2[1]))
-      `isize += `utils.`isizeEvalue(`evalue2)
+      `nsize += `utils.`nsizeEvalue(`evalue2)
       `lsize += `utils.`lsizeEvalue(`evalue2)-1
-      return [`key_interp_list, `value, `lsize, `isize]
+      return [`key_interp_list, `value, `lsize, `nsize]
     ENDIF
     THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
     return NULL
@@ -5176,7 +5176,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
       return NULL
     ENDIF
-    VAR `value = `projection(`utils.`lsizeEvalue(`evalue), `utils.`isizeEvalue(`evalue))
+    VAR `value = `projection(`utils.`lsizeEvalue(`evalue), `utils.`nsizeEvalue(`evalue))
     THIS.`_tmpNumber[1] = `value
     return THIS.`_tmpNumber
 
@@ -6764,11 +6764,11 @@ CLASS Prequel:
       THIS.`_error = "INVALID"+" "+"VARVALUE"
       return NULL
     ENDIF
-    VAR `isize = `utils.`isizeEvalue(`evalue)
+    VAR `nsize = `utils.`nsizeEvalue(`evalue)
     VAR `lsize = `utils.`lsizeEvalue(`evalue)
     VAR `cost = {}
-    `cost["memory"] = `lsize+`isize
-    `cost["memory_i"] = `isize
+    `cost["memory"] = `lsize+`nsize
+    `cost["memory_n"] = `nsize
     `cost["memory_l"] = `lsize
     return `cost
 
