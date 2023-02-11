@@ -2693,14 +2693,14 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `literal
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_DECIMAL:
-      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10))]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_HEXADECIMAL:
-      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16))]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_BINARY:
       `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2))]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LPAR:
       `lidx_ariexpr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2842,14 +2842,14 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `literal
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_DECIMAL:
-      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 10))]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_HEXADECIMAL:
-      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`lexer.`tokenValue(`tokens[`lidxs[`lidx]]), 16))]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_BINARY:
       `literal = `lexer.`tokenValue(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2) & 0xffffffff)]]
+      return [`lidx+1, [`OPCODE_NUMBER, `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2))]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LPAR:
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -3700,7 +3700,7 @@ FUNC `func_iexpr_rel_op_ge(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_unary_op_neg(`v):
-  return `int32((-`v) & 0xffffffff)
+  return `int32(-`v)
 ENDFUNC
 
 FUNC `func_iexpr_unary_op_bit_not(`v):
@@ -3708,11 +3708,11 @@ FUNC `func_iexpr_unary_op_bit_not(`v):
 ENDFUNC
 
 FUNC `func_iexpr_add_op_plus(`v1 `v2):
-  return `int32((`v1+`v2) & 0xffffffff)
+  return `int32(`v1+`v2)
 ENDFUNC
 
 FUNC `func_iexpr_add_op_minus(`v1 `v2):
-  return `int32((`v1-`v2) & 0xffffffff)
+  return `int32(`v1-`v2)
 ENDFUNC
 
 FUNC `func_iexpr_add_op_bit_or(`v1 `v2):
@@ -3724,19 +3724,19 @@ FUNC `func_iexpr_add_op_bit_xor(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_mul(`v1 `v2):
-  return `int32((((`v1 & 0xffff) * (`v2 & 0xffff)) + ((`v1 & 0xffff0000) * (`v2 & 0xffff)) + ((`v1 & 0xffff) * (`v2 & 0xffff0000))) & 0xffffffff)
+  return `int32(((`v1 & 0xffff) * (`v2 & 0xffff)) + ((`v1 & 0xffff0000) * (`v2 & 0xffff)) + ((`v1 & 0xffff) * (`v2 & 0xffff0000)))
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_div(`v1 `v2):
-  return `int32(`trunc(`v1 / `v2) & 0xffffffff)
+  return `int32(`trunc(`v1 / `v2))
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_idv(`v1 `v2):
-  return `int32(`trunc(`v1 / `v2) & 0xffffffff)
+  return `int32(`trunc(`v1 / `v2))
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_mod(`v1 `v2):
-  return `int32((`v1 % `v2) & 0xffffffff)
+  return `int32(`v1 % `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_and(`v1 `v2):
@@ -4306,7 +4306,7 @@ CLASS `InterpM:
       VAR `evalue
       VAR `r
       IF `isnull(`expr):
-        `r = `int32(`that.`_rnd32b[0]() | 0)
+        `r = `int32(`that.`_rnd32b[0]())
         return `utils.`encodeData(`r)
       ENDIF
       `evalue = `that.`_interpExpr(`expr)
@@ -6609,7 +6609,7 @@ CLASS Prequel:
       THIS.`_error = "NOT"+" "+"RUNNING"+" "+"INSTANCE"
       return NULL
     ENDIF
-    IF `not(`is_type_num(`get_type(`status_code))) OR (`status_code != `trunc(`status_code)) OR (`status_code != `int32(`status_code & 0xffffffff)):
+    IF `not(`is_type_num(`get_type(`status_code))) OR (`status_code != `trunc(`status_code)) OR (`status_code != `int32(`status_code)):
       THIS.`_error = "INVALID"+" "+"STATUS"+" "+"CODE"
       return NULL
     ENDIF
