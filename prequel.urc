@@ -1124,18 +1124,17 @@ CLASS `Lexer:
           `push(`tokens, [`key_token_ASSIGN_OP_DIV, `col, "/="])
           `col += 2
           continue
-        ENDIF
-        `push(`tokens, [`key_token_DIV, `col, "/"])
-        `col += 1
-        continue
-      ENDIF
-      IF `line[`col] == "\\":
-        IF `line[`col+1] == "=":
-          `push(`tokens, [`key_token_ASSIGN_OP_IDV, `col, "\\="])
+        ELSIF `line[`col+1] == "/":
+          IF `line[`col+2] == "=":
+            `push(`tokens, [`key_token_ASSIGN_OP_IDV, `col, "//="])
+            `col += 3
+            continue
+          ENDIF
+          `push(`tokens, [`key_token_IDV, `col, "//"])
           `col += 2
           continue
         ENDIF
-        `push(`tokens, [`key_token_IDV, `col, "\\"])
+        `push(`tokens, [`key_token_DIV, `col, "/"])
         `col += 1
         continue
       ENDIF
