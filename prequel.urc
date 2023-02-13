@@ -3013,13 +3013,14 @@ CLASS `UtilsEditorM:
     THIS.`_control_tokens_if = [`key_token_IF, `key_token_ELSIF, `key_token_ELSE, `key_token_ENDIF]
     THIS.`_control_tokens_repeat = [`key_token_REPEAT, `key_token_ENDREP]
     THIS.`_control_tokens_repstop = [`key_token_REPNEXT, `key_token_REPSTOP]
+    VAR `indent_spaces = 1
     THIS.`_indent_stmts = {}
-    THIS.`_indent_stmts[`key_token_IF] = [0, 2]
-    THIS.`_indent_stmts[`key_token_ELSIF] = [-2, 2]
-    THIS.`_indent_stmts[`key_token_ELSE] = [-2, 2]
-    THIS.`_indent_stmts[`key_token_ENDIF] = [-2, 0]
-    THIS.`_indent_stmts[`key_token_REPEAT] = [0, 2]
-    THIS.`_indent_stmts[`key_token_ENDREP] = [-2, 0]
+    THIS.`_indent_stmts[`key_token_IF] = [0, `indent_spaces]
+    THIS.`_indent_stmts[`key_token_ELSIF] = [-`indent_spaces, `indent_spaces]
+    THIS.`_indent_stmts[`key_token_ELSE] = [-`indent_spaces, `indent_spaces]
+    THIS.`_indent_stmts[`key_token_ENDIF] = [-`indent_spaces, 0]
+    THIS.`_indent_stmts[`key_token_REPEAT] = [0, `indent_spaces]
+    THIS.`_indent_stmts[`key_token_ENDREP] = [-`indent_spaces, 0]
 
   METHOD `lineastLine(`line_ast):
     return `line_ast[0]
