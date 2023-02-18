@@ -1,3 +1,6 @@
+COMMENT FP class available at https://github.com/simoesh/FixPointCS/tree/urcode
+VAR `fp = NEW FP()
+
 CLASS `ResourceIds:
 
   METHOD_INIT():
@@ -108,7 +111,7 @@ CLASS `Utils:
     return TRUE
 
   METHOD `isInt32b(`val):
-    return (`is_type_num(`get_type(`val)) AND `trunc(`val) == `val AND `val >= -2147483648 AND `val <= 2147483647)
+    return (`is_type_num(`get_type(`val)) AND (`val == `trunc(`val)) AND (`val == `int32(`val)))
 
   METHOD `isArgData(`arg):
     return (`is_type_list(`get_type(`arg)) AND `length(`arg) == 2 AND `is_type_num(`get_type(`arg[0])) AND `arg[0] >= `ARG_TYPE_NUMBER AND `arg[0] <= `ARG_TYPE_MODNAME)
@@ -225,7 +228,7 @@ CLASS `Utils:
     IF `is_type_num(`data_type) OR `is_type_bool(`data_type):
       `nsize = 1
       `lsize = 0
-      return [`key_interp_number, `trunc(`data), `lsize, `nsize]
+      return [`key_interp_number, `fp.FromFloat(`data), `lsize, `nsize]
     ENDIF
     VAR `j
     IF `is_type_list(`data_type):
@@ -258,7 +261,7 @@ CLASS `Utils:
         `nsize = 1
         `lsize = 0
         `push(`evalue, `key_interp_number)
-        `push(`evalue, `trunc(`data))
+        `push(`evalue, `fp.FromFloat(`data))
         `push(`evalue, `lsize)
         `push(`evalue, `nsize)
       ELSE:
@@ -269,7 +272,7 @@ CLASS `Utils:
           `evalue[2] = `lsize
           `evalue[3] = `nsize
         ENDIF
-        `evalue[1] = `trunc(`data)
+        `evalue[1] = `fp.FromFloat(`data)
       ENDIF
       return TRUE
     ENDIF
@@ -361,7 +364,7 @@ CLASS `Utils:
       return NULL
     ENDIF
     IF `edata[0] == `key_interp_number:
-      return [`ARG_TYPE_NUMBER, `trunc(`edata[1])]
+      return [`ARG_TYPE_NUMBER, `fp.ToFloat(`edata[1])]
     ENDIF
     IF `edata[0] == `key_interp_list:
       IF `not(`is_type_list(`get_type(`edata[1]))):
@@ -417,7 +420,7 @@ CLASS `Utils:
       return "<NULL>"
     ENDIF
     IF `evalue[0] == `key_interp_number:
-      return `str(`evalue[1])
+      return `str(`fp.ToFloat(`evalue[1]))
     ENDIF
     IF `evalue[0] == `key_interp_list:
       IF `length(`evalue[1]) == 0:
@@ -494,37 +497,38 @@ VAR `key_token_LPAR = 47
 VAR `key_token_LSIZE = 48
 VAR `key_token_LSQR = 49
 VAR `key_token_LT = 50
-VAR `key_token_MINUS = 51
-VAR `key_token_MOD = 52
-VAR `key_token_MODULE_NAME = 53
-VAR `key_token_MUL = 54
-VAR `key_token_NE = 55
-VAR `key_token_NEWLINE = 56
-VAR `key_token_NOT = 57
-VAR `key_token_NSIZE = 58
-VAR `key_token_NUMBER = 59
-VAR `key_token_OR = 60
-VAR `key_token_PLUS = 61
-VAR `key_token_POP = 62
-VAR `key_token_POSTERROR = 63
-VAR `key_token_PROCEDURE = 64
-VAR `key_token_PUSH = 65
-VAR `key_token_QUALVAR = 66
-VAR `key_token_QUEUE = 67
-VAR `key_token_RANDOM = 68
-VAR `key_token_REPEAT = 69
-VAR `key_token_REPNEXT = 70
-VAR `key_token_REPSTOP = 71
-VAR `key_token_RPAR = 72
-VAR `key_token_RSQR = 73
-VAR `key_token_SIZE = 74
-VAR `key_token_SPACES = 75
-VAR `key_token_STRING = 76
-VAR `key_token_SUFFIX = 77
-VAR `key_token_UNASSIGN = 78
-VAR `key_token_UNDEFINED = 79
-VAR `key_token_UNQUEUE = 80
-VAR `key_token_VAR = 81
+VAR `key_token_MATHSYMB = 51
+VAR `key_token_MINUS = 52
+VAR `key_token_MOD = 53
+VAR `key_token_MODULE_NAME = 54
+VAR `key_token_MUL = 55
+VAR `key_token_NE = 56
+VAR `key_token_NEWLINE = 57
+VAR `key_token_NOT = 58
+VAR `key_token_NSIZE = 59
+VAR `key_token_NUMBER = 60
+VAR `key_token_OR = 61
+VAR `key_token_PLUS = 62
+VAR `key_token_POP = 63
+VAR `key_token_POSTERROR = 64
+VAR `key_token_PROCEDURE = 65
+VAR `key_token_PUSH = 66
+VAR `key_token_QUALVAR = 67
+VAR `key_token_QUEUE = 68
+VAR `key_token_RANDOM = 69
+VAR `key_token_REPEAT = 70
+VAR `key_token_REPNEXT = 71
+VAR `key_token_REPSTOP = 72
+VAR `key_token_RPAR = 73
+VAR `key_token_RSQR = 74
+VAR `key_token_SIZE = 75
+VAR `key_token_SPACES = 76
+VAR `key_token_STRING = 77
+VAR `key_token_SUFFIX = 78
+VAR `key_token_UNASSIGN = 79
+VAR `key_token_UNDEFINED = 80
+VAR `key_token_UNQUEUE = 81
+VAR `key_token_VAR = 82
 
 VAR `SUFFIX_ = 0
 VAR `SUFFIX_LENGTH = 1
@@ -560,6 +564,28 @@ CLASS `Lexer:
     `push(THIS.`_reserved_words, "PROCEDURE")
     `push(THIS.`_reserved_words, "RANDOM")
     `push(THIS.`_reserved_words, "UNDEFINED")
+    `push(THIS.`_reserved_words, "ABS")
+    `push(THIS.`_reserved_words, "ACOS")
+    `push(THIS.`_reserved_words, "ASIN")
+    `push(THIS.`_reserved_words, "ATAN")
+    `push(THIS.`_reserved_words, "ATAN2")
+    `push(THIS.`_reserved_words, "CEIL")
+    `push(THIS.`_reserved_words, "COS")
+    `push(THIS.`_reserved_words, "E")
+    `push(THIS.`_reserved_words, "EXP")
+    `push(THIS.`_reserved_words, "EXP2")
+    `push(THIS.`_reserved_words, "FLOOR")
+    `push(THIS.`_reserved_words, "LOG")
+    `push(THIS.`_reserved_words, "LOG2")
+    `push(THIS.`_reserved_words, "MAX")
+    `push(THIS.`_reserved_words, "MIN")
+    `push(THIS.`_reserved_words, "PI")
+    `push(THIS.`_reserved_words, "POW")
+    `push(THIS.`_reserved_words, "ROUND")
+    `push(THIS.`_reserved_words, "SIGN")
+    `push(THIS.`_reserved_words, "SIN")
+    `push(THIS.`_reserved_words, "SQRT")
+    `push(THIS.`_reserved_words, "TAN")
 
     THIS.`_reserved_vlast_words = []
     `push(THIS.`_reserved_vlast_words, "UNASSIGN")
@@ -632,6 +658,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "LSIZE")
     `push(THIS.`_token_strs, "LSQR")
     `push(THIS.`_token_strs, "LT")
+    `push(THIS.`_token_strs, "MATHSYMB")
     `push(THIS.`_token_strs, "MINUS")
     `push(THIS.`_token_strs, "MOD")
     `push(THIS.`_token_strs, "MODULE_NAME")
@@ -958,12 +985,33 @@ CLASS `Lexer:
           `col += `tlen
           continue
         ENDIF
+        `tname = "ROUND"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
       ENDIF
       IF `ic == "L":
         `tname = "LIST"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_LIST, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "LOG"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "LOG2"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -976,12 +1024,61 @@ CLASS `Lexer:
           `col += `tlen
           continue
         ENDIF
+        `tname = "ABS"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "ACOS"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "ASIN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "ATAN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "ATAN2"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
       ENDIF
       IF `ic == "P":
         `tname = "PROCEDURE"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_PROCEDURE, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "PI"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "POW"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -1019,6 +1116,27 @@ CLASS `Lexer:
         IF THIS.`isTokenEndOther(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_EMPTY, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "E"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "EXP"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "EXP2"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -1360,8 +1478,8 @@ CLASS `Lexer:
         WHILE ((`line[`col] >= "0") AND (`line[`col] <= "9")) OR ((`line[`col] >= "a") AND (`line[`col] <= "f")) OR ((`line[`col] >= "A") AND (`line[`col] <= "F")):
           `col += 1
         ENDWHILE
-        IF `col-`start > 10:
-          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "HEXADECIMAL"+" "+"NUMBER"+" "+"GREATER"+" "+"THAN"+" "+"32"+" "+"BITS"])
+        IF `col-`start > 6:
+          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "HEXADECIMAL"+" "+"NUMBER"+" "+"EXCEEDS"+" "+"SIGNED"+" "+"16"+" "+"BITS"])
           `start = `col
           WHILE `line[`col] != `chr_lf:
             `col += 1
@@ -1369,9 +1487,22 @@ CLASS `Lexer:
           `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
           break
         ENDIF
-        `literal = `substring(`line, `start, `col)
-        `literal = `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 16))
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `literal])
+        IF (`line[`col] == ".") AND (((`line[`col+1] >= "0") AND (`line[`col+1] <= "9")) OR ((`line[`col+1] >= "a") AND (`line[`col+1] <= "f")) OR ((`line[`col+1] >= "A") AND (`line[`col+1] <= "F"))):
+          `col += 2
+          WHILE ((`line[`col] >= "0") AND (`line[`col] <= "9")) OR ((`line[`col] >= "a") AND (`line[`col] <= "f")) OR ((`line[`col] >= "A") AND (`line[`col] <= "F")):
+            `col += 1
+          ENDWHILE
+        ENDIF
+        `literal = `split(`substring(`line, `start, `col), ".")
+        `literal[0] = `parse_int(`substring(`literal[0], 2, `length(`literal[0])), 16)
+        IF `length(`literal) > 1:
+          `literal[1] = `substring(`literal[1], 0, 4)
+          WHILE `length(`literal[1]) < 4:
+            `literal[1] += "0"
+          ENDWHILE
+          `literal[0] += `parse_int(`literal[1], 16)/65536.0
+        ENDIF
+        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp.FromFloat(`literal[0])])
         continue
       ENDIF
       IF (`line[`col] == "0") AND (`lowercase(`line[`col+1]) == "b") AND (`line[`col+2] >= "0") AND (`line[`col+2] <= "1"):
@@ -1380,8 +1511,8 @@ CLASS `Lexer:
         WHILE (`line[`col] >= "0") AND (`line[`col] <= "1"):
           `col += 1
         ENDWHILE
-        IF `col-`start > 34:
-          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "BINARY"+" "+"NUMBER"+" "+"GREATER"+" "+"THAN"+" "+"32"+" "+"BITS"])
+        IF `col-`start > 18:
+          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "BINARY"+" "+"NUMBER"+" "+"EXCEEDS"+" "+"SIGNED"+" "+"16"+" "+"BITS"])
           `start = `col
           WHILE `line[`col] != `chr_lf:
             `col += 1
@@ -1389,9 +1520,22 @@ CLASS `Lexer:
           `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
           break
         ENDIF
-        `literal = `substring(`line, `start, `col)
-        `literal = `int32(`parse_int(`substring(`literal, 2, `length(`literal)), 2))
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `literal])
+        IF (`line[`col] == ".") AND (`line[`col+1] >= "0") AND (`line[`col+1] <= "1"):
+          `col += 2
+          WHILE (`line[`col] >= "0") AND (`line[`col] <= "1"):
+            `col += 1
+          ENDWHILE
+        ENDIF
+        `literal = `split(`substring(`line, `start, `col), ".")
+        `literal[0] = `parse_int(`substring(`literal[0], 2, `length(`literal[0])), 2)
+        IF `length(`literal) > 1:
+          `literal[1] = `substring(`literal[1], 0, 16)
+          WHILE `length(`literal[1]) < 16:
+            `literal[1] += "0"
+          ENDWHILE
+          `literal[0] += `parse_int(`literal[1], 2)/65536.0
+        ENDIF
+        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp.FromFloat(`literal[0])])
         continue
       ENDIF
       IF (`line[`col] >= "0") AND (`line[`col] <= "9"):
@@ -1408,8 +1552,8 @@ CLASS `Lexer:
           `nonzero = `j
           break
         ENDFOR
-        IF (`col-`nonzero > 10) OR (`parse_int(`substring(`line, `start, `col), 10) > 0xffffffff):
-          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "NUMBER"+" "+"GREATER"+" "+"THAN"+" "+"32"+" "+"BITS"])
+        IF (`col-`nonzero > 5) OR (`parse_int(`substring(`line, `start, `col), 10) > 0xffff):
+          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "NUMBER"+" "+"EXCEEDS"+" "+"SIGNED"+" "+"16"+" "+"BITS"])
           `start = `col
           WHILE `line[`col] != `chr_lf:
             `col += 1
@@ -1417,8 +1561,14 @@ CLASS `Lexer:
           `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
           break
         ENDIF
-        `literal = `int32(`parse_int(`substring(`line, `start, `col), 10))
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `literal])
+        IF (`line[`col] == ".") AND (`line[`col+1] >= "0") AND (`line[`col+1] <= "9"):
+          `col += 2
+          WHILE (`line[`col] >= "0") AND (`line[`col] <= "9"):
+            `col += 1
+          ENDWHILE
+        ENDIF
+        `literal = `parse_float(`substring(`line, `start, `col))
+        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp.FromFloat(`literal)])
         continue
       ENDIF
       IF `ic == "D":
@@ -1426,6 +1576,79 @@ CLASS `Lexer:
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_DEBUGL, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+      ENDIF
+      IF `ic == "S":
+        `tname = "SQRT"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "SIGN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "SIN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+      ENDIF
+      IF `ic == "C":
+        `tname = "CEIL"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "COS"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+      ENDIF
+      IF `ic == "F":
+        `tname = "FLOOR"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+      ENDIF
+      IF `ic == "M":
+        `tname = "MAX"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "MIN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
+      ENDIF
+      IF `ic == "T":
+        `tname = "TAN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -1518,61 +1741,81 @@ VAR `UNARYOP_BIT_NOT = 3
 
 VAR `OPCODE_ERROR = 0
 VAR `OPCODE_SUFFIX = 1
-VAR `OPCODE_AND = 2
-VAR `OPCODE_ASSIGN_OP = 3
-VAR `OPCODE_ASSIGN_OP_RANDOM = 4
-VAR `OPCODE_ASSIGN_POP = 5
-VAR `OPCODE_ASSIGN_UNQUEUE = 6
-VAR `OPCODE_BIT_AND = 7
-VAR `OPCODE_BIT_NOT = 8
-VAR `OPCODE_BIT_OR = 9
-VAR `OPCODE_BIT_SHL = 10
-VAR `OPCODE_BIT_SHR = 11
-VAR `OPCODE_BIT_XOR = 12
-VAR `OPCODE_BY_REF = 13
-VAR `OPCODE_DEBUGL = 14
-VAR `OPCODE_DIV = 15
-VAR `OPCODE_ELSE = 16
-VAR `OPCODE_ELSIF = 17
-VAR `OPCODE_ENDIF = 18
-VAR `OPCODE_ENDREP = 19
-VAR `OPCODE_EQ = 20
-VAR `OPCODE_GE = 21
-VAR `OPCODE_GT = 22
-VAR `OPCODE_IDV = 23
-VAR `OPCODE_IF = 24
-VAR `OPCODE_INDEXOF_VAR = 25
-VAR `OPCODE_IS_NOT_VAR = 26
-VAR `OPCODE_IS_VAR = 27
-VAR `OPCODE_LE = 28
-VAR `OPCODE_LENGTH_VAR = 29
-VAR `OPCODE_LIST = 30
-VAR `OPCODE_LIST_AT_QUALVAR = 31
-VAR `OPCODE_LIST_AT_VAR = 32
-VAR `OPCODE_LSIZE_VAR = 33
-VAR `OPCODE_LT = 34
-VAR `OPCODE_MINUS = 35
-VAR `OPCODE_MOD = 36
-VAR `OPCODE_MODULE_NAME = 37
-VAR `OPCODE_MUL = 38
-VAR `OPCODE_NE = 39
-VAR `OPCODE_NEG = 40
-VAR `OPCODE_NOT = 41
-VAR `OPCODE_NSIZE_VAR = 42
-VAR `OPCODE_NUMBER = 43
-VAR `OPCODE_OR = 44
-VAR `OPCODE_PLUS = 45
-VAR `OPCODE_PROCEDURE = 46
-VAR `OPCODE_PUSH = 47
-VAR `OPCODE_QUALVAR = 48
-VAR `OPCODE_QUEUE = 49
-VAR `OPCODE_REPEAT = 50
-VAR `OPCODE_REPNEXT = 51
-VAR `OPCODE_REPSTOP = 52
-VAR `OPCODE_SIZE_VAR = 53
-VAR `OPCODE_STRING = 54
-VAR `OPCODE_UNASSIGN = 55
-VAR `OPCODE_VAR = 56
+VAR `OPCODE_ABS = 2
+VAR `OPCODE_ACOS = 3
+VAR `OPCODE_AND = 4
+VAR `OPCODE_ASIN = 5
+VAR `OPCODE_ATAN = 6
+VAR `OPCODE_ATAN2 = 7
+VAR `OPCODE_ASSIGN_OP = 8
+VAR `OPCODE_ASSIGN_OP_RANDOM = 9
+VAR `OPCODE_ASSIGN_POP = 10
+VAR `OPCODE_ASSIGN_UNQUEUE = 11
+VAR `OPCODE_BIT_AND = 12
+VAR `OPCODE_BIT_NOT = 13
+VAR `OPCODE_BIT_OR = 14
+VAR `OPCODE_BIT_SHL = 15
+VAR `OPCODE_BIT_SHR = 16
+VAR `OPCODE_BIT_XOR = 17
+VAR `OPCODE_BY_REF = 18
+VAR `OPCODE_CEIL = 19
+VAR `OPCODE_COS = 20
+VAR `OPCODE_DEBUGL = 21
+VAR `OPCODE_DIV = 22
+VAR `OPCODE_ELSE = 23
+VAR `OPCODE_ELSIF = 24
+VAR `OPCODE_ENDIF = 25
+VAR `OPCODE_ENDREP = 26
+VAR `OPCODE_EQ = 27
+VAR `OPCODE_EXP = 28
+VAR `OPCODE_EXP2 = 29
+VAR `OPCODE_FLOOR = 30
+VAR `OPCODE_GE = 31
+VAR `OPCODE_GT = 32
+VAR `OPCODE_IDV = 33
+VAR `OPCODE_IF = 34
+VAR `OPCODE_INDEXOF_VAR = 35
+VAR `OPCODE_IS_NOT_VAR = 36
+VAR `OPCODE_IS_VAR = 37
+VAR `OPCODE_LE = 38
+VAR `OPCODE_LENGTH_VAR = 39
+VAR `OPCODE_LIST = 40
+VAR `OPCODE_LIST_AT_QUALVAR = 41
+VAR `OPCODE_LIST_AT_VAR = 42
+VAR `OPCODE_LOG = 43
+VAR `OPCODE_LOG2 = 44
+VAR `OPCODE_LSIZE_VAR = 45
+VAR `OPCODE_LT = 46
+VAR `OPCODE_MAX = 47
+VAR `OPCODE_MIN = 48
+VAR `OPCODE_MINUS = 49
+VAR `OPCODE_MOD = 50
+VAR `OPCODE_MODULE_NAME = 51
+VAR `OPCODE_MUL = 52
+VAR `OPCODE_NE = 53
+VAR `OPCODE_NEG = 54
+VAR `OPCODE_NOT = 55
+VAR `OPCODE_NSIZE_VAR = 56
+VAR `OPCODE_NUMBER = 57
+VAR `OPCODE_OR = 58
+VAR `OPCODE_PLUS = 59
+VAR `OPCODE_POW = 60
+VAR `OPCODE_PROCEDURE = 61
+VAR `OPCODE_PUSH = 62
+VAR `OPCODE_QUALVAR = 63
+VAR `OPCODE_QUEUE = 64
+VAR `OPCODE_REPEAT = 65
+VAR `OPCODE_REPNEXT = 66
+VAR `OPCODE_REPSTOP = 67
+VAR `OPCODE_ROUND = 68
+VAR `OPCODE_SIGN = 69
+VAR `OPCODE_SIN = 70
+VAR `OPCODE_SIZE_VAR = 71
+VAR `OPCODE_SQRT = 72
+VAR `OPCODE_STRING = 73
+VAR `OPCODE_TAN = 74
+VAR `OPCODE_UNASSIGN = 75
+VAR `OPCODE_VAR = 76
 
 CLASS `Parser:
 
@@ -1817,9 +2060,9 @@ CLASS `Parser:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"INCREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, 1]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
       ELSE:
-        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, 1]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
       ENDIF
       return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -1828,9 +2071,9 @@ CLASS `Parser:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"DECREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, 1]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
       ELSE:
-        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, 1]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
       ENDIF
       return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -2537,7 +2780,7 @@ CLASS `Parser:
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_PROCEDURE:
         `rel_op_opcode = TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_NE}{`OPCODE_EQ}
-        return [`lidx+3, [`rel_op_opcode, [`OPCODE_NUMBER, 1], [`OPCODE_NUMBER, 1]]]
+        return [`lidx+3, [`rel_op_opcode, [`OPCODE_NUMBER, 0], [`OPCODE_NUMBER, 0]]]
       ENDIF
       return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
@@ -2721,6 +2964,8 @@ CLASS `Parser:
     VAR `lsize_var
     VAR `lidx_expr
     VAR `indexof_var
+    VAR `mathsymb
+    VAR `lidx_mathexprs
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LITERAL:
       return [`lidx+1, [`OPCODE_NUMBER, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]]
     ENDIF
@@ -2752,11 +2997,232 @@ CLASS `Parser:
       ENDIF
       return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_MATHSYMB:
+      `mathsymb = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      IF `mathsymb == "ABS":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_ABS, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "ACOS":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_ACOS, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "ASIN":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_ASIN, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "ATAN":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_ATAN, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "ATAN2":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 2:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_ATAN2, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "CEIL":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_CEIL, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "COS":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_COS, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "E":
+        return [`lidx+1, [`OPCODE_NUMBER, `fp.E()]]
+      ELSIF `mathsymb == "EXP":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_EXP, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "EXP2":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_EXP2, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "FLOOR":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_FLOOR, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "LOG":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_LOG, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "LOG2":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_LOG2, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "MAX":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 2:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_MAX, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "MIN":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 2:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_MIN, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "PI":
+        return [`lidx+1, [`OPCODE_NUMBER, `fp.PI()]]
+      ELSIF `mathsymb == "POW":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 2:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_POW, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "ROUND":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_ROUND, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "SIGN":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_SIGN, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "SIN":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_SIN, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "SQRT":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_SQRT, `lidx_mathexprs[1]]]
+      ELSIF `mathsymb == "TAN":
+        `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_mathexprs) == 1:
+          return `lidx_mathexprs
+        ENDIF
+        IF `length(`lidx_mathexprs[1]) != 1:
+          return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        return [`lidx_mathexprs[0], [`OPCODE_TAN, `lidx_mathexprs[1]]]
+      ENDIF
+    ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
     IF (`length(`lidx_sfxexpr) > 1) AND ((`lidx_sfxexpr[1][1] == `SUFFIX_) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LENGTH) OR (`lidx_sfxexpr[1][1] == `SUFFIX_SIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_NSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_LSIZE) OR (`lidx_sfxexpr[1][1] == `SUFFIX_INDEXOF)):
       return [`lidx_sfxexpr[0], `lidx_sfxexpr[1][2]]
     ENDIF
     return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"BASE"+" "+"FACTOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+
+  METHOD `_parseMathArith(`tokens `lidxs `lidx):
+    VAR `exprs
+    VAR `lidx_expr
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_LPAR:
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"LPAR"+" "+"AFTER"+" "+"MATH"+" "+"FUNCTION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+    ENDIF
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_RPAR:
+      return [`lidx+2, []]
+    ENDIF
+    `exprs = []
+    `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+    IF `length(`lidx_expr) == 1:
+      return `lidx_expr
+    ENDIF
+    `push(`exprs, `lidx_expr[1])
+    `lidx = `lidx_expr[0]
+    WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_COMMA:
+      IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_RPAR:
+        `lidx += 1
+        break
+      ENDIF
+      `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+      IF `length(`lidx_expr) == 1:
+        return `lidx_expr
+      ENDIF
+      `push(`exprs, `lidx_expr[1])
+      `lidx = `lidx_expr[0]
+    ENDWHILE
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RPAR:
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RPAR"+" "+"AFTER"+" "+"MATH"+" "+"FUNCTION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+    ENDIF
+    return [`lidx+1, `exprs]
 
   METHOD `_parseVarSuffix(`tokens `lidxs `lidx):
     VAR `vvar
@@ -3564,7 +4030,7 @@ FUNC `func_iexpr_rel_op_ge(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_unary_op_neg(`v):
-  return `int32(-`v)
+  return `fp.Neg(`v)
 ENDFUNC
 
 FUNC `func_iexpr_unary_op_bit_not(`v):
@@ -3572,11 +4038,11 @@ FUNC `func_iexpr_unary_op_bit_not(`v):
 ENDFUNC
 
 FUNC `func_iexpr_add_op_plus(`v1 `v2):
-  return `int32(`v1+`v2)
+  return `fp.Add(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_add_op_minus(`v1 `v2):
-  return `int32(`v1-`v2)
+  return `fp.Sub(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_add_op_bit_or(`v1 `v2):
@@ -3588,19 +4054,19 @@ FUNC `func_iexpr_add_op_bit_xor(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_mul(`v1 `v2):
-  return `int32(((`v1 & 0xffff) * (`v2 & 0xffff)) + ((`v1 & 0xffff0000) * (`v2 & 0xffff)) + ((`v1 & 0xffff) * (`v2 & 0xffff0000)))
+  return `fp.Mul(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_div(`v1 `v2):
-  return `int32(`trunc(`v1 / `v2))
+  return `fp.Div(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_idv(`v1 `v2):
-  return `int32(`trunc(`v1 / `v2))
+  return `fp.Floor(`fp.Div(`v1, `v2))
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_mod(`v1 `v2):
-  return `int32(`v1 % `v2)
+  return `fp.Mod(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_and(`v1 `v2):
@@ -3608,6 +4074,7 @@ FUNC `func_iexpr_mul_op_bit_and(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_shl(`v1 `v2):
+  `v2 = `fp.FloorToInt(`v2)
   IF `v2 >= 32:
     return 0
   ELSIF `v2 >= 0:
@@ -3619,6 +4086,7 @@ FUNC `func_iexpr_mul_op_bit_shl(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_shr(`v1 `v2):
+  `v2 = `fp.FloorToInt(`v2)
   IF `v2 >= 31:
     return TERNARY{(`v1 & 0x80000000) == 0}{0}{-1}
   ELSIF `v2 >= 0:
@@ -3639,6 +4107,86 @@ ENDFUNC
 
 FUNC `func_iexpr_size_var_lsize(`lsize `nsize):
   return `lsize
+ENDFUNC
+
+FUNC `func_iexpr_math_op_abs(`v):
+  return `fp.Abs(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_acos(`v):
+  return `fp.Acos(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_asin(`v):
+  return `fp.Asin(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_atan(`v):
+  return `fp.Atan(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_atan2(`v1 `v2):
+  return `fp.Atan2(`v1, `v2)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_ceil(`v):
+  return `fp.Ceil(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_cos(`v):
+  return `fp.Cos(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_exp(`v):
+  return `fp.Exp(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_exp2(`v):
+  return `fp.Exp2(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_floor(`v):
+  return `fp.Floor(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_log(`v):
+  return `fp.Log(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_log2(`v):
+  return `fp.Log2(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_max(`v1 `v2):
+  return `fp.Max(`v1, `v2)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_min(`v1 `v2):
+  return `fp.Min(`v1, `v2)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_pow(`v1 `v2):
+  return `fp.Pow(`v1, `v2)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_round(`v):
+  return `fp.Round(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_sign(`v):
+  return `fp.Sign(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_sin(`v):
+  return `fp.Sin(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_sqrt(`v):
+  return `fp.Sqrt(`v)
+ENDFUNC
+
+FUNC `func_iexpr_math_op_tan(`v):
+  return `fp.Tan(`v)
 ENDFUNC
 
 CLASS `InterpM:
@@ -3814,25 +4362,25 @@ CLASS `InterpM:
       return `that.`_iexprAddOp(`expression, `func_iexpr_add_op_bit_xor)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_mul(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mul, NULL)
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mul)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_div(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_div, "DIVISION"+" "+"BY"+" "+"ZERO")
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_div)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_idv(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_idv, "DIVISION"+" "+"BY"+" "+"ZERO")
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_idv)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_mod(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mod, "MODULO"+" "+"BY"+" "+"ZERO")
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_mod)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_bit_and(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_bit_and, NULL)
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_bit_and)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_bit_shl(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_bit_shl, NULL)
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_bit_shl)
     ENDCLOSURE
     CLOSURE `closure_iexpr_mul_op_bit_shr(`expression):
-      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_bit_shr, NULL)
+      return `that.`_iexprMulOp(`expression, `func_iexpr_mul_op_bit_shr)
     ENDCLOSURE
     CLOSURE `closure_iexpr_var(`expression):
       return `that.`_iexprVar(`expression)
@@ -3866,6 +4414,66 @@ CLASS `InterpM:
     ENDCLOSURE
     CLOSURE `closure_iexpr_list_at_qualvar(`expression):
       return `that.`_iexprListAtQualvar(`expression)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_abs(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_abs)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_acos(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_acos)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_asin(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_asin)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_atan(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_atan)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_atan2(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_atan2)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_ceil(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_ceil)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_cos(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_cos)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_exp(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_exp)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_exp2(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_exp2)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_floor(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_floor)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_log(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_log)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_log2(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_log2)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_max(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_max)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_min(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_min)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_pow(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_pow)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_round(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_round)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_sign(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_sign)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_sin(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_sin)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_sqrt(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_sqrt)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_math_op_tan(`expression):
+      return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_tan)
     ENDCLOSURE
     THIS.`_dispatch_expr = {}
     THIS.`_dispatch_expr[`OPCODE_NUMBER] = `closure_iexpr_number
@@ -3906,6 +4514,26 @@ CLASS `InterpM:
     THIS.`_dispatch_expr[`OPCODE_INDEXOF_VAR] = `closure_iexpr_indexof_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_VAR] = `closure_iexpr_list_at_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_QUALVAR] = `closure_iexpr_list_at_qualvar
+    THIS.`_dispatch_expr[`OPCODE_ABS] = `closure_iexpr_math_op_abs
+    THIS.`_dispatch_expr[`OPCODE_ACOS] = `closure_iexpr_math_op_acos
+    THIS.`_dispatch_expr[`OPCODE_ASIN] = `closure_iexpr_math_op_asin
+    THIS.`_dispatch_expr[`OPCODE_ATAN] = `closure_iexpr_math_op_atan
+    THIS.`_dispatch_expr[`OPCODE_ATAN2] = `closure_iexpr_math_op_atan2
+    THIS.`_dispatch_expr[`OPCODE_CEIL] = `closure_iexpr_math_op_ceil
+    THIS.`_dispatch_expr[`OPCODE_COS] = `closure_iexpr_math_op_cos
+    THIS.`_dispatch_expr[`OPCODE_EXP] = `closure_iexpr_math_op_exp
+    THIS.`_dispatch_expr[`OPCODE_EXP2] = `closure_iexpr_math_op_exp2
+    THIS.`_dispatch_expr[`OPCODE_FLOOR] = `closure_iexpr_math_op_floor
+    THIS.`_dispatch_expr[`OPCODE_LOG] = `closure_iexpr_math_op_log
+    THIS.`_dispatch_expr[`OPCODE_LOG2] = `closure_iexpr_math_op_log2
+    THIS.`_dispatch_expr[`OPCODE_MAX] = `closure_iexpr_math_op_max
+    THIS.`_dispatch_expr[`OPCODE_MIN] = `closure_iexpr_math_op_min
+    THIS.`_dispatch_expr[`OPCODE_POW] = `closure_iexpr_math_op_pow
+    THIS.`_dispatch_expr[`OPCODE_ROUND] = `closure_iexpr_math_op_round
+    THIS.`_dispatch_expr[`OPCODE_SIGN] = `closure_iexpr_math_op_sign
+    THIS.`_dispatch_expr[`OPCODE_SIN] = `closure_iexpr_math_op_sin
+    THIS.`_dispatch_expr[`OPCODE_SQRT] = `closure_iexpr_math_op_sqrt
+    THIS.`_dispatch_expr[`OPCODE_TAN] = `closure_iexpr_math_op_tan
     THIS.`_data_v = NULL
 
   METHOD `readDebugl():
@@ -4168,9 +4796,10 @@ CLASS `InterpM:
     VAR `expr = `instruction[4]
     CLOSURE `getExpr():
       VAR `evalue
+      VAR `evaluen
       VAR `r
       IF `isnull(`expr):
-        `r = `int32(`that.`_rnd32b[0]())
+        `r = `fp.ToFloat(`int32(`that.`_rnd32b[0]()))
         return `utils.`encodeData(`r)
       ENDIF
       `evalue = `that.`_interpExpr(`expr)
@@ -4181,12 +4810,22 @@ CLASS `InterpM:
         `that.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"IN"+" "+"RHS")
         return NULL
       ENDIF
-      IF `evalue[1] < 2:
-        `r = 0
-        return `utils.`encodeData(`r)
+      IF `fp.Fract(`evalue[1]) == 0:
+        `evaluen = `trunc(`fp.ToFloat(`evalue[1]))
+        IF `evaluen < 2:
+          `r = 0
+          return `utils.`encodeData(`r)
+        ENDIF
+        `r = `that.`_rnd32b[0]() | 0
+        `r = (`r & 0x7fffffff) % `evaluen
+      ELSE:
+        IF `evalue[1] < 2:
+          `r = 0
+          return `utils.`encodeData(`r)
+        ENDIF
+        `r = `that.`_rnd32b[0]() | 0
+        `r = `fp.ToFloat((`r & 0x7fffffff) % `evalue[1])
       ENDIF
-      `r = `that.`_rnd32b[0]() | 0
-      `r = (`r & 0x7fffffff) % `evalue[1]
       return `utils.`encodeData(`r)
     ENDCLOSURE
     IF `length(`exprs) == 0:
@@ -4218,6 +4857,7 @@ CLASS `InterpM:
       VAR `popvar = `popvarexprs[1]
       VAR `popvalue
       VAR `lindex
+      VAR `lindexn
       IF `isnull(`index):
         `popvalue = `pop(`evalue[1])
       ELSE:
@@ -4229,17 +4869,19 @@ CLASS `InterpM:
           `that.`_setRuntimeError("INVALID"+" "+"INDEX")
           return NULL
         ENDIF
-        IF (`lindex[1] < 0) OR (`lindex[1] >= `length(`evalue[1])):
+        `lindexn = `fp.FloorToInt(`lindex[1])
+        IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
           `that.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
           return NULL
         ENDIF
-        `popvalue = `pick(`evalue[1], `lindex[1])
+        `popvalue = `pick(`evalue[1], `lindexn)
       ENDIF
       VAR `delta_cost_n = -`utils.`nsizeEvalue(`popvalue)
       VAR `delta_cost_l = -`utils.`lsizeEvalue(`popvalue)
       VAR `popexprs
       VAR `popevalue
       VAR `poplindex
+      VAR `poplindexn
       VAR `j
       IF `popvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
@@ -4251,7 +4893,8 @@ CLASS `InterpM:
         `popevalue[3] += `delta_cost_n
         FORINCR `j(0 `length(`popexprs)):
           `poplindex = `that.`_interpExpr(`popexprs[`j])
-          `popevalue = `popevalue[1][`poplindex[1]]
+          `poplindexn = `fp.FloorToInt(`poplindex[1])
+          `popevalue = `popevalue[1][`poplindexn]
           `popevalue[2] += `delta_cost_l
           `popevalue[3] += `delta_cost_n
         ENDFOR
@@ -4295,6 +4938,7 @@ CLASS `InterpM:
       VAR `unqexprs
       VAR `unqevalue
       VAR `unqlindex
+      VAR `unqlindexn
       VAR `j
       IF `unqvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
@@ -4306,7 +4950,8 @@ CLASS `InterpM:
         `unqevalue[3] += `delta_cost_n
         FORINCR `j(0 `length(`unqexprs)):
           `unqlindex = `that.`_interpExpr(`unqexprs[`j])
-          `unqevalue = `unqevalue[1][`unqlindex[1]]
+          `unqlindexn = `fp.FloorToInt(`unqlindex[1])
+          `unqevalue = `unqevalue[1][`unqlindexn]
           `unqevalue[2] += `delta_cost_l
           `unqevalue[3] += `delta_cost_n
         ENDFOR
@@ -4372,14 +5017,15 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
       return
     ENDIF
-    IF (`lindex[1] < 0) OR (`lindex[1] >= `length(`vvalue[1])):
+    VAR `lindexn = `fp.FloorToInt(`lindex[1])
+    IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
       THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
       return NULL
     ENDIF
     VAR `j
     FORINCR `j(1 `length(`exprs)):
       `push(`vvalues, `vvalue)
-      `vvalue = `vvalue[1][`lindex[1]]
+      `vvalue = `vvalue[1][`lindexn]
       IF `vvalue[0] != `key_interp_list:
         THIS.`_setRuntimeError("EXPECTED"+" "+"LIST"+" "+"IN"+" "+"LHS")
         return
@@ -4392,19 +5038,19 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
         return
       ENDIF
-      IF (`lindex[1] < 0) OR (`lindex[1] >= `length(`vvalue[1])):
+      `lindexn = `fp.FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
         return NULL
       ENDIF
     ENDFOR
-    VAR `lindexi = `lindex[1]
     VAR `evalue = `getExpr()
     IF `isnull(`evalue):
       return
     ENDIF
-    VAR `delta_cost_n = -`utils.`nsizeEvalue(`vvalue[1][`lindexi])+`utils.`nsizeEvalue(`evalue)
-    VAR `delta_cost_l = -`utils.`lsizeEvalue(`vvalue[1][`lindexi])+`utils.`lsizeEvalue(`evalue)
-    `vvalue[1][`lindexi] = `evalue
+    VAR `delta_cost_n = -`utils.`nsizeEvalue(`vvalue[1][`lindexn])+`utils.`nsizeEvalue(`evalue)
+    VAR `delta_cost_l = -`utils.`lsizeEvalue(`vvalue[1][`lindexn])+`utils.`lsizeEvalue(`evalue)
+    `vvalue[1][`lindexn] = `evalue
     IF (`delta_cost_n != 0) OR (`delta_cost_l != 0):
       `push(`vvalues, `vvalue)
       FORINCR `j(0 `length(`vvalues)):
@@ -4471,12 +5117,15 @@ CLASS `InterpM:
       return
     ENDIF
     `push(THIS.`_repeat_vars, `vvar)
-    IF `evalue[1] > 0:
-      `evalue[1] -= 1
+    VAR `evaluen = `fp.FloorToInt(`evalue[1])
+    IF `evaluen > 0:
+      `evaluen -= 1
+      `evalue[1] = `fp.FromFloat(`evaluen)
       THIS.`_addChangedVar(`vvar)
       THIS.`_has_repstop = FALSE
       THIS.`_pcounter = `next_pcounter
     ELSE:
+      `evalue[1] = `fp.FromFloat(`evaluen)
       THIS.`_pcounter = `alt_pcounter
     ENDIF
 
@@ -4547,6 +5196,7 @@ CLASS `InterpM:
     VAR `delta_cost_n = `utils.`nsizeEvalue(`evalue)
     VAR `delta_cost_l = `utils.`lsizeEvalue(`evalue)
     VAR `lindex
+    VAR `lindexn
     IF `isnull(`index):
       `push(`pvalue[1], `evalue)
     ELSE:
@@ -4558,12 +5208,13 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return
       ENDIF
-      IF (`lindex[1] < 0) OR (`lindex[1] > `length(`pvalue[1])):
+      `lindexn = `fp.FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn > `length(`pvalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
         return
       ENDIF
-      IF `lindex[1] < `length(`pvalue[1]):
-        `poke(`pvalue[1], `lindex[1], `evalue)
+      IF `lindexn < `length(`pvalue[1]):
+        `poke(`pvalue[1], `lindexn, `evalue)
       ELSE:
         `push(`pvalue[1], `evalue)
       ENDIF
@@ -4571,6 +5222,7 @@ CLASS `InterpM:
     VAR `pexprs
     VAR `pevalue
     VAR `plindex
+    VAR `plindexn
     VAR `j
     IF `pvarexprs[0] == `OPCODE_VAR:
       `pvalue[2] += `delta_cost_l
@@ -4582,7 +5234,8 @@ CLASS `InterpM:
       `pevalue[3] += `delta_cost_n
       FORINCR `j(0 `length(`pexprs)):
         `plindex = THIS.`_interpExpr(`pexprs[`j])
-        `pevalue = `pevalue[1][`plindex[1]]
+        `plindexn = `fp.FloorToInt(`plindex[1])
+        `pevalue = `pevalue[1][`plindexn]
         `pevalue[2] += `delta_cost_l
         `pevalue[3] += `delta_cost_n
       ENDFOR
@@ -4615,6 +5268,7 @@ CLASS `InterpM:
     VAR `qexprs
     VAR `qevalue
     VAR `qlindex
+    VAR `qlindexn
     VAR `j
     IF `qvarexprs[0] == `OPCODE_VAR:
       `qvalue[2] += `delta_cost_l
@@ -4626,7 +5280,8 @@ CLASS `InterpM:
       `qevalue[3] += `delta_cost_n
       FORINCR `j(0 `length(`qexprs)):
         `qlindex = THIS.`_interpExpr(`qexprs[`j])
-        `qevalue = `qevalue[1][`qlindex[1]]
+        `qlindexn = `fp.FloorToInt(`qlindex[1])
+        `qevalue = `qevalue[1][`qlindexn]
         `qevalue[2] += `delta_cost_l
         `qevalue[3] += `delta_cost_n
       ENDFOR
@@ -4768,7 +5423,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `evalue1i = `evalue1[1]
+    VAR `evalue1n = `evalue1[1]
     VAR `evalue2 = THIS.`_interpExpr(`expr2)
     IF `isnull(`evalue2):
       return NULL
@@ -4777,7 +5432,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `value = `binOp(`evalue1i, `evalue2[1])
+    VAR `value = `binOp(`evalue1n, `evalue2[1])
     THIS.`_tmpBoolean[1] = `value
     return THIS.`_tmpBoolean
 
@@ -4806,7 +5461,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `evalue1i = `evalue1[1]
+    VAR `evalue1n = `evalue1[1]
     VAR `evalue2 = THIS.`_interpExpr(`expr2)
     IF `isnull(`evalue2):
       return NULL
@@ -4815,11 +5470,11 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `value = `binOp(`evalue1i, `evalue2[1])
+    VAR `value = `binOp(`evalue1n, `evalue2[1])
     THIS.`_tmpNumber[1] = `value
     return THIS.`_tmpNumber
 
-  METHOD `_iexprMulOp(`expression `binOp `zero_error):
+  METHOD `_iexprMulOp(`expression `binOp):
     VAR `expr1 = `expression[1]
     VAR `expr2 = `expression[2]
     VAR `evalue1 = THIS.`_interpExpr(`expr1)
@@ -4830,7 +5485,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `evalue1i = `evalue1[1]
+    VAR `evalue1n = `evalue1[1]
     VAR `evalue2 = THIS.`_interpExpr(`expr2)
     IF `isnull(`evalue2):
       return NULL
@@ -4839,11 +5494,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    IF (`evalue2[1] == 0) AND `not(`isnull(`zero_error)):
-      THIS.`_setRuntimeError(`zero_error)
-      return NULL
-    ENDIF
-    VAR `value = `binOp(`evalue1i, `evalue2[1])
+    VAR `value = `binOp(`evalue1n, `evalue2[1])
     THIS.`_tmpNumber[1] = `value
     return THIS.`_tmpNumber
 
@@ -4851,6 +5502,7 @@ CLASS `InterpM:
     VAR `vvar = `expression[1][0]
     VAR `values = [`vvar]
     VAR `lindex
+    VAR `lindexn
     VAR `j
     FORINCR `j(1 `length(`expression[1])):
       `lindex = THIS.`_interpExpr(`expression[1][`j])
@@ -4861,7 +5513,8 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
-      `push(`values, `lindex[1])
+      `lindexn = `fp.FloorToInt(`lindex[1])
+      `push(`values, `lindexn)
     ENDFOR
     THIS.`_tmpByRef[1] = `values
     return THIS.`_tmpByRef
@@ -4980,7 +5633,12 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
       return NULL
     ENDIF
-    THIS.`_tmpNumber[1] = `length(`evalue[1])
+    VAR `lenn = `length(`evalue[1])
+    IF `lenn > 0x7fff:
+      THIS.`_setRuntimeError("VALUE"+" "+"EXCEEDS"+" "+"NUMERIC"+" "+"TYPE")
+      return NULL
+    ENDIF
+    THIS.`_tmpNumber[1] = `fp.FromFloat(`lenn)
     return THIS.`_tmpNumber
 
   METHOD `_iexprSizeVar(`expression `projection):
@@ -4994,7 +5652,11 @@ CLASS `InterpM:
       return NULL
     ENDIF
     VAR `value = `projection(`utils.`lsizeEvalue(`evalue), `utils.`nsizeEvalue(`evalue))
-    THIS.`_tmpNumber[1] = `value
+    IF `value > 0x7fff:
+      THIS.`_setRuntimeError("VALUE"+" "+"EXCEEDS"+" "+"NUMERIC"+" "+"TYPE")
+      return NULL
+    ENDIF
+    THIS.`_tmpNumber[1] = `fp.FromFloat(`value)
     return THIS.`_tmpNumber
 
   METHOD `_iexprIndexofVar(`expression):
@@ -5018,7 +5680,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `fromi = `from[1]
+    VAR `fromn = `fp.FloorToInt(`from[1])
     VAR `indexof_ = THIS.`_interpExpr(`expr)
     IF `isnull(`indexof_):
       return NULL
@@ -5032,9 +5694,13 @@ CLASS `InterpM:
     IF `isnull(`varvalue) OR `isnull(`indexofvalue):
       `result = -1
     ELSE:
-      `result = `utils.`structuralIndexOf(`varvalue[1], `indexofvalue[1], `fromi)
+      `result = `utils.`structuralIndexOf(`varvalue[1], `indexofvalue[1], `fromn)
     ENDIF
-    THIS.`_tmpNumber[1] = `result
+    IF `result > 0x7fff:
+      THIS.`_setRuntimeError("VALUE"+" "+"EXCEEDS"+" "+"NUMERIC"+" "+"TYPE")
+      return NULL
+    ENDIF
+    THIS.`_tmpNumber[1] = `fp.FromFloat(`result)
     return THIS.`_tmpNumber
 
   METHOD `_iexprListAtVar(`expression):
@@ -5046,6 +5712,7 @@ CLASS `InterpM:
       return NULL
     ENDIF
     VAR `lindex
+    VAR `lindexn
     VAR `j
     FORINCR `j(0 `length(`exprs)):
       IF `evalue[0] != `key_interp_list:
@@ -5060,11 +5727,12 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
-      IF (`lindex[1] < 0) OR (`lindex[1] >= `length(`evalue[1])):
+      `lindexn = `fp.FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
         return NULL
       ENDIF
-      `evalue = `evalue[1][`lindex[1]]
+      `evalue = `evalue[1][`lindexn]
     ENDFOR
     return `evalue
 
@@ -5077,6 +5745,7 @@ CLASS `InterpM:
       return NULL
     ENDIF
     VAR `lindex
+    VAR `lindexn
     VAR `j
     FORINCR `j(0 `length(`exprs)):
       IF `evalue[0] != `key_interp_list:
@@ -5091,13 +5760,54 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
-      IF (`lindex[1] < 0) OR (`lindex[1] >= `length(`evalue[1])):
+      `lindexn = `fp.FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
         return NULL
       ENDIF
-      `evalue = `evalue[1][`lindex[1]]
+      `evalue = `evalue[1][`lindexn]
     ENDFOR
     return `evalue
+
+  METHOD `_iexprMathOp(`expression `mathOp):
+    VAR `expr1
+    VAR `evalue1
+    VAR `evalue1n
+    VAR `value
+    IF `length(`expression[1]) == 1:
+      `expr1 = `expression[1][0]
+      `evalue1 = THIS.`_interpExpr(`expr1)
+      IF `evalue1[0] != `key_interp_number:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
+        return NULL
+      ENDIF
+      `evalue1n = `evalue1[1]
+      `value = `mathOp(`evalue1n)
+      THIS.`_tmpNumber[1] = `value
+      return THIS.`_tmpNumber
+    ENDIF
+    VAR `expr2
+    VAR `evalue2
+    IF `length(`expression[1]) == 2:
+      `expr1 = `expression[1][0]
+      `evalue1 = THIS.`_interpExpr(`expr1)
+      IF `evalue1[0] != `key_interp_number:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
+        return NULL
+      ENDIF
+      `evalue1n = `evalue1[1]
+      `expr2 = `expression[1][1]
+      `evalue2 = THIS.`_interpExpr(`expr2)
+      IF `evalue2[0] != `key_interp_number:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
+        return NULL
+      ENDIF
+      `value = `mathOp(`evalue1n, `evalue2[1])
+      THIS.`_tmpNumber[1] = `value
+      return THIS.`_tmpNumber
+    ENDIF
+    THIS.`_setRuntimeError("NOT"+" "+"IMPLEMENTED")
+    return NULL
 
   METHOD `destroy():
     VAR `x = NULL
