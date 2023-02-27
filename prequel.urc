@@ -1,5 +1,5 @@
 COMMENT FP class available at https://github.com/simoesh/FixPointCS/tree/urcode
-VAR `fp = NEW FP()
+VAR `fp = [NULL]
 
 CLASS `ResourceIds:
 
@@ -225,10 +225,10 @@ CLASS `Utils:
     VAR `lsize
     VAR `elist
     VAR `evalue
-    IF `is_type_num(`data_type) OR `is_type_bool(`data_type):
+    IF `is_type_num(`data_type):
       `nsize = 1
       `lsize = 0
-      return [`key_interp_number, `fp.FromFloat(`data), `lsize, `nsize]
+      return [`key_interp_number, `data, `lsize, `nsize]
     ENDIF
     VAR `j
     IF `is_type_list(`data_type):
@@ -246,6 +246,11 @@ CLASS `Utils:
       ENDFOR
       return [`key_interp_list, `elist, `lsize, `nsize]
     ENDIF
+    IF `is_type_bool(`data_type):
+      `nsize = 1
+      `lsize = 0
+      return [`key_interp_number, `fp[0].FromFloat(`data), `lsize, `nsize]
+    ENDIF
     `warning("Prequel"+" "+"Utils"+" "+"encodeData"+":"+" "+"invalid"+" "+"data"+":", `data)
     return NULL
 
@@ -256,12 +261,12 @@ CLASS `Utils:
     VAR `elist
     VAR `j
     VAR `evalueE
-    IF `is_type_num(`data_type) OR `is_type_bool(`data_type):
+    IF `is_type_num(`data_type):
       IF `length(`evalue) == 0:
         `nsize = 1
         `lsize = 0
         `push(`evalue, `key_interp_number)
-        `push(`evalue, `fp.FromFloat(`data))
+        `push(`evalue, `data)
         `push(`evalue, `lsize)
         `push(`evalue, `nsize)
       ELSE:
@@ -272,7 +277,7 @@ CLASS `Utils:
           `evalue[2] = `lsize
           `evalue[3] = `nsize
         ENDIF
-        `evalue[1] = `fp.FromFloat(`data)
+        `evalue[1] = `data
       ENDIF
       return TRUE
     ENDIF
@@ -352,6 +357,26 @@ CLASS `Utils:
       ENDIF
       return TRUE
     ENDIF
+    IF `is_type_bool(`data_type):
+      IF `length(`evalue) == 0:
+        `nsize = 1
+        `lsize = 0
+        `push(`evalue, `key_interp_number)
+        `push(`evalue, `fp[0].FromFloat(`data))
+        `push(`evalue, `lsize)
+        `push(`evalue, `nsize)
+      ELSE:
+        IF `evalue[0] != `key_interp_number:
+          `nsize = 1
+          `lsize = 0
+          `evalue[0] = `key_interp_number
+          `evalue[2] = `lsize
+          `evalue[3] = `nsize
+        ENDIF
+        `evalue[1] = `fp[0].FromFloat(`data)
+      ENDIF
+      return TRUE
+    ENDIF
     `warning("Prequel"+" "+"Utils"+" "+"encodeOverwriteData"+":"+" "+"invalid"+" "+"data"+":", `data)
     return FALSE
 
@@ -364,7 +389,7 @@ CLASS `Utils:
       return NULL
     ENDIF
     IF `edata[0] == `key_interp_number:
-      return [`ARG_TYPE_NUMBER, `fp.ToFloat(`edata[1])]
+      return [`ARG_TYPE_NUMBER, `edata[1]]
     ENDIF
     IF `edata[0] == `key_interp_list:
       IF `not(`is_type_list(`get_type(`edata[1]))):
@@ -420,7 +445,7 @@ CLASS `Utils:
       return "<NULL>"
     ENDIF
     IF `evalue[0] == `key_interp_number:
-      return `str(`fp.ToFloat(`evalue[1]))
+      return `str(`fp[0].ToFloat(`evalue[1]))
     ENDIF
     IF `evalue[0] == `key_interp_list:
       IF `length(`evalue[1]) == 0:
@@ -1502,7 +1527,7 @@ CLASS `Lexer:
           ENDWHILE
           `literal[0] += `parse_int(`literal[1], 16)/65536.0
         ENDIF
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp.FromFloat(`literal[0])])
+        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal[0])])
         continue
       ENDIF
       IF (`line[`col] == "0") AND (`lowercase(`line[`col+1]) == "b") AND (`line[`col+2] >= "0") AND (`line[`col+2] <= "1"):
@@ -1535,7 +1560,7 @@ CLASS `Lexer:
           ENDWHILE
           `literal[0] += `parse_int(`literal[1], 2)/65536.0
         ENDIF
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp.FromFloat(`literal[0])])
+        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal[0])])
         continue
       ENDIF
       IF (`line[`col] >= "0") AND (`line[`col] <= "9"):
@@ -1568,7 +1593,7 @@ CLASS `Lexer:
           ENDWHILE
         ENDIF
         `literal = `parse_float(`substring(`line, `start, `col))
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp.FromFloat(`literal)])
+        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal)])
         continue
       ENDIF
       IF `ic == "D":
@@ -2060,9 +2085,9 @@ CLASS `Parser:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"INCREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
       ELSE:
-        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
+        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
       ENDIF
       return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -2071,9 +2096,9 @@ CLASS `Parser:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"DECREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
       IF `length(`exprs) == 0:
-        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
       ELSE:
-        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp.FromFloat(1)]]
+        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
       ENDIF
       return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
@@ -3063,7 +3088,7 @@ CLASS `Parser:
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_COS, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "E":
-        return [`lidx+1, [`OPCODE_NUMBER, `fp.E()]]
+        return [`lidx+1, [`OPCODE_NUMBER, `fp[0].E()]]
       ELSIF `mathsymb == "EXP":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3128,7 +3153,7 @@ CLASS `Parser:
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MIN, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "PI":
-        return [`lidx+1, [`OPCODE_NUMBER, `fp.PI()]]
+        return [`lidx+1, [`OPCODE_NUMBER, `fp[0].PI()]]
       ELSIF `mathsymb == "POW":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -4030,7 +4055,7 @@ FUNC `func_iexpr_rel_op_ge(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_unary_op_neg(`v):
-  return `fp.Neg(`v)
+  return `fp[0].Neg(`v)
 ENDFUNC
 
 FUNC `func_iexpr_unary_op_bit_not(`v):
@@ -4038,11 +4063,11 @@ FUNC `func_iexpr_unary_op_bit_not(`v):
 ENDFUNC
 
 FUNC `func_iexpr_add_op_plus(`v1 `v2):
-  return `fp.Add(`v1, `v2)
+  return `fp[0].Add(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_add_op_minus(`v1 `v2):
-  return `fp.Sub(`v1, `v2)
+  return `fp[0].Sub(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_add_op_bit_or(`v1 `v2):
@@ -4054,19 +4079,19 @@ FUNC `func_iexpr_add_op_bit_xor(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_mul(`v1 `v2):
-  return `fp.Mul(`v1, `v2)
+  return `fp[0].Mul(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_div(`v1 `v2):
-  return `fp.Div(`v1, `v2)
+  return `fp[0].Div(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_idv(`v1 `v2):
-  return `fp.Floor(`fp.Div(`v1, `v2))
+  return `fp[0].Floor(`fp[0].Div(`v1, `v2))
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_mod(`v1 `v2):
-  return `fp.Mod(`v1, `v2)
+  return `fp[0].Mod(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_and(`v1 `v2):
@@ -4074,7 +4099,7 @@ FUNC `func_iexpr_mul_op_bit_and(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_shl(`v1 `v2):
-  `v2 = `fp.FloorToInt(`v2)
+  `v2 = `fp[0].FloorToInt(`v2)
   IF `v2 >= 32:
     return 0
   ELSIF `v2 >= 0:
@@ -4086,7 +4111,7 @@ FUNC `func_iexpr_mul_op_bit_shl(`v1 `v2):
 ENDFUNC
 
 FUNC `func_iexpr_mul_op_bit_shr(`v1 `v2):
-  `v2 = `fp.FloorToInt(`v2)
+  `v2 = `fp[0].FloorToInt(`v2)
   IF `v2 >= 31:
     return TERNARY{(`v1 & 0x80000000) == 0}{0}{-1}
   ELSIF `v2 >= 0:
@@ -4110,83 +4135,83 @@ FUNC `func_iexpr_size_var_lsize(`lsize `nsize):
 ENDFUNC
 
 FUNC `func_iexpr_math_op_abs(`v):
-  return `fp.Abs(`v)
+  return `fp[0].Abs(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_acos(`v):
-  return `fp.Acos(`v)
+  return `fp[0].Acos(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_asin(`v):
-  return `fp.Asin(`v)
+  return `fp[0].Asin(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_atan(`v):
-  return `fp.Atan(`v)
+  return `fp[0].Atan(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_atan2(`v1 `v2):
-  return `fp.Atan2(`v1, `v2)
+  return `fp[0].Atan2(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_ceil(`v):
-  return `fp.Ceil(`v)
+  return `fp[0].Ceil(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_cos(`v):
-  return `fp.Cos(`v)
+  return `fp[0].Cos(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_exp(`v):
-  return `fp.Exp(`v)
+  return `fp[0].Exp(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_exp2(`v):
-  return `fp.Exp2(`v)
+  return `fp[0].Exp2(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_floor(`v):
-  return `fp.Floor(`v)
+  return `fp[0].Floor(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_log(`v):
-  return `fp.Log(`v)
+  return `fp[0].Log(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_log2(`v):
-  return `fp.Log2(`v)
+  return `fp[0].Log2(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_max(`v1 `v2):
-  return `fp.Max(`v1, `v2)
+  return `fp[0].Max(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_min(`v1 `v2):
-  return `fp.Min(`v1, `v2)
+  return `fp[0].Min(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_pow(`v1 `v2):
-  return `fp.Pow(`v1, `v2)
+  return `fp[0].Pow(`v1, `v2)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_round(`v):
-  return `fp.Round(`v)
+  return `fp[0].Round(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_sign(`v):
-  return `fp.Sign(`v)
+  return `fp[0].Sign(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_sin(`v):
-  return `fp.Sin(`v)
+  return `fp[0].Sin(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_sqrt(`v):
-  return `fp.Sqrt(`v)
+  return `fp[0].Sqrt(`v)
 ENDFUNC
 
 FUNC `func_iexpr_math_op_tan(`v):
-  return `fp.Tan(`v)
+  return `fp[0].Tan(`v)
 ENDFUNC
 
 CLASS `InterpM:
@@ -4799,7 +4824,7 @@ CLASS `InterpM:
       VAR `evaluen
       VAR `r
       IF `isnull(`expr):
-        `r = `fp.ToFloat(`int32(`that.`_rnd32b[0]()))
+        `r = `int32(`that.`_rnd32b[0]())
         return `utils.`encodeData(`r)
       ENDIF
       `evalue = `that.`_interpExpr(`expr)
@@ -4810,21 +4835,21 @@ CLASS `InterpM:
         `that.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"IN"+" "+"RHS")
         return NULL
       ENDIF
-      IF `fp.Fract(`evalue[1]) == 0:
-        `evaluen = `trunc(`fp.ToFloat(`evalue[1]))
+      IF `fp[0].Fract(`evalue[1]) == 0:
+        `evaluen = `trunc(`fp[0].ToFloat(`evalue[1]))
         IF `evaluen < 2:
           `r = 0
           return `utils.`encodeData(`r)
         ENDIF
         `r = `that.`_rnd32b[0]() | 0
-        `r = (`r & 0x7fffffff) % `evaluen
+        `r = (`r & 0x7fff0000) % `evalue[1]
       ELSE:
         IF `evalue[1] < 2:
           `r = 0
           return `utils.`encodeData(`r)
         ENDIF
         `r = `that.`_rnd32b[0]() | 0
-        `r = `fp.ToFloat((`r & 0x7fffffff) % `evalue[1])
+        `r = (`r & 0x7fffffff) % `evalue[1]
       ENDIF
       return `utils.`encodeData(`r)
     ENDCLOSURE
@@ -4869,7 +4894,7 @@ CLASS `InterpM:
           `that.`_setRuntimeError("INVALID"+" "+"INDEX")
           return NULL
         ENDIF
-        `lindexn = `fp.FloorToInt(`lindex[1])
+        `lindexn = `fp[0].FloorToInt(`lindex[1])
         IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
           `that.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
           return NULL
@@ -4893,7 +4918,7 @@ CLASS `InterpM:
         `popevalue[3] += `delta_cost_n
         FORINCR `j(0 `length(`popexprs)):
           `poplindex = `that.`_interpExpr(`popexprs[`j])
-          `poplindexn = `fp.FloorToInt(`poplindex[1])
+          `poplindexn = `fp[0].FloorToInt(`poplindex[1])
           `popevalue = `popevalue[1][`poplindexn]
           `popevalue[2] += `delta_cost_l
           `popevalue[3] += `delta_cost_n
@@ -4950,7 +4975,7 @@ CLASS `InterpM:
         `unqevalue[3] += `delta_cost_n
         FORINCR `j(0 `length(`unqexprs)):
           `unqlindex = `that.`_interpExpr(`unqexprs[`j])
-          `unqlindexn = `fp.FloorToInt(`unqlindex[1])
+          `unqlindexn = `fp[0].FloorToInt(`unqlindex[1])
           `unqevalue = `unqevalue[1][`unqlindexn]
           `unqevalue[2] += `delta_cost_l
           `unqevalue[3] += `delta_cost_n
@@ -5017,7 +5042,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
       return
     ENDIF
-    VAR `lindexn = `fp.FloorToInt(`lindex[1])
+    VAR `lindexn = `fp[0].FloorToInt(`lindex[1])
     IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
       THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
       return NULL
@@ -5038,7 +5063,7 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
         return
       ENDIF
-      `lindexn = `fp.FloorToInt(`lindex[1])
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
       IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
         return NULL
@@ -5117,15 +5142,15 @@ CLASS `InterpM:
       return
     ENDIF
     `push(THIS.`_repeat_vars, `vvar)
-    VAR `evaluen = `fp.FloorToInt(`evalue[1])
+    VAR `evaluen = `fp[0].FloorToInt(`evalue[1])
     IF `evaluen > 0:
       `evaluen -= 1
-      `evalue[1] = `fp.FromFloat(`evaluen)
+      `evalue[1] = `fp[0].FromFloat(`evaluen)
       THIS.`_addChangedVar(`vvar)
       THIS.`_has_repstop = FALSE
       THIS.`_pcounter = `next_pcounter
     ELSE:
-      `evalue[1] = `fp.FromFloat(`evaluen)
+      `evalue[1] = `fp[0].FromFloat(`evaluen)
       THIS.`_pcounter = `alt_pcounter
     ENDIF
 
@@ -5208,7 +5233,7 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return
       ENDIF
-      `lindexn = `fp.FloorToInt(`lindex[1])
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
       IF (`lindexn < 0) OR (`lindexn > `length(`pvalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
         return
@@ -5234,7 +5259,7 @@ CLASS `InterpM:
       `pevalue[3] += `delta_cost_n
       FORINCR `j(0 `length(`pexprs)):
         `plindex = THIS.`_interpExpr(`pexprs[`j])
-        `plindexn = `fp.FloorToInt(`plindex[1])
+        `plindexn = `fp[0].FloorToInt(`plindex[1])
         `pevalue = `pevalue[1][`plindexn]
         `pevalue[2] += `delta_cost_l
         `pevalue[3] += `delta_cost_n
@@ -5280,7 +5305,7 @@ CLASS `InterpM:
       `qevalue[3] += `delta_cost_n
       FORINCR `j(0 `length(`qexprs)):
         `qlindex = THIS.`_interpExpr(`qexprs[`j])
-        `qlindexn = `fp.FloorToInt(`qlindex[1])
+        `qlindexn = `fp[0].FloorToInt(`qlindex[1])
         `qevalue = `qevalue[1][`qlindexn]
         `qevalue[2] += `delta_cost_l
         `qevalue[3] += `delta_cost_n
@@ -5513,7 +5538,7 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
-      `lindexn = `fp.FloorToInt(`lindex[1])
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
       `push(`values, `lindexn)
     ENDFOR
     THIS.`_tmpByRef[1] = `values
@@ -5638,7 +5663,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("VALUE"+" "+"EXCEEDS"+" "+"NUMERIC"+" "+"TYPE")
       return NULL
     ENDIF
-    THIS.`_tmpNumber[1] = `fp.FromFloat(`lenn)
+    THIS.`_tmpNumber[1] = `fp[0].FromFloat(`lenn)
     return THIS.`_tmpNumber
 
   METHOD `_iexprSizeVar(`expression `projection):
@@ -5656,7 +5681,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("VALUE"+" "+"EXCEEDS"+" "+"NUMERIC"+" "+"TYPE")
       return NULL
     ENDIF
-    THIS.`_tmpNumber[1] = `fp.FromFloat(`value)
+    THIS.`_tmpNumber[1] = `fp[0].FromFloat(`value)
     return THIS.`_tmpNumber
 
   METHOD `_iexprIndexofVar(`expression):
@@ -5680,7 +5705,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
       return NULL
     ENDIF
-    VAR `fromn = `fp.FloorToInt(`from[1])
+    VAR `fromn = `fp[0].FloorToInt(`from[1])
     VAR `indexof_ = THIS.`_interpExpr(`expr)
     IF `isnull(`indexof_):
       return NULL
@@ -5700,7 +5725,7 @@ CLASS `InterpM:
       THIS.`_setRuntimeError("VALUE"+" "+"EXCEEDS"+" "+"NUMERIC"+" "+"TYPE")
       return NULL
     ENDIF
-    THIS.`_tmpNumber[1] = `fp.FromFloat(`result)
+    THIS.`_tmpNumber[1] = `fp[0].FromFloat(`result)
     return THIS.`_tmpNumber
 
   METHOD `_iexprListAtVar(`expression):
@@ -5727,7 +5752,7 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
-      `lindexn = `fp.FloorToInt(`lindex[1])
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
       IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
         return NULL
@@ -5760,7 +5785,7 @@ CLASS `InterpM:
         THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
         return NULL
       ENDIF
-      `lindexn = `fp.FloorToInt(`lindex[1])
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
       IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
         return NULL
@@ -6277,13 +6302,17 @@ ENDCLASS
 
 CLASS Prequel:
 
-  METHOD_INIT(`onProcedure `onYieldResume `rnd32b `now):
+  METHOD_INIT(`onProcedure `onYieldResume `rnd32b `now `_fp):
+    `fp[0] = `_fp
     THIS.`_prequel_m = NEW `PrequelM({})
     THIS.`_prequel_m.`init(`onProcedure, `onYieldResume, `rnd32b, `now)
     THIS.`_error = NULL
 
   METHOD getVersion():
     return "1.0"
+
+  METHOD setFP(`_fp):
+    `fp[0] = `_fp
 
   METHOD setCallbacks(`onProcedure `onYieldResume `rnd32b `now):
     VAR `instances = THIS.`_prequel_m.`getInstances()
