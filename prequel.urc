@@ -3548,11 +3548,11 @@ CLASS `UtilsEditorM:
       ENDIF
       `error_lnid = `set_control[`length(`set_control)-1][0]
       IF `set_control[`length(`set_control)-1][1] == `key_token_IF:
-        `error_message = "IF"+" "+"WITHOUT"+" "+"ENDIF"
+        `error_message = "IF"+" "+"MISMATCHES"+" "+"ENDIF"
       ELSIF `set_control[`length(`set_control)-1][1] == `key_token_ELSIF:
-        `error_message = "ELSIF"+" "+"WITHOUT"+" "+"ENDIF"
+        `error_message = "ELSIF"+" "+"MISMATCHES"+" "+"ENDIF"
       ELSE:
-        `error_message = "ELSE"+" "+"WITHOUT"+" "+"ENDIF"
+        `error_message = "ELSE"+" "+"MISMATCHES"+" "+"ENDIF"
       ENDIF
       return [`error_lnid, `error_message]
     ENDIF
@@ -3560,7 +3560,7 @@ CLASS `UtilsEditorM:
       IF `set_control[`length(`set_control)-1][1] == `key_token_ENDREP:
         return [NULL, NULL]
       ENDIF
-      return [`set_control[0][0], "REPEAT"+" "+"WITHOUT"+" "+"ENDREP"]
+      return [`set_control[0][0], "REPEAT"+" "+"MISMATCHES"+" "+"ENDREP"]
     ENDIF
     `error_lnid = `set_control[0][0]
     IF `set_control[0][1] == `key_token_ELSIF:
