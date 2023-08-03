@@ -716,6 +716,9 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "UNQUEUE")
     `push(THIS.`_token_strs, "VAR")
 
+  METHOD `tokenStringToId(`token_str):
+    return `indexof(THIS.`_token_strs, `token_str)
+
   METHOD `tokenIdToString(`token_id):
     IF (`token_id <= 0) OR (`token_id >= `length(THIS.`_token_strs)):
       `warning("Prequel"+" "+"Lexer"+" "+"tokenIdToString"+":"+" "+"unknown"+" "+"id"+":", `token_id)
@@ -3278,7 +3281,7 @@ CLASS `Parser:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_SUFFIX:
         return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]
       ENDIF
-      `suffix = `indexof(THIS.`_token_strs, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
+      `suffix = `lexer.`tokenStringToId(`lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
       IF `suffix == `key_token_LENGTH:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]]]
       ELSIF `suffix == `key_token_SIZE:
@@ -3331,7 +3334,7 @@ CLASS `Parser:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_SUFFIX:
         return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]
       ENDIF
-      `suffix = `indexof(THIS.`_token_strs, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
+      `suffix = `lexer.`tokenStringToId(`lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
       IF `suffix == `key_token_LENGTH:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]]
       ELSIF `suffix == `key_token_SIZE:
