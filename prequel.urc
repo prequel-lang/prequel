@@ -5048,7 +5048,7 @@ CLASS `InterpM:
     VAR `lindexn = `fp[0].FloorToInt(`lindex[1])
     IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
       THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
-      return NULL
+      return
     ENDIF
     VAR `j
     FORINCR `j(1 `length(`exprs)):
@@ -5069,7 +5069,7 @@ CLASS `InterpM:
       `lindexn = `fp[0].FloorToInt(`lindex[1])
       IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
         THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
-        return NULL
+        return
       ENDIF
     ENDFOR
     VAR `evalue = `getExpr()
@@ -5211,7 +5211,7 @@ CLASS `InterpM:
     VAR `pvar = `pvarexprs[1]
     VAR `pvalue = THIS.`_interpExpr(`pvarexprs)
     IF `isnull(`pvalue):
-      return NULL
+      return
     ENDIF
     IF `pvalue[0] != `key_interp_list:
       THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
@@ -5280,7 +5280,7 @@ CLASS `InterpM:
     VAR `qvar = `qvarexprs[1]
     VAR `qvalue = THIS.`_interpExpr(`qvarexprs)
     IF `isnull(`qvalue):
-      return NULL
+      return
     ENDIF
     IF `qvalue[0] != `key_interp_list:
       THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
