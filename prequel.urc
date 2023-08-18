@@ -5,7 +5,7 @@ CLASS `ResourceIds:
 
   METHOD_INIT():
     THIS.`_ids = []
-    THIS.`_cur_id = `trunc(0.5+`random()*1000)
+    THIS.`_cur_id = 1+`trunc(0.5+`random()*1000)
     THIS.`_free_ids = []
 
   METHOD `alloc():
