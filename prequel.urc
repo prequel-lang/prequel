@@ -734,7 +734,7 @@ CLASS `Lexer:
     return (((`c >= "a") AND (`c <= "z")) OR ((`c >= "A") AND (`c <= "Z")) OR (`c == "_"))
 
   METHOD `isModuleNameChar(`c):
-    return (((`c >= "0") AND (`c <= "9")) OR ((`c >= "a") AND (`c <= "z")) OR ((`c >= "A") AND (`c <= "Z")) OR (`c == "_") OR (`c == "."))
+    return (((`c >= "0") AND (`c <= "9")) OR ((`c >= "a") AND (`c <= "z")) OR ((`c >= "A") AND (`c <= "Z")) OR (`c == "_"))
 
   METHOD `isValidModuleName(`module_name):
     VAR `j
