@@ -407,7 +407,7 @@ CLASS `Utils:
       return [`ARG_TYPE_LIST, `dlist]
     ENDIF
     IF `edata[0] == `key_interp_by_ref:
-      IF `not(`is_type_list(`get_type(`edata[1]))) OR `length(`edata[1]) <= 0:
+      IF `not(`is_type_list(`get_type(`edata[1]))) OR `length(`edata[1]) <= 1:
         `warning("Prequel"+" "+"Utils"+" "+"decodeData"+":"+" "+"invalid"+" "+"data"+":", `edata)
         return NULL
       ENDIF
@@ -415,8 +415,12 @@ CLASS `Utils:
         `warning("Prequel"+" "+"Utils"+" "+"decodeData"+":"+" "+"invalid"+" "+"data"+":", `edata)
         return NULL
       ENDIF
-      `dlist = [`edata[1][0]]
-      FORINCR `j(1 `length(`edata[1])):
+      IF `not(`isnull(`edata[1][1])) AND `not(`is_type_str(`get_type(`edata[1][1]))):
+        `warning("Prequel"+" "+"Utils"+" "+"decodeData"+":"+" "+"invalid"+" "+"data"+":", `edata)
+        return NULL
+      ENDIF
+      `dlist = [`edata[1][0], `edata[1][1]]
+      FORINCR `j(2 `length(`edata[1])):
         `push(`dlist, `trunc(`edata[1][`j]))
       ENDFOR
       return [`ARG_TYPE_VARNAME, `dlist]
@@ -497,63 +501,64 @@ VAR `key_token_BIT_SHR = 22
 VAR `key_token_BIT_XOR = 23
 VAR `key_token_COMMA = 24
 VAR `key_token_COMMENT = 25
-VAR `key_token_DEBUGL = 26
-VAR `key_token_DIV = 27
-VAR `key_token_ELSE = 28
-VAR `key_token_ELSIF = 29
-VAR `key_token_EMPTY = 30
-VAR `key_token_ENDIF = 31
-VAR `key_token_ENDREP = 32
-VAR `key_token_EQ = 33
-VAR `key_token_ERROR = 34
-VAR `key_token_GE = 35
-VAR `key_token_GT = 36
-VAR `key_token_IDV = 37
-VAR `key_token_IF = 38
-VAR `key_token_INDENT = 39
-VAR `key_token_INDEXOF = 40
-VAR `key_token_IS = 41
-VAR `key_token_IS_NOT = 42
-VAR `key_token_LE = 43
-VAR `key_token_LENGTH = 44
-VAR `key_token_LIST = 45
-VAR `key_token_LITERAL = 46
-VAR `key_token_LPAR = 47
-VAR `key_token_LSIZE = 48
-VAR `key_token_LSQR = 49
-VAR `key_token_LT = 50
-VAR `key_token_MATHSYMB = 51
-VAR `key_token_MINUS = 52
-VAR `key_token_MOD = 53
-VAR `key_token_MODULE_NAME = 54
-VAR `key_token_MUL = 55
-VAR `key_token_NE = 56
-VAR `key_token_NEWLINE = 57
-VAR `key_token_NOT = 58
-VAR `key_token_NSIZE = 59
-VAR `key_token_NUMBER = 60
-VAR `key_token_OR = 61
-VAR `key_token_PLUS = 62
-VAR `key_token_POP = 63
-VAR `key_token_POSTERROR = 64
-VAR `key_token_PROCEDURE = 65
-VAR `key_token_PUSH = 66
-VAR `key_token_QUALVAR = 67
-VAR `key_token_QUEUE = 68
-VAR `key_token_RANDOM = 69
-VAR `key_token_REPEAT = 70
-VAR `key_token_REPNEXT = 71
-VAR `key_token_REPSTOP = 72
-VAR `key_token_RPAR = 73
-VAR `key_token_RSQR = 74
-VAR `key_token_SIZE = 75
-VAR `key_token_SPACES = 76
-VAR `key_token_STRING = 77
-VAR `key_token_SUFFIX = 78
-VAR `key_token_UNASSIGN = 79
-VAR `key_token_UNDEFINED = 80
-VAR `key_token_UNQUEUE = 81
-VAR `key_token_VAR = 82
+VAR `key_token_CSVAR = 26
+VAR `key_token_DEBUGL = 27
+VAR `key_token_DIV = 28
+VAR `key_token_ELSE = 29
+VAR `key_token_ELSIF = 30
+VAR `key_token_EMPTY = 31
+VAR `key_token_ENDIF = 32
+VAR `key_token_ENDREP = 33
+VAR `key_token_EQ = 34
+VAR `key_token_ERROR = 35
+VAR `key_token_GE = 36
+VAR `key_token_GT = 37
+VAR `key_token_IDV = 38
+VAR `key_token_IF = 39
+VAR `key_token_INDENT = 40
+VAR `key_token_INDEXOF = 41
+VAR `key_token_IS = 42
+VAR `key_token_IS_NOT = 43
+VAR `key_token_LE = 44
+VAR `key_token_LENGTH = 45
+VAR `key_token_LIST = 46
+VAR `key_token_LITERAL = 47
+VAR `key_token_LPAR = 48
+VAR `key_token_LSIZE = 49
+VAR `key_token_LSQR = 50
+VAR `key_token_LT = 51
+VAR `key_token_MATHSYMB = 52
+VAR `key_token_MINUS = 53
+VAR `key_token_MOD = 54
+VAR `key_token_MODULE_NAME = 55
+VAR `key_token_MUL = 56
+VAR `key_token_NE = 57
+VAR `key_token_NEWLINE = 58
+VAR `key_token_NOT = 59
+VAR `key_token_NSIZE = 60
+VAR `key_token_NUMBER = 61
+VAR `key_token_OR = 62
+VAR `key_token_PLUS = 63
+VAR `key_token_POP = 64
+VAR `key_token_POSTERROR = 65
+VAR `key_token_PROCEDURE = 66
+VAR `key_token_PUSH = 67
+VAR `key_token_QUALVAR = 68
+VAR `key_token_QUEUE = 69
+VAR `key_token_RANDOM = 70
+VAR `key_token_REPEAT = 71
+VAR `key_token_REPNEXT = 72
+VAR `key_token_REPSTOP = 73
+VAR `key_token_RPAR = 74
+VAR `key_token_RSQR = 75
+VAR `key_token_SIZE = 76
+VAR `key_token_SPACES = 77
+VAR `key_token_STRING = 78
+VAR `key_token_SUFFIX = 79
+VAR `key_token_UNASSIGN = 80
+VAR `key_token_UNDEFINED = 81
+VAR `key_token_UNQUEUE = 82
+VAR `key_token_VAR = 83
 
 VAR `SUFFIX_ = 0
 VAR `SUFFIX_LENGTH = 1
@@ -658,6 +663,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "BIT_XOR")
     `push(THIS.`_token_strs, "COMMA")
     `push(THIS.`_token_strs, "COMMENT")
+    `push(THIS.`_token_strs, "CSVAR")
     `push(THIS.`_token_strs, "DEBUGL")
     `push(THIS.`_token_strs, "DIV")
     `push(THIS.`_token_strs, "ELSE")
@@ -942,6 +948,8 @@ CLASS `Lexer:
     VAR `error_msg
     VAR `literal
     VAR `var_op
+    VAR `indexof_csvar
+    VAR `token
     `push(`tokens, [`key_token_INDENT, 0, `substring(`line, 0, `col)])
     WHILE TRUE:
       IF `line[`col] == " ":
@@ -1418,6 +1426,93 @@ CLASS `Lexer:
         `col += 1
         continue
       ENDIF
+      IF `line[`col] == "!":
+        `start = `col
+        `col += 1
+        IF ((`line[`col] < "a") OR (`line[`col] > "z")) AND ((`line[`col] < "A") OR (`line[`col] > "Z")) AND (`line[`col] != "_"):
+          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"AFTER"+" "+"CALLSTACK"+"-"+"VARIABLE"+" "+"OPERATOR"])
+          `start = `col
+          WHILE `line[`col] != `chr_lf:
+            `col += 1
+          ENDWHILE
+          `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
+          break
+        ENDIF
+        `col += 1
+        WHILE ((`line[`col] >= "0") AND (`line[`col] <= "9")) OR ((`line[`col] >= "a") AND (`line[`col] <= "z")) OR ((`line[`col] >= "A") AND (`line[`col] <= "Z")) OR (`line[`col] == "_"):
+          `col += 1
+        ENDWHILE
+        `textra = `substring(`line, `start+1, `col)
+        `error_msg = NULL
+        `textra = `uppercase(`textra)
+        IF `indexof(THIS.`_reserved_words, `textra) >= 0:
+          `error_msg = "RESERVED"+" "+"WORD"
+        ELSIF `indexof(THIS.`_reserved_vlast_words, `textra) >= 0:
+          `error_msg = "RESERVED"+" "+"WORD"
+        ENDIF
+        IF `not(`isnull(`error_msg)):
+          `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), `error_msg])
+          `start = `col
+          WHILE `line[`col] != `chr_lf:
+            `col += 1
+          ENDWHILE
+          `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
+          break
+        ENDIF
+        IF `line[`col] == "@":
+          `indexof_csvar = `col
+          `col += 1
+          IF `not(THIS.`isModuleNameCharStart(`line[`col])):
+            `textra = `lowercase(`textra)
+            `push(`tokens, [`key_token_CSVAR, `start, `substring(`line, `start, `col-1), `textra])
+            `start = `col-1
+            `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "MISSING"+" "+"MODULE"+" "+"NAME"])
+            `start = `col
+            WHILE `line[`col] != `chr_lf:
+              `col += 1
+            ENDWHILE
+            `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
+            break
+          ENDIF
+          `col += 1
+          WHILE THIS.`isModuleNameChar(`line[`col]):
+            `col += 1
+          ENDWHILE
+          `textra = `lowercase(`substring(`line, `start+1, `indexof_csvar))+"@"+`uppercase(`substring(`line, `indexof_csvar+1, `col))
+        ELSE:
+          `textra = `lowercase(`substring(`line, `start+1, `col))
+        ENDIF
+        `push(`tokens, [`key_token_CSVAR, `start, `substring(`line, `start, `col), `textra])
+        IF `line[`col] == ".":
+          `start = `col
+          `col += 1
+          WHILE ((`line[`col] >= "A") AND (`line[`col] <= "Z")) OR ((`line[`col] >= "a") AND (`line[`col] <= "z")):
+            `col += 1
+          ENDWHILE
+          `textra = `uppercase(`substring(`line, `start+1, `col))
+          IF `indexof(THIS.`_reserved_vlast_words, `textra) < 0:
+            `push(`tokens, [`key_token_ERROR, `start, `substring(`line, `start, `col), "UNEXPECTED"+" "+"SUFFIX"])
+            `start = `col
+            WHILE `line[`col] != `chr_lf:
+              `col += 1
+            ENDWHILE
+            `push(`tokens, [`key_token_POSTERROR, `start, `substring(`line, `start, `col-1)])
+            break
+          ENDIF
+          COMMENT IF (`textra != "UNASSIGN") AND (`textra != "LENGTH") AND (`textra != "SIZE") AND (`textra != "NSIZE") AND (`textra != "LSIZE") AND (`textra != "INDEXOF") AND (`textra != "POP") AND (`textra != "UNQUEUE") AND (`textra != "PUSH") AND (`textra != "QUEUE"):
+          COMMENT   `push(`tokens, [`key_token_SUFFIX, `start, `substring(`line, `start, `col), `textra])
+          COMMENT   continue
+          COMMENT ENDIF
+          `var_op = `textra
+          `token = `pop(`tokens)
+          `start = `token[1]
+          `textra = "!"+`token[3]
+          `var_op = `indexof(THIS.`_token_strs, `var_op)
+          `push(`tokens, [`var_op, `start, `substring(`line, `start, `col), `textra])
+          continue
+        ENDIF
+        continue
+      ENDIF
       IF `line[`col] == "@":
         `start = `col
         `col += 1
@@ -1776,74 +1871,80 @@ VAR `OPCODE_ASIN = 5
 VAR `OPCODE_ATAN = 6
 VAR `OPCODE_ATAN2 = 7
 VAR `OPCODE_ASSIGN_OP = 8
-VAR `OPCODE_ASSIGN_OP_RANDOM = 9
-VAR `OPCODE_ASSIGN_POP = 10
-VAR `OPCODE_ASSIGN_UNQUEUE = 11
-VAR `OPCODE_BIT_AND = 12
-VAR `OPCODE_BIT_NOT = 13
-VAR `OPCODE_BIT_OR = 14
-VAR `OPCODE_BIT_SHL = 15
-VAR `OPCODE_BIT_SHR = 16
-VAR `OPCODE_BIT_XOR = 17
-VAR `OPCODE_BY_REF = 18
-VAR `OPCODE_CEIL = 19
-VAR `OPCODE_COS = 20
-VAR `OPCODE_DEBUGL = 21
-VAR `OPCODE_DIV = 22
-VAR `OPCODE_ELSE = 23
-VAR `OPCODE_ELSIF = 24
-VAR `OPCODE_ENDIF = 25
-VAR `OPCODE_ENDREP = 26
-VAR `OPCODE_EQ = 27
-VAR `OPCODE_EXP = 28
-VAR `OPCODE_EXP2 = 29
-VAR `OPCODE_FLOOR = 30
-VAR `OPCODE_GE = 31
-VAR `OPCODE_GT = 32
-VAR `OPCODE_IDV = 33
-VAR `OPCODE_IF = 34
-VAR `OPCODE_INDEXOF_VAR = 35
-VAR `OPCODE_IS_NOT_VAR = 36
-VAR `OPCODE_IS_VAR = 37
-VAR `OPCODE_LE = 38
-VAR `OPCODE_LENGTH_VAR = 39
-VAR `OPCODE_LIST = 40
-VAR `OPCODE_LIST_AT_QUALVAR = 41
-VAR `OPCODE_LIST_AT_VAR = 42
-VAR `OPCODE_LOG = 43
-VAR `OPCODE_LOG2 = 44
-VAR `OPCODE_LSIZE_VAR = 45
-VAR `OPCODE_LT = 46
-VAR `OPCODE_MAX = 47
-VAR `OPCODE_MIN = 48
-VAR `OPCODE_MINUS = 49
-VAR `OPCODE_MOD = 50
-VAR `OPCODE_MODULE_NAME = 51
-VAR `OPCODE_MUL = 52
-VAR `OPCODE_NE = 53
-VAR `OPCODE_NEG = 54
-VAR `OPCODE_NOT = 55
-VAR `OPCODE_NSIZE_VAR = 56
-VAR `OPCODE_NUMBER = 57
-VAR `OPCODE_OR = 58
-VAR `OPCODE_PLUS = 59
-VAR `OPCODE_POW = 60
-VAR `OPCODE_PROCEDURE = 61
-VAR `OPCODE_PUSH = 62
-VAR `OPCODE_QUALVAR = 63
-VAR `OPCODE_QUEUE = 64
-VAR `OPCODE_REPEAT = 65
-VAR `OPCODE_REPNEXT = 66
-VAR `OPCODE_REPSTOP = 67
-VAR `OPCODE_ROUND = 68
-VAR `OPCODE_SIGN = 69
-VAR `OPCODE_SIN = 70
-VAR `OPCODE_SIZE_VAR = 71
-VAR `OPCODE_SQRT = 72
-VAR `OPCODE_STRING = 73
-VAR `OPCODE_TAN = 74
-VAR `OPCODE_UNASSIGN = 75
-VAR `OPCODE_VAR = 76
+VAR `OPCODE_ASSIGN_OP_CSVAR = 9
+VAR `OPCODE_ASSIGN_OP_RANDOM = 10
+VAR `OPCODE_ASSIGN_POP = 11
+VAR `OPCODE_ASSIGN_UNQUEUE = 12
+VAR `OPCODE_BIT_AND = 13
+VAR `OPCODE_BIT_NOT = 14
+VAR `OPCODE_BIT_OR = 15
+VAR `OPCODE_BIT_SHL = 16
+VAR `OPCODE_BIT_SHR = 17
+VAR `OPCODE_BIT_XOR = 18
+VAR `OPCODE_BY_REF = 19
+VAR `OPCODE_CEIL = 20
+VAR `OPCODE_COS = 21
+VAR `OPCODE_CSVAR = 22
+VAR `OPCODE_DEBUGL = 23
+VAR `OPCODE_DIV = 24
+VAR `OPCODE_ELSE = 25
+VAR `OPCODE_ELSIF = 26
+VAR `OPCODE_ENDIF = 27
+VAR `OPCODE_ENDREP = 28
+VAR `OPCODE_EQ = 29
+VAR `OPCODE_EXP = 30
+VAR `OPCODE_EXP2 = 31
+VAR `OPCODE_FLOOR = 32
+VAR `OPCODE_GE = 33
+VAR `OPCODE_GT = 34
+VAR `OPCODE_IDV = 35
+VAR `OPCODE_IF = 36
+VAR `OPCODE_INDEXOF_VAR = 37
+VAR `OPCODE_IS_CSVAR = 38
+VAR `OPCODE_IS_NOT_CSVAR = 39
+VAR `OPCODE_IS_NOT_VAR = 40
+VAR `OPCODE_IS_VAR = 41
+VAR `OPCODE_LE = 42
+VAR `OPCODE_LENGTH_VAR = 43
+VAR `OPCODE_LIST = 44
+VAR `OPCODE_LIST_AT_CSVAR = 45
+VAR `OPCODE_LIST_AT_QUALVAR = 46
+VAR `OPCODE_LIST_AT_VAR = 47
+VAR `OPCODE_LOG = 48
+VAR `OPCODE_LOG2 = 49
+VAR `OPCODE_LSIZE_VAR = 50
+VAR `OPCODE_LT = 51
+VAR `OPCODE_MAX = 52
+VAR `OPCODE_MIN = 53
+VAR `OPCODE_MINUS = 54
+VAR `OPCODE_MOD = 55
+VAR `OPCODE_MODULE_NAME = 56
+VAR `OPCODE_MUL = 57
+VAR `OPCODE_NE = 58
+VAR `OPCODE_NEG = 59
+VAR `OPCODE_NOT = 60
+VAR `OPCODE_NSIZE_VAR = 61
+VAR `OPCODE_NUMBER = 62
+VAR `OPCODE_OR = 63
+VAR `OPCODE_PLUS = 64
+VAR `OPCODE_POW = 65
+VAR `OPCODE_PROCEDURE = 66
+VAR `OPCODE_PUSH = 67
+VAR `OPCODE_QUALVAR = 68
+VAR `OPCODE_QUEUE = 69
+VAR `OPCODE_REPEAT = 70
+VAR `OPCODE_REPNEXT = 71
+VAR `OPCODE_REPSTOP = 72
+VAR `OPCODE_ROUND = 73
+VAR `OPCODE_SIGN = 74
+VAR `OPCODE_SIN = 75
+VAR `OPCODE_SIZE_VAR = 76
+VAR `OPCODE_SQRT = 77
+VAR `OPCODE_STRING = 78
+VAR `OPCODE_TAN = 79
+VAR `OPCODE_UNASSIGN = 80
+VAR `OPCODE_UNASSIGN_CSVAR = 81
+VAR `OPCODE_VAR = 82
 
 CLASS `Parser:
 
@@ -1880,7 +1981,7 @@ CLASS `Parser:
       ENDIF
     ENDIF
     VAR `token_id = `lexer.`tokenId(`tokens[`lidxs[0]])
-    IF `token_id == `key_token_VAR:
+    IF (`token_id == `key_token_VAR) OR (`token_id == `key_token_CSVAR):
       return THIS.`_parseAssign(`tokens, `lidxs)
     ELSIF `token_id == `key_token_IF:
       return THIS.`_parseIf(`tokens, `lidxs)
@@ -1916,7 +2017,8 @@ CLASS `Parser:
     return [`OPCODE_ERROR, NULL, "INVALID"+" "+"INSTRUCTION", `lexer.`tokenColumn(`tokens[`lidxs[0]]), []]
 
   METHOD `_parseAssign(`tokens `lidxs):
-    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    VAR `vvar
+    VAR `vmod
     VAR `exprs = []
     VAR `lidx_expr
     VAR `lidx = 1
@@ -1927,6 +2029,23 @@ CLASS `Parser:
     VAR `qualvar
     VAR `expr
     VAR `lidx_sfxexpr
+    VAR `vvar_ref
+    VAR `vmod_ref
+    VAR `indexof_csvar
+    VAR `vvar2
+    VAR `vmod2
+    `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    IF `lexer.`tokenId(`tokens[`lidxs[0]]) == `key_token_VAR:
+      `vmod = NULL
+    ELSE:
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 0, `indexof_csvar)
+      ENDIF
+    ENDIF
     WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_expr) == 1:
@@ -1939,7 +2058,7 @@ CLASS `Parser:
     ENDWHILE
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_COMMA:
       `proc_exprs = []
-      `byref_exprs = [`vvar]
+      `byref_exprs = [`vvar, `vmod]
       FORINCR `j(0 `length(`exprs)):
         `push(`byref_exprs, `exprs[`j])
       ENDFOR
@@ -1949,10 +2068,21 @@ CLASS `Parser:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP:
           break
         ENDIF
-        IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_VAR:
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_CSVAR:
+          `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+          `indexof_csvar = `indexof(`vvar_ref, "@")
+          IF `indexof_csvar < 0:
+            `vmod_ref = ""
+          ELSE:
+            `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+            `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+          ENDIF
+          `byref_exprs = [`vvar_ref, `vmod_ref]
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_VAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
+        ELSE:
+          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]]), NULL]
         ENDIF
-        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
         `lidx += 1
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -1986,12 +2116,22 @@ CLASS `Parser:
         return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_BIT_AND:
-        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) == `key_token_CSVAR:
+          `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]])
+          `indexof_csvar = `indexof(`vvar_ref, "@")
+          IF `indexof_csvar < 0:
+            `vmod_ref = ""
+          ELSE:
+            `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+            `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+          ENDIF
+          `byref_exprs = [`vvar_ref, `vmod_ref]
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+        ELSE:
+          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]]), NULL]
         ENDIF
-        `lidx += 3
-        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
-        `lidx += 1
+        `lidx += 4
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
@@ -2025,12 +2165,22 @@ CLASS `Parser:
           break
         ENDIF
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_BIT_AND:
-          IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
+          IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_CSVAR:
+            `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])
+            `indexof_csvar = `indexof(`vvar_ref, "@")
+            IF `indexof_csvar < 0:
+              `vmod_ref = ""
+            ELSE:
+              `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+              `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+            ENDIF
+            `byref_exprs = [`vvar_ref, `vmod_ref]
+          ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
             return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+          ELSE:
+            `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]]), NULL]
           ENDIF
-          `lidx += 2
-          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
-          `lidx += 1
+          `lidx += 3
           WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
             `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
             IF `length(`lidx_ariexpr) == 1:
@@ -2072,7 +2222,7 @@ CLASS `Parser:
         IF `lidx+2 != `length(`lidxs)-1:
           return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"RANDOM", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
         ENDIF
-        return [`OPCODE_ASSIGN_OP_RANDOM, NULL, `vvar, `exprs, NULL]
+        return [`OPCODE_ASSIGN_OP_RANDOM, NULL, `vvar, `exprs, NULL, `vmod]
       ENDIF
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
       IF `length(`lidx_expr) == 1:
@@ -2081,29 +2231,47 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return [`OPCODE_ASSIGN_OP_RANDOM, NULL, `vvar, `exprs, `lidx_expr[1]]
+      return [`OPCODE_ASSIGN_OP_RANDOM, NULL, `vvar, `exprs, `lidx_expr[1], `vmod]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_INCR:
       IF `lidx+1 != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"INCREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ELSE:
+          `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_PLUS, [`OPCODE_CSVAR, `vvar, `vmod], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ELSE:
+          `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_DECR:
       IF `lidx+1 != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"DECREMENT"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ELSE:
+          `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MINUS, [`OPCODE_CSVAR, `vvar, `vmod], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ELSE:
+          `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], [`OPCODE_NUMBER, `fp[0].FromFloat(1)]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_PLUS:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2113,12 +2281,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_PLUS, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_PLUS, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_PLUS, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_MINUS:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2128,12 +2305,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MINUS, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MINUS, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_MINUS, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_MUL:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2143,12 +2329,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_MUL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MUL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_MUL, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_MUL, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MUL, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_MUL, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_DIV:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2158,12 +2353,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_DIV, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_DIV, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_DIV, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_DIV, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_DIV, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_DIV, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_IDV:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2173,12 +2377,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_IDV, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_IDV, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_IDV, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_IDV, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_IDV, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_IDV, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_MOD:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2188,12 +2401,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_MOD, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MOD, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_MOD, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_MOD, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_MOD, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_MOD, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_AND:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2203,12 +2425,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_BIT_AND, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_AND, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_AND, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_BIT_AND, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_AND, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_AND, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_OR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2218,12 +2449,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_BIT_OR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_OR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_OR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_BIT_OR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_OR, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_OR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_XOR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2233,12 +2473,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_BIT_XOR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_XOR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_XOR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_BIT_XOR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_XOR, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_XOR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_SHL:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2248,12 +2497,21 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_BIT_SHL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_SHL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_SHL, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_BIT_SHL, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_SHL, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_SHL, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_BIT_SHR:
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
@@ -2263,30 +2521,49 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ARITHMETIC"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_BIT_SHR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_SHR, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_SHR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_BIT_SHR, [`OPCODE_LIST_AT_VAR, `vvar, `exprs], `lidx_expr[1]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_SHR, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+        ELSE:
+          `expr = [`OPCODE_BIT_SHR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_ASSIGN_OP_TOGGLE:
       IF `lidx+1 != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"TOGGLE"+" "+"OPERATOR", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+1]]), []]
       ENDIF
-      IF `length(`exprs) == 0:
-        `expr = [`OPCODE_BIT_NOT, [`OPCODE_VAR, `vvar]]
+
+      IF `isnull(`vmod):
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_NOT, [`OPCODE_VAR, `vvar]]
+        ELSE:
+          `expr = [`OPCODE_BIT_NOT, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
       ELSE:
-        `expr = [`OPCODE_BIT_NOT, [`OPCODE_LIST_AT_VAR, `vvar, `exprs]]
+        IF `length(`exprs) == 0:
+          `expr = [`OPCODE_BIT_NOT, [`OPCODE_CSVAR, `vvar, `vmod]]
+        ELSE:
+          `expr = [`OPCODE_BIT_NOT, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]
+        ENDIF
+        return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `expr]
       ENDIF
-      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `expr]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_ASSIGN_OP:
       return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
     ENDIF
     IF (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_QUALVAR) AND (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_LPAR):
       `proc_exprs = []
-      `byref_exprs = [`vvar]
+      `byref_exprs = [`vvar, `vmod]
       FORINCR `j(0 `length(`exprs)):
         `push(`byref_exprs, `exprs[`j])
       ENDFOR
@@ -2300,12 +2577,22 @@ CLASS `Parser:
         return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_BIT_AND:
-        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) == `key_token_CSVAR:
+          `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]])
+          `indexof_csvar = `indexof(`vvar_ref, "@")
+          IF `indexof_csvar < 0:
+            `vmod_ref = ""
+          ELSE:
+            `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+            `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+          ENDIF
+          `byref_exprs = [`vvar_ref, `vmod_ref]
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+        ELSE:
+          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]]), NULL]
         ENDIF
-        `lidx += 3
-        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
-        `lidx += 1
+        `lidx += 4
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
@@ -2339,12 +2626,22 @@ CLASS `Parser:
           break
         ENDIF
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_BIT_AND:
-          IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
+          IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_CSVAR:
+            `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])
+            `indexof_csvar = `indexof(`vvar_ref, "@")
+            IF `indexof_csvar < 0:
+              `vmod_ref = ""
+            ELSE:
+              `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+              `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+            ENDIF
+            `byref_exprs = [`vvar_ref, `vmod_ref]
+          ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
             return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+          ELSE:
+            `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]]), NULL]
           ENDIF
-          `lidx += 2
-          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
-          `lidx += 1
+          `lidx += 3
           WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
             `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
             IF `length(`lidx_ariexpr) == 1:
@@ -2382,8 +2679,25 @@ CLASS `Parser:
       return [`OPCODE_PROCEDURE, NULL, `qualvar, `proc_exprs]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_POP:
+      `vvar2 = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])
+      IF `vvar2[0] != "!":
+        `vmod2 = NULL
+      ELSE:
+        `indexof_csvar = `indexof(`vvar2, "@")
+        IF `indexof_csvar < 0:
+          `vmod2 = ""
+          `vvar2 = `substring(`vvar2, 1, `length(`vvar2))
+        ELSE:
+          `vmod2 = `substring(`vvar2, `indexof_csvar+1, `length(`vvar2))
+          `vvar2 = `substring(`vvar2, 1, `indexof_csvar)
+        ENDIF
+      ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_NEWLINE:
-        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])], NULL]
+        IF `isnull(`vmod2):
+          return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_VAR, `vvar2], NULL, `vmod]
+        ELSE:
+          return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_CSVAR, `vvar2, `vmod2], NULL, `vmod]
+        ENDIF
       ENDIF
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+2)
       IF `length(`lidx_expr) == 1:
@@ -2392,19 +2706,40 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])], `lidx_expr[1]]
+      IF `isnull(`vmod2):
+        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_VAR, `vvar2], `lidx_expr[1], `vmod]
+      ELSE:
+        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, [`OPCODE_CSVAR, `vvar2, `vmod2], `lidx_expr[1], `vmod]
+      ENDIF
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_UNQUEUE:
+      `vvar2 = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])
+      IF `vvar2[0] != "!":
+        `vmod2 = NULL
+      ELSE:
+        `indexof_csvar = `indexof(`vvar2, "@")
+        IF `indexof_csvar < 0:
+          `vmod2 = ""
+          `vvar2 = `substring(`vvar2, 1, `length(`vvar2))
+        ELSE:
+          `vmod2 = `substring(`vvar2, `indexof_csvar+1, `length(`vvar2))
+          `vvar2 = `substring(`vvar2, 1, `indexof_csvar)
+        ENDIF
+      ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_NEWLINE:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
       ENDIF
-      return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx+1]])]]
+      IF `isnull(`vmod2):
+        return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, [`OPCODE_VAR, `vvar2], `vmod]
+      ELSE:
+        return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, [`OPCODE_CSVAR, `vvar2, `vmod2], `vmod]
+      ENDIF
     ENDIF
     `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx+1)
     IF `length(`lidx_sfxexpr) > 1:
       IF `lidx_sfxexpr[1][1] == `SUFFIX_POP:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_NEWLINE:
-          return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], NULL]
+          return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], NULL, `vmod]
         ENDIF
         `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_sfxexpr[0])
         IF `length(`lidx_expr) == 1:
@@ -2413,13 +2748,13 @@ CLASS `Parser:
         IF `lidx_expr[0] != `length(`lidxs)-1:
           return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
         ENDIF
-        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], `lidx_expr[1]]
+        return [`OPCODE_ASSIGN_POP, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], `lidx_expr[1], `vmod]
       ENDIF
       IF `lidx_sfxexpr[1][1] == `SUFFIX_UNQUEUE:
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) != `key_token_NEWLINE:
           return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]]]), []]
         ENDIF
-        return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2]]
+        return [`OPCODE_ASSIGN_UNQUEUE, NULL, `vvar, `exprs, `lidx_sfxexpr[1][2], `vmod]
       ENDIF
     ENDIF
     `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -2429,7 +2764,11 @@ CLASS `Parser:
     IF `lidx_expr[0] != `length(`lidxs)-1:
       return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"ASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `lidx_expr[1]]
+    IF `isnull(`vmod):
+      return [`OPCODE_ASSIGN_OP, NULL, `vvar, `exprs, `lidx_expr[1]]
+    ELSE:
+      return [`OPCODE_ASSIGN_OP_CSVAR, NULL, `vvar, `vmod, `exprs, `lidx_expr[1]]
+    ENDIF
 
   METHOD `_parseIf(`tokens `lidxs):
     VAR `lidx_expr = THIS.`_parseLogicalExpression(`tokens, `lidxs, 1)
@@ -2506,13 +2845,27 @@ CLASS `Parser:
     VAR `lidx
     VAR `byref_exprs
     VAR `lidx_ariexpr
+    VAR `vvar_ref
+    VAR `vmod_ref
+    VAR `indexof_csvar
     IF `lexer.`tokenId(`tokens[`lidxs[2]]) == `key_token_BIT_AND:
-      IF `lexer.`tokenId(`tokens[`lidxs[3]]) != `key_token_VAR:
-        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[3]]), []]
+      `lidx = 0
+      IF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) == `key_token_CSVAR:
+        `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]])
+        `indexof_csvar = `indexof(`vvar_ref, "@")
+        IF `indexof_csvar < 0:
+          `vmod_ref = ""
+        ELSE:
+          `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+          `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+        ENDIF
+        `byref_exprs = [`vvar_ref, `vmod_ref]
+      ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
+        return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
+      ELSE:
+        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]]), NULL]
       ENDIF
-      `lidx = 3
-      `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
-      `lidx += 1
+      `lidx += 4
       WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_ariexpr) == 1:
@@ -2546,12 +2899,22 @@ CLASS `Parser:
         break
       ENDIF
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_BIT_AND:
-        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_CSVAR:
+          `vvar_ref = `lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]])
+          `indexof_csvar = `indexof(`vvar_ref, "@")
+          IF `indexof_csvar < 0:
+            `vmod_ref = ""
+          ELSE:
+            `vmod_ref = `substring(`vvar_ref, `indexof_csvar+1, `length(`vvar_ref))
+            `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
+          ENDIF
+          `byref_exprs = [`vvar_ref, `vmod_ref]
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
+        ELSE:
+          `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]]), NULL]
         ENDIF
-        `lidx += 2
-        `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]
-        `lidx += 1
+        `lidx += 3
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
@@ -2612,8 +2975,27 @@ CLASS `Parser:
     IF `length(`lidx_expr) == 1:
       return `lidx_expr[0]
     ENDIF
+    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    VAR `vmod
+    VAR `indexof_csvar
+    IF `vvar[0] != "!":
+      `vmod = NULL
+    ELSE:
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+        `vvar = `substring(`vvar, 1, `length(`vvar))
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 1, `indexof_csvar)
+      ENDIF
+    ENDIF
     IF `lidx_expr[0] == `length(`lidxs)-1:
-      return [`OPCODE_PUSH, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1], NULL]
+      IF `isnull(`vmod):
+        return [`OPCODE_PUSH, NULL, [`OPCODE_VAR, `vvar], `lidx_expr[1], NULL]
+      ELSE:
+        return [`OPCODE_PUSH, NULL, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1], NULL]
+      ENDIF
     ENDIF
     `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
     IF `length(`lidx_ariexpr) == 1:
@@ -2622,7 +3004,11 @@ CLASS `Parser:
     IF `lidx_ariexpr[0] != `length(`lidxs)-1:
       return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"PUSH", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]
     ENDIF
-    return [`OPCODE_PUSH, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1], `lidx_ariexpr[1]]
+    IF `isnull(`vmod):
+      return [`OPCODE_PUSH, NULL, [`OPCODE_VAR, `vvar], `lidx_expr[1], `lidx_ariexpr[1]]
+    ELSE:
+      return [`OPCODE_PUSH, NULL, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1], `lidx_ariexpr[1]]
+    ENDIF
 
   METHOD `_parseQueue(`tokens `lidxs `lidx_sfxexpr):
     VAR `lidx_expr
@@ -2643,13 +3029,32 @@ CLASS `Parser:
     IF `lidx_expr[0] != `length(`lidxs)-1:
       return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"QUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return [`OPCODE_QUEUE, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1]]
+    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    VAR `vmod
+    VAR `indexof_csvar
+    IF `vvar[0] != "!":
+      `vmod = NULL
+    ELSE:
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+        `vvar = `substring(`vvar, 1, `length(`vvar))
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 1, `indexof_csvar)
+      ENDIF
+    ENDIF
+    IF `isnull(`vmod):
+      return [`OPCODE_QUEUE, NULL, [`OPCODE_VAR, `vvar], `lidx_expr[1]]
+    ELSE:
+      return [`OPCODE_QUEUE, NULL, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1]]
+    ENDIF
 
   METHOD `_parsePop(`tokens `lidxs `lidx_sfxexpr):
     VAR `lidx_expr
     IF `not(`isnull(`lidx_sfxexpr)):
       IF `lidx_sfxexpr[0] == `length(`lidxs)-1:
-        return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, `lidx_sfxexpr[1][2], NULL]
+        return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, `lidx_sfxexpr[1][2], NULL, NULL]
       ENDIF
       `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_sfxexpr[0])
       IF `length(`lidx_expr) == 1:
@@ -2658,10 +3063,29 @@ CLASS `Parser:
       IF `lidx_expr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
       ENDIF
-      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1]]
+      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, `lidx_sfxexpr[1][2], `lidx_expr[1], NULL]
+    ENDIF
+    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    VAR `vmod
+    VAR `indexof_csvar
+    IF `vvar[0] != "!":
+      `vmod = NULL
+    ELSE:
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+        `vvar = `substring(`vvar, 1, `length(`vvar))
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 1, `indexof_csvar)
+      ENDIF
     ENDIF
     IF `length(`lidxs) == 2:
-      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], NULL]
+      IF `isnull(`vmod):
+        return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_VAR, `vvar], NULL, NULL]
+      ELSE:
+        return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_CSVAR, `vvar, `vmod], NULL, NULL]
+      ENDIF
     ENDIF
     `lidx_expr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, 1)
     IF `length(`lidx_expr) == 1:
@@ -2670,25 +3094,61 @@ CLASS `Parser:
     IF `lidx_expr[0] != `length(`lidxs)-1:
       return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"POP", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]
     ENDIF
-    return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])], `lidx_expr[1]]
+    IF `isnull(`vmod):
+      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_VAR, `vvar], `lidx_expr[1], NULL]
+    ELSE:
+      return [`OPCODE_ASSIGN_POP, NULL, NULL, NULL, [`OPCODE_CSVAR, `vvar, `vmod], `lidx_expr[1], NULL]
+    ENDIF
 
   METHOD `_parseUnqueue(`tokens `lidxs `lidx_sfxexpr):
     IF `not(`isnull(`lidx_sfxexpr)):
       IF `lidx_sfxexpr[0] != `length(`lidxs)-1:
         return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]]]), []]
       ENDIF
-      return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, `lidx_sfxexpr[1][2]]
+      return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, `lidx_sfxexpr[1][2], NULL]
     ENDIF
     IF `length(`lidxs) != 2:
       return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNQUEUE", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[0]])]]
+    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    VAR `vmod
+    VAR `indexof_csvar
+    IF `vvar[0] != "!":
+      `vmod = NULL
+    ELSE:
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+        `vvar = `substring(`vvar, 1, `length(`vvar))
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 1, `indexof_csvar)
+      ENDIF
+    ENDIF
+    IF `isnull(`vmod):
+      return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, [`OPCODE_VAR, `vvar], NULL]
+    ELSE:
+      return [`OPCODE_ASSIGN_UNQUEUE, NULL, NULL, NULL, [`OPCODE_CSVAR, `vvar, `vmod], NULL]
+    ENDIF
 
   METHOD `_parseUnassign(`tokens `lidxs):
     IF `lexer.`tokenId(`tokens[`lidxs[1]]) != `key_token_NEWLINE:
-      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNASSIGNMENT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
+      return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"UNASSIGN", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
-    return [`OPCODE_UNASSIGN, NULL, `lexer.`tokenExtra(`tokens[`lidxs[0]])]
+    VAR `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
+    IF `vvar[0] != "!":
+      return [`OPCODE_UNASSIGN, NULL, `vvar]
+    ENDIF
+    VAR `vmod
+    VAR `indexof_csvar = `indexof(`vvar, "@")
+    IF `indexof_csvar < 0:
+      `vmod = ""
+      `vvar = `substring(`vvar, 1, `length(`vvar))
+    ELSE:
+      `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+      `vvar = `substring(`vvar, 1, `indexof_csvar)
+    ENDIF
+    return [`OPCODE_UNASSIGN_CSVAR, NULL, `vvar, `vmod]
 
   METHOD `_parseDebugl(`tokens `lidxs):
     IF `length(`lidxs) <= 2:
@@ -2783,6 +3243,10 @@ CLASS `Parser:
         `logical_factor = [`OPCODE_IS_NOT_VAR, `lidx_factor[1][1], `lidx_factor[1][2]]
       ELSIF `lidx_factor[1][0] == `OPCODE_IS_NOT_VAR:
         `logical_factor = [`OPCODE_IS_VAR, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_IS_CSVAR:
+        `logical_factor = [`OPCODE_IS_NOT_CSVAR, `lidx_factor[1][1], `lidx_factor[1][2]]
+      ELSIF `lidx_factor[1][0] == `OPCODE_IS_NOT_CSVAR:
+        `logical_factor = [`OPCODE_IS_CSVAR, `lidx_factor[1][1], `lidx_factor[1][2]]
       ELSE:
         `logical_factor = [`OPCODE_NOT, `lidx_factor[1]]
       ENDIF
@@ -2818,10 +3282,37 @@ CLASS `Parser:
       ENDIF
       return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
     ENDIF
+    VAR `vvar
+    VAR `vmod
+    VAR `indexof_csvar
+    IF (`lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_CSVAR) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS_NOT)):
+      `vvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 0, `indexof_csvar)
+      ENDIF
+      IF (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_EMPTY) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_UNDEFINED):
+        return [`lidx+3, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_IS_CSVAR}{`OPCODE_IS_NOT_CSVAR}, [`OPCODE_CSVAR, `vvar, `vmod], `lexer.`tokenId(`tokens[`lidxs[`lidx+2]])]]
+      ENDIF
+      IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_PROCEDURE:
+        `rel_op_opcode = TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_NE}{`OPCODE_EQ}
+        return [`lidx+3, [`rel_op_opcode, [`OPCODE_NUMBER, 0], [`OPCODE_NUMBER, 0]]]
+      ENDIF
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"TYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]]
+    ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
     IF (`length(`lidx_sfxexpr) > 1) AND (`lidx_sfxexpr[1][1] == `SUFFIX_) AND ((`lidx_sfxexpr[1][2][0] == `OPCODE_LIST_AT_VAR) OR (`lidx_sfxexpr[1][2][0] == `OPCODE_LIST_AT_QUALVAR)) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS_NOT)):
       IF (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_EMPTY):
         return [`lidx_sfxexpr[0]+2, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS}{`OPCODE_IS_VAR}{`OPCODE_IS_NOT_VAR}, `lidx_sfxexpr[1][2], `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]])]]
+      ENDIF
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
+    ENDIF
+    IF (`length(`lidx_sfxexpr) > 1) AND (`lidx_sfxexpr[1][1] == `SUFFIX_) AND (`lidx_sfxexpr[1][2][0] == `OPCODE_LIST_AT_CSVAR) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS_NOT)):
+      IF (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]) == `key_token_EMPTY):
+        return [`lidx_sfxexpr[0]+2, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]]]) == `key_token_IS}{`OPCODE_IS_CSVAR}{`OPCODE_IS_NOT_CSVAR}, `lidx_sfxexpr[1][2], `lexer.`tokenId(`tokens[`lidxs[`lidx_sfxexpr[0]+1]])]]
       ENDIF
       return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
     ENDIF
@@ -2994,24 +3485,82 @@ CLASS `Parser:
     VAR `indexof_var
     VAR `mathsymb
     VAR `lidx_mathexprs
+    VAR `vmod
+    VAR `indexof_csvar
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LITERAL:
       return [`lidx+1, [`OPCODE_NUMBER, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LENGTH:
       `length_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_LENGTH_VAR, [TERNARY{`indexof(`length_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `length_var]]]
+      IF `length_var[0] == "!":
+        `indexof_csvar = `indexof(`length_var, "@")
+        IF `indexof_csvar < 0:
+          `vmod = ""
+          `length_var = `substring(`length_var, 1, `length(`length_var))
+        ELSE:
+          `vmod = `substring(`length_var, `indexof_csvar+1, `length(`length_var))
+          `length_var = `substring(`length_var, 1, `indexof_csvar)
+        ENDIF
+        return [`lidx+1, [`OPCODE_LENGTH_VAR, [`OPCODE_CSVAR, `length_var, `vmod]]]
+      ELSIF `indexof(`length_var, ".") < 0:
+        return [`lidx+1, [`OPCODE_LENGTH_VAR, [`OPCODE_VAR, `length_var]]]
+      ELSE:
+        return [`lidx+1, [`OPCODE_LENGTH_VAR, [`OPCODE_QUALVAR, `length_var]]]
+      ENDIF
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_SIZE:
       `size_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_SIZE_VAR, [TERNARY{`indexof(`size_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `size_var]]]
+      IF `size_var[0] == "!":
+        `indexof_csvar = `indexof(`size_var, "@")
+        IF `indexof_csvar < 0:
+          `vmod = ""
+          `size_var = `substring(`size_var, 1, `length(`size_var))
+        ELSE:
+          `vmod = `substring(`size_var, `indexof_csvar+1, `length(`size_var))
+          `size_var = `substring(`size_var, 1, `indexof_csvar)
+        ENDIF
+        return [`lidx+1, [`OPCODE_SIZE_VAR, [`OPCODE_CSVAR, `size_var, `vmod]]]
+      ELSIF `indexof(`size_var, ".") < 0:
+        return [`lidx+1, [`OPCODE_SIZE_VAR, [`OPCODE_VAR, `size_var]]]
+      ELSE:
+        return [`lidx+1, [`OPCODE_SIZE_VAR, [`OPCODE_QUALVAR, `size_var]]]
+      ENDIF
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_NSIZE:
       `nsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_NSIZE_VAR, [TERNARY{`indexof(`nsize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `nsize_var]]]
+      IF `nsize_var[0] == "!":
+        `indexof_csvar = `indexof(`nsize_var, "@")
+        IF `indexof_csvar < 0:
+          `vmod = ""
+          `nsize_var = `substring(`nsize_var, 1, `length(`nsize_var))
+        ELSE:
+          `vmod = `substring(`nsize_var, `indexof_csvar+1, `length(`nsize_var))
+          `nsize_var = `substring(`nsize_var, 1, `indexof_csvar)
+        ENDIF
+        return [`lidx+1, [`OPCODE_NSIZE_VAR, [`OPCODE_CSVAR, `nsize_var, `vmod]]]
+      ELSIF `indexof(`nsize_var, ".") < 0:
+        return [`lidx+1, [`OPCODE_NSIZE_VAR, [`OPCODE_VAR, `nsize_var]]]
+      ELSE:
+        return [`lidx+1, [`OPCODE_NSIZE_VAR, [`OPCODE_QUALVAR, `nsize_var]]]
+      ENDIF
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSIZE:
       `lsize_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      return [`lidx+1, [`OPCODE_LSIZE_VAR, [TERNARY{`indexof(`lsize_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `lsize_var]]]
+      IF `lsize_var[0] == "!":
+        `indexof_csvar = `indexof(`lsize_var, "@")
+        IF `indexof_csvar < 0:
+          `vmod = ""
+          `lsize_var = `substring(`lsize_var, 1, `length(`lsize_var))
+        ELSE:
+          `vmod = `substring(`lsize_var, `indexof_csvar+1, `length(`lsize_var))
+          `lsize_var = `substring(`lsize_var, 1, `indexof_csvar)
+        ENDIF
+        return [`lidx+1, [`OPCODE_LSIZE_VAR, [`OPCODE_CSVAR, `lsize_var, `vmod]]]
+      ELSIF `indexof(`lsize_var, ".") < 0:
+        return [`lidx+1, [`OPCODE_LSIZE_VAR, [`OPCODE_VAR, `lsize_var]]]
+      ELSE:
+        return [`lidx+1, [`OPCODE_LSIZE_VAR, [`OPCODE_QUALVAR, `lsize_var]]]
+      ENDIF
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_INDEXOF:
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -3020,10 +3569,30 @@ CLASS `Parser:
       ENDIF
       `indexof_var = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
-      IF `length(`lidx_ariexpr) == 1:
-        return [`lidx_expr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]
+      IF `indexof_var[0] == "!":
+        `indexof_csvar = `indexof(`indexof_var, "@")
+        IF `indexof_csvar < 0:
+          `vmod = ""
+          `indexof_var = `substring(`indexof_var, 1, `length(`indexof_var))
+        ELSE:
+          `vmod = `substring(`indexof_var, `indexof_csvar+1, `length(`indexof_var))
+          `indexof_var = `substring(`indexof_var, 1, `indexof_csvar)
+        ENDIF
+        IF `length(`lidx_ariexpr) == 1:
+          return [`lidx_expr[0], [`OPCODE_INDEXOF_VAR, [`OPCODE_CSVAR, `indexof_var, `vmod], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]
+        ENDIF
+        return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [`OPCODE_CSVAR, `indexof_var, `vmod], `lidx_expr[1], `lidx_ariexpr[1]]]
+      ELSIF `indexof(`indexof_var, ".") < 0:
+        IF `length(`lidx_ariexpr) == 1:
+          return [`lidx_expr[0], [`OPCODE_INDEXOF_VAR, [`OPCODE_VAR, `indexof_var], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]
+        ENDIF
+        return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [`OPCODE_VAR, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
+      ELSE:
+        IF `length(`lidx_ariexpr) == 1:
+          return [`lidx_expr[0], [`OPCODE_INDEXOF_VAR, [`OPCODE_QUALVAR, `indexof_var], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]
+        ENDIF
+        return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [`OPCODE_QUALVAR, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
       ENDIF
-      return [`lidx_ariexpr[0], [`OPCODE_INDEXOF_VAR, [TERNARY{`indexof(`indexof_var, ".") < 0}{`OPCODE_VAR}{`OPCODE_QUALVAR}, `indexof_var], `lidx_expr[1], `lidx_ariexpr[1]]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_MATHSYMB:
       `mathsymb = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
@@ -3355,6 +3924,68 @@ CLASS `Parser:
         return [`lidx_ariexpr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs], `lidx_expr[1], `lidx_ariexpr[1]]]]
       ENDIF
       return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_QUALVAR, `qualvar, `exprs]]]
+    ENDIF
+    VAR `vmod
+    VAR `indexof_csvar
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_CSVAR:
+      `vvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
+      `indexof_csvar = `indexof(`vvar, "@")
+      IF `indexof_csvar < 0:
+        `vmod = ""
+      ELSE:
+        `vmod = `substring(`vvar, `indexof_csvar+1, `length(`vvar))
+        `vvar = `substring(`vvar, 0, `indexof_csvar)
+      ENDIF
+      IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) != `key_token_LSQR:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_CSVAR, `vvar, `vmod]]]
+      ENDIF
+      `lidx += 1
+      `exprs = []
+      WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
+        `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_ariexpr) == 1:
+          return `lidx_ariexpr
+        ENDIF
+        `lidx = `lidx_ariexpr[0]
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
+          return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        `push(`exprs, `lidx_ariexpr[1])
+        `lidx += 1
+      ENDWHILE
+      IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_SUFFIX:
+        return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]
+      ENDIF
+      `suffix = `lexer.`tokenStringToId(`lexer.`tokenExtra(`tokens[`lidxs[`lidx]]))
+      IF `suffix == `key_token_LENGTH:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LENGTH, [`OPCODE_LENGTH_VAR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]]
+      ELSIF `suffix == `key_token_SIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_SIZE, [`OPCODE_SIZE_VAR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]]
+      ELSIF `suffix == `key_token_NSIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_NSIZE, [`OPCODE_NSIZE_VAR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]]
+      ELSIF `suffix == `key_token_LSIZE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_LSIZE, [`OPCODE_LSIZE_VAR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]]
+      ELSIF `suffix == `key_token_INDEXOF:
+        `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_expr) == 1:
+          return `lidx_expr
+        ENDIF
+        `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_expr[0])
+        IF `length(`lidx_ariexpr) == 1:
+          return [`lidx_expr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1], [`OPCODE_NUMBER, 0]]]]
+        ENDIF
+        return [`lidx_ariexpr[0], [`OPCODE_SUFFIX, `SUFFIX_INDEXOF, [`OPCODE_INDEXOF_VAR, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod], `lidx_expr[1], `lidx_ariexpr[1]]]]
+      ENDIF
+      IF `suffix == `key_token_PUSH:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_PUSH, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]
+      ELSIF `suffix == `key_token_QUEUE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_QUEUE, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]
+      ELSIF `suffix == `key_token_POP:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_POP, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]
+      ELSIF `suffix == `key_token_UNQUEUE:
+        return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_UNQUEUE, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]
+      ENDIF
+      return [`lidx, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_LIST_AT_CSVAR, `vvar, `exprs, `vmod]]]
     ENDIF
     return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
 
@@ -4219,7 +4850,7 @@ ENDFUNC
 
 CLASS `InterpM:
 
-  METHOD_INIT(`editor_m `getQualvar `onProcedure `onYieldResume `rnd32b `now):
+  METHOD_INIT(`editor_m `getQualvar `onProcedure `onYieldResume `rnd32b `now `instance `existsInstanceCsvar `getInstanceCsvar `__addInstanceCsvar `__removeInstanceCsvar `__updateInstanceCsvarDeltaCost `inInstanceRepeatCsvars `isCsinstanceStatusCodeNull `getCsinstance):
     THIS.`_lines_id = `editor_m.`getLinesId()
     THIS.`_lines_ast = `editor_m.`getLinesAst()
     VAR `breakpoints_info = `editor_m.`getBreakpointsInfo()
@@ -4230,6 +4861,15 @@ CLASS `InterpM:
     THIS.`_onYieldResume = `onYieldResume
     THIS.`_rnd32b = `rnd32b
     THIS.`_now = `now
+    THIS.`_instance = `instance
+    THIS.`_existsInstanceCsvar = `existsInstanceCsvar
+    THIS.`_getInstanceCsvar = `getInstanceCsvar
+    THIS.`_addInstanceCsvar = `__addInstanceCsvar
+    THIS.`_removeInstanceCsvar = `__removeInstanceCsvar
+    THIS.`_updateInstanceCsvarDeltaCost = `__updateInstanceCsvarDeltaCost
+    THIS.`_inInstanceRepeatCsvars = `inInstanceRepeatCsvars
+    THIS.`_isCsinstanceStatusCodeNull = `isCsinstanceStatusCodeNull
+    THIS.`_getCsinstance = `getCsinstance
     THIS.`_max_debugl_lines = NULL
     THIS.`_max_debugl_chars_per_line = NULL
     THIS.`_environment = NEW `Environment()
@@ -4262,6 +4902,9 @@ CLASS `InterpM:
     VAR `that = THIS
     CLOSURE `closure_istmt_assign_op(`instruction):
       `that.`_istmtAssignOp(`instruction)
+    ENDCLOSURE
+    CLOSURE `closure_istmt_assign_op_csvar(`instruction):
+      `that.`_istmtAssignOpCsvar(`instruction)
     ENDCLOSURE
     CLOSURE `closure_istmt_assign_op_random(`instruction):
       `that.`_istmtAssignOpRandom(`instruction)
@@ -4308,11 +4951,15 @@ CLASS `InterpM:
     CLOSURE `closure_istmt_unassign(`instruction):
       `that.`_istmtUnassign(`instruction)
     ENDCLOSURE
+    CLOSURE `closure_istmt_unassign_csvar(`instruction):
+      `that.`_istmtUnassignCsvar(`instruction)
+    ENDCLOSURE
     CLOSURE `closure_istmt_debugl(`instruction):
       `that.`_istmtDebugl(`instruction)
     ENDCLOSURE
     THIS.`_dispatch_stmt = {}
     THIS.`_dispatch_stmt[`OPCODE_ASSIGN_OP] = `closure_istmt_assign_op
+    THIS.`_dispatch_stmt[`OPCODE_ASSIGN_OP_CSVAR] = `closure_istmt_assign_op_csvar
     THIS.`_dispatch_stmt[`OPCODE_ASSIGN_OP_RANDOM] = `closure_istmt_assign_op_random
     THIS.`_dispatch_stmt[`OPCODE_ASSIGN_POP] = `closure_istmt_assign_pop
     THIS.`_dispatch_stmt[`OPCODE_ASSIGN_UNQUEUE] = `closure_istmt_assign_unqueue
@@ -4328,6 +4975,7 @@ CLASS `InterpM:
     THIS.`_dispatch_stmt[`OPCODE_PUSH] = `closure_istmt_push
     THIS.`_dispatch_stmt[`OPCODE_QUEUE] = `closure_istmt_queue
     THIS.`_dispatch_stmt[`OPCODE_UNASSIGN] = `closure_istmt_unassign
+    THIS.`_dispatch_stmt[`OPCODE_UNASSIGN_CSVAR] = `closure_istmt_unassign_csvar
     THIS.`_dispatch_stmt[`OPCODE_DEBUGL] = `closure_istmt_debugl
     CLOSURE `closure_iexpr_number(`expression):
       return `that.`_iexprNumber(`expression)
@@ -4416,11 +5064,20 @@ CLASS `InterpM:
     CLOSURE `closure_iexpr_qualvar(`expression):
       return `that.`_iexprQualvar(`expression)
     ENDCLOSURE
+    CLOSURE `closure_iexpr_csvar(`expression):
+      return `that.`_iexprCsvar(`expression)
+    ENDCLOSURE
     CLOSURE `closure_iexpr_is_var(`expression):
       return `that.`_iexprIsVar(`expression)
     ENDCLOSURE
     CLOSURE `closure_iexpr_is_not_var(`expression):
       return `that.`_iexprIsNotVar(`expression)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_is_csvar(`expression):
+      return `that.`_iexprIsCsvar(`expression)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_is_not_csvar(`expression):
+      return `that.`_iexprIsNotCsvar(`expression)
     ENDCLOSURE
     CLOSURE `closure_iexpr_length_var(`expression):
       return `that.`_iexprLengthVar(`expression)
@@ -4442,6 +5099,9 @@ CLASS `InterpM:
     ENDCLOSURE
     CLOSURE `closure_iexpr_list_at_qualvar(`expression):
       return `that.`_iexprListAtQualvar(`expression)
+    ENDCLOSURE
+    CLOSURE `closure_iexpr_list_at_csvar(`expression):
+      return `that.`_iexprListAtCsvar(`expression)
     ENDCLOSURE
     CLOSURE `closure_iexpr_math_op_abs(`expression):
       return `that.`_iexprMathOp(`expression, `func_iexpr_math_op_abs)
@@ -4533,8 +5193,11 @@ CLASS `InterpM:
     THIS.`_dispatch_expr[`OPCODE_BIT_SHR] = `closure_iexpr_mul_op_bit_shr
     THIS.`_dispatch_expr[`OPCODE_VAR] = `closure_iexpr_var
     THIS.`_dispatch_expr[`OPCODE_QUALVAR] = `closure_iexpr_qualvar
+    THIS.`_dispatch_expr[`OPCODE_CSVAR] = `closure_iexpr_csvar
     THIS.`_dispatch_expr[`OPCODE_IS_VAR] = `closure_iexpr_is_var
     THIS.`_dispatch_expr[`OPCODE_IS_NOT_VAR] = `closure_iexpr_is_not_var
+    THIS.`_dispatch_expr[`OPCODE_IS_CSVAR] = `closure_iexpr_is_csvar
+    THIS.`_dispatch_expr[`OPCODE_IS_NOT_CSVAR] = `closure_iexpr_is_not_csvar
     THIS.`_dispatch_expr[`OPCODE_LENGTH_VAR] = `closure_iexpr_length_var
     THIS.`_dispatch_expr[`OPCODE_SIZE_VAR] = `closure_iexpr_size_var_size
     THIS.`_dispatch_expr[`OPCODE_NSIZE_VAR] = `closure_iexpr_size_var_nsize
@@ -4542,6 +5205,7 @@ CLASS `InterpM:
     THIS.`_dispatch_expr[`OPCODE_INDEXOF_VAR] = `closure_iexpr_indexof_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_VAR] = `closure_iexpr_list_at_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_QUALVAR] = `closure_iexpr_list_at_qualvar
+    THIS.`_dispatch_expr[`OPCODE_LIST_AT_CSVAR] = `closure_iexpr_list_at_csvar
     THIS.`_dispatch_expr[`OPCODE_ABS] = `closure_iexpr_math_op_abs
     THIS.`_dispatch_expr[`OPCODE_ACOS] = `closure_iexpr_math_op_acos
     THIS.`_dispatch_expr[`OPCODE_ASIN] = `closure_iexpr_math_op_asin
@@ -4611,6 +5275,29 @@ CLASS `InterpM:
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`varname)
     THIS.`_removeVar(`varname)
+
+  METHOD `addCsvar(`varname `evalue):
+    THIS.`_addVar(`varname, `evalue)
+
+  METHOD `addCsvarCost(`varname `evalue):
+    VAR `delta_cost_n = `utils.`nsizeEvalue(`evalue)
+    VAR `delta_cost_l = `utils.`lsizeEvalue(`evalue)
+    THIS.`updateCsvarDeltaCost(`varname, `delta_cost_n, `delta_cost_l)
+
+  METHOD `removeCsvar(`varname):
+    VAR `evalue = THIS.`getVar(`varname)
+    THIS.`_removeVar(`varname)
+    return `evalue
+
+  METHOD `removeCsvarCost(`varname `evalue):
+    VAR `delta_cost_n = -`utils.`nsizeEvalue(`evalue)
+    VAR `delta_cost_l = -`utils.`lsizeEvalue(`evalue)
+    THIS.`updateCsvarDeltaCost(`varname, `delta_cost_n, `delta_cost_l)
+
+  METHOD `updateCsvarDeltaCost(`varname `delta_cost_n `delta_cost_l):
+    THIS.`_memory_delta_n += `delta_cost_n
+    THIS.`_memory_delta_l += `delta_cost_l
+    THIS.`_addChangedVar(`varname)
 
   METHOD `_addVar(`varname `evalue):
     IF `indexof(THIS.`_varnames, `varname) < 0:
@@ -4816,12 +5503,29 @@ CLASS `InterpM:
       THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
     ENDIF
 
+  METHOD `_istmtAssignOpCsvar(`instruction):
+    VAR `that = THIS
+    VAR `next_pcounter = `instruction[1]
+    VAR `vvar = `instruction[2]
+    VAR `vmod = `instruction[3]
+    VAR `exprs = `instruction[4]
+    VAR `expr = `instruction[5]
+    CLOSURE `getExpr():
+      return `utils.`deepCopy(`that.`_interpExpr(`expr))
+    ENDCLOSURE
+    IF `length(`exprs) == 0:
+      THIS.`_istmtAssignToCsvar(`vvar, `vmod, `getExpr, `next_pcounter)
+    ELSE:
+      THIS.`_istmtAssignToListAtCsvar(`vvar, `vmod, `exprs, `getExpr, `next_pcounter)
+    ENDIF
+
   METHOD `_istmtAssignOpRandom(`instruction):
     VAR `that = THIS
     VAR `next_pcounter = `instruction[1]
     VAR `vvar = `instruction[2]
     VAR `exprs = `instruction[3]
     VAR `expr = `instruction[4]
+    VAR `vmod = `instruction[5]
     CLOSURE `getExpr():
       VAR `evalue
       VAR `evaluen
@@ -4856,10 +5560,18 @@ CLASS `InterpM:
       ENDIF
       return `utils.`encodeData(`r)
     ENDCLOSURE
-    IF `length(`exprs) == 0:
-      THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+    IF `isnull(`vmod):
+      IF `length(`exprs) == 0:
+        THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+      ELSE:
+        THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      ENDIF
     ELSE:
-      THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      IF `length(`exprs) == 0:
+        THIS.`_istmtAssignToCsvar(`vvar, `vmod, `getExpr, `next_pcounter)
+      ELSE:
+        THIS.`_istmtAssignToListAtCsvar(`vvar, `vmod, `exprs, `getExpr, `next_pcounter)
+      ENDIF
     ENDIF
 
   METHOD `_istmtAssignPop(`instruction):
@@ -4869,6 +5581,7 @@ CLASS `InterpM:
     VAR `exprs = `instruction[3]
     VAR `popvarexprs = `instruction[4]
     VAR `index = `instruction[5]
+    VAR `vmod = `instruction[6]
     CLOSURE `getExpr():
       VAR `evalue = `that.`_interpExpr(`popvarexprs)
       IF `isnull(`evalue):
@@ -4911,10 +5624,13 @@ CLASS `InterpM:
       VAR `poplindex
       VAR `poplindexn
       VAR `j
+      VAR `csinstance
+      VAR `popmod
       IF `popvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
         `evalue[3] += `delta_cost_n
-      ELSE:
+        `csinstance = `that.`_instance
+      ELSIF `popvarexprs[0] == `OPCODE_LIST_AT_VAR:
         `popexprs = `popvarexprs[2]
         `popevalue = `that.`getVar(`popvar)
         `popevalue[2] += `delta_cost_l
@@ -4926,18 +5642,47 @@ CLASS `InterpM:
           `popevalue[2] += `delta_cost_l
           `popevalue[3] += `delta_cost_n
         ENDFOR
+        `csinstance = `that.`_instance
+      ELSIF `popvarexprs[0] == `OPCODE_CSVAR:
+        `evalue[2] += `delta_cost_l
+        `evalue[3] += `delta_cost_n
+        `popmod = `popvarexprs[2]
+        `csinstance = `that.`_getCsinstance(`popvar, `popmod, `that.`_instance)
+      ELSIF `popvarexprs[0] == `OPCODE_LIST_AT_CSVAR:
+        `popexprs = `popvarexprs[2]
+        `popmod = `popvarexprs[3]
+        `csinstance = `that.`_getCsinstance(`popvar, `popmod, `that.`_instance)
+        `popevalue = `that.`_getInstanceCsvar(`csinstance, `popvar)
+        `popevalue[2] += `delta_cost_l
+        `popevalue[3] += `delta_cost_n
+        FORINCR `j(0 `length(`popexprs)):
+          `poplindex = `that.`_interpExpr(`popexprs[`j])
+          `poplindexn = `fp[0].FloorToInt(`poplindex[1])
+          `popevalue = `popevalue[1][`poplindexn]
+          `popevalue[2] += `delta_cost_l
+          `popevalue[3] += `delta_cost_n
+        ENDFOR
+      ELSE:
+        `that.`_setRuntimeError("UNEXPECTED"+" "+"OPCODE")
+        return NULL
       ENDIF
-      `that.`_memory_delta_n += `delta_cost_n
-      `that.`_memory_delta_l += `delta_cost_l
-      `that.`_addChangedVar(`popvar)
+      `that.`_updateInstanceCsvarDeltaCost(`that.`_instance, `popvar, `csinstance, `delta_cost_n, `delta_cost_l)
       return `popvalue
     ENDCLOSURE
     IF `isnull(`vvar):
       THIS.`_istmtAssignToDummy(`getExpr, `next_pcounter)
-    ELSIF `length(`exprs) == 0:
-      THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+    ELSIF `isnull(`vmod):
+      IF `length(`exprs) == 0:
+        THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+      ELSE:
+        THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      ENDIF
     ELSE:
-      THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      IF `length(`exprs) == 0:
+        THIS.`_istmtAssignToCsvar(`vvar, `vmod, `getExpr, `next_pcounter)
+      ELSE:
+        THIS.`_istmtAssignToListAtCsvar(`vvar, `vmod, `exprs, `getExpr, `next_pcounter)
+      ENDIF
     ENDIF
 
   METHOD `_istmtAssignUnqueue(`instruction):
@@ -4946,6 +5691,7 @@ CLASS `InterpM:
     VAR `vvar = `instruction[2]
     VAR `exprs = `instruction[3]
     VAR `unqvarexprs = `instruction[4]
+    VAR `vmod = `instruction[5]
     CLOSURE `getExpr():
       VAR `evalue = `that.`_interpExpr(`unqvarexprs)
       IF `isnull(`evalue):
@@ -4968,10 +5714,13 @@ CLASS `InterpM:
       VAR `unqlindex
       VAR `unqlindexn
       VAR `j
+      VAR `csinstance
+      VAR `unqmod
       IF `unqvarexprs[0] == `OPCODE_VAR:
         `evalue[2] += `delta_cost_l
         `evalue[3] += `delta_cost_n
-      ELSE:
+        `csinstance = `that.`_instance
+      ELSIF `unqvarexprs[0] == `OPCODE_LIST_AT_VAR:
         `unqexprs = `unqvarexprs[2]
         `unqevalue = `that.`getVar(`unqvar)
         `unqevalue[2] += `delta_cost_l
@@ -4983,18 +5732,47 @@ CLASS `InterpM:
           `unqevalue[2] += `delta_cost_l
           `unqevalue[3] += `delta_cost_n
         ENDFOR
+        `csinstance = `that.`_instance
+      ELSIF `unqvarexprs[0] == `OPCODE_CSVAR:
+        `evalue[2] += `delta_cost_l
+        `evalue[3] += `delta_cost_n
+        `unqmod = `unqvarexprs[2]
+        `csinstance = `that.`_getCsinstance(`unqvar, `unqmod, `that.`_instance)
+      ELSIF `unqvarexprs[0] == `OPCODE_LIST_AT_CSVAR:
+        `unqexprs = `unqvarexprs[2]
+        `unqmod = `unqvarexprs[3]
+        `csinstance = `that.`_getCsinstance(`unqvar, `unqmod, `that.`_instance)
+        `unqevalue = `that.`_getInstanceCsvar(`csinstance, `unqvar)
+        `unqevalue[2] += `delta_cost_l
+        `unqevalue[3] += `delta_cost_n
+        FORINCR `j(0 `length(`unqexprs)):
+          `unqlindex = `that.`_interpExpr(`unqexprs[`j])
+          `unqlindexn = `fp[0].FloorToInt(`unqlindex[1])
+          `unqevalue = `unqevalue[1][`unqlindexn]
+          `unqevalue[2] += `delta_cost_l
+          `unqevalue[3] += `delta_cost_n
+        ENDFOR
+      ELSE:
+        `that.`_setRuntimeError("UNEXPECTED"+" "+"OPCODE")
+        return NULL
       ENDIF
-      `that.`_memory_delta_n += `delta_cost_n
-      `that.`_memory_delta_l += `delta_cost_l
-      `that.`_addChangedVar(`unqvar)
+      `that.`_updateInstanceCsvarDeltaCost(`that.`_instance, `unqvar, `csinstance, `delta_cost_n, `delta_cost_l)
       return `unqvalue
     ENDCLOSURE
     IF `isnull(`vvar):
       THIS.`_istmtAssignToDummy(`getExpr, `next_pcounter)
-    ELSIF `length(`exprs) == 0:
-      THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+    ELSIF `isnull(`vmod):
+      IF `length(`exprs) == 0:
+        THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+      ELSE:
+        THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      ENDIF
     ELSE:
-      THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      IF `length(`exprs) == 0:
+        THIS.`_istmtAssignToCsvar(`vvar, `vmod, `getExpr, `next_pcounter)
+      ELSE:
+        THIS.`_istmtAssignToListAtCsvar(`vvar, `vmod, `exprs, `getExpr, `next_pcounter)
+      ENDIF
     ENDIF
 
   METHOD `_istmtAssignToDummy(`getExpr `next_pcounter):
@@ -5005,7 +5783,7 @@ CLASS `InterpM:
     THIS.`_pcounter = `next_pcounter
 
   METHOD `_istmtAssignToVar(`vvar `getExpr `next_pcounter):
-    IF `indexof(THIS.`_repeat_vars, `vvar) >= 0:
+    IF THIS.`inRepeatVars(`vvar):
       THIS.`_setRuntimeError("REPEAT"+" "+"VARIABLE"+" "+"IN"+" "+"ASSIGNMENT")
       return
     ENDIF
@@ -5091,6 +5869,102 @@ CLASS `InterpM:
     THIS.`_addChangedVar(`vvar)
     THIS.`_pcounter = `next_pcounter
 
+  METHOD `_istmtAssignToCsvar(`vvar `vmod `getExpr `next_pcounter):
+    VAR `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+    IF `isnull(`csinstance):
+      THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return
+    ENDIF
+    IF `csinstance == THIS.`_instance:
+      THIS.`_istmtAssignToVar(`vvar, `getExpr, `next_pcounter)
+      return
+    ENDIF
+    IF THIS.`_inInstanceRepeatCsvars(`csinstance, `vvar) AND THIS.`_isCsinstanceStatusCodeNull(`csinstance):
+      THIS.`_setRuntimeError("REPEAT"+" "+"VARIABLE"+" "+"IN"+" "+"ASSIGNMENT")
+      return
+    ENDIF
+    VAR `evalue = `getExpr()
+    IF `isnull(`evalue):
+      return
+    ENDIF
+    IF THIS.`_existsInstanceCsvar(`csinstance, `vvar):
+      THIS.`_removeInstanceCsvar(THIS.`_instance, `vvar, `csinstance)
+    ENDIF
+    THIS.`_addInstanceCsvar(THIS.`_instance, `vvar, `evalue, `csinstance)
+    THIS.`_pcounter = `next_pcounter
+
+  METHOD `_istmtAssignToListAtCsvar(`vvar `vmod `exprs `getExpr `next_pcounter):
+    VAR `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+    IF `isnull(`csinstance):
+      THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return
+    ENDIF
+    IF `csinstance == THIS.`_instance:
+      THIS.`_istmtAssignToListAt(`vvar, `exprs, `getExpr, `next_pcounter)
+      return
+    ENDIF
+    VAR `vvalue = THIS.`_getInstanceCsvar(`csinstance, `vvar)
+    IF `isnull(`vvalue):
+      THIS.`_setRuntimeError("UNDEFINED"+" "+"VARIABLE"+" "+"IN"+" "+"LHS")
+      return
+    ENDIF
+    IF `vvalue[0] != `key_interp_list:
+      THIS.`_setRuntimeError("EXPECTED"+" "+"LIST"+" "+"IN"+" "+"LHS")
+      return
+    ENDIF
+    VAR `vvalues = []
+    VAR `lindex = THIS.`_interpExpr(`exprs[0])
+    IF `isnull(`lindex):
+      return
+    ENDIF
+    IF `lindex[0] != `key_interp_number:
+      THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
+      return
+    ENDIF
+    VAR `lindexn = `fp[0].FloorToInt(`lindex[1])
+    IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
+      THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
+      return
+    ENDIF
+    VAR `j
+    FORINCR `j(1 `length(`exprs)):
+      `push(`vvalues, `vvalue)
+      `vvalue = `vvalue[1][`lindexn]
+      IF `vvalue[0] != `key_interp_list:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"LIST"+" "+"IN"+" "+"LHS")
+        return
+      ENDIF
+      `lindex = THIS.`_interpExpr(`exprs[`j])
+      IF `isnull(`lindex):
+        return
+      ENDIF
+      IF `lindex[0] != `key_interp_number:
+        THIS.`_setRuntimeError("INVALID"+" "+"INDEX"+" "+"IN"+" "+"LHS")
+        return
+      ENDIF
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn >= `length(`vvalue[1])):
+        THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE"+" "+"IN"+" "+"LHS")
+        return
+      ENDIF
+    ENDFOR
+    VAR `evalue = `getExpr()
+    IF `isnull(`evalue):
+      return
+    ENDIF
+    VAR `delta_cost_n = -`utils.`nsizeEvalue(`vvalue[1][`lindexn])+`utils.`nsizeEvalue(`evalue)
+    VAR `delta_cost_l = -`utils.`lsizeEvalue(`vvalue[1][`lindexn])+`utils.`lsizeEvalue(`evalue)
+    `vvalue[1][`lindexn] = `evalue
+    IF (`delta_cost_n != 0) OR (`delta_cost_l != 0):
+      `push(`vvalues, `vvalue)
+      FORINCR `j(0 `length(`vvalues)):
+        `vvalues[`j][2] += `delta_cost_l
+        `vvalues[`j][3] += `delta_cost_n
+      ENDFOR
+    ENDIF
+    THIS.`_updateInstanceCsvarDeltaCost(THIS.`_instance, `vvar, `csinstance, `delta_cost_n, `delta_cost_l)
+    THIS.`_pcounter = `next_pcounter
+
   METHOD `_istmtIf(`instruction):
     VAR `next_pcounter = `instruction[1]
     VAR `alt_pcounter = `instruction[2]
@@ -5131,7 +6005,7 @@ CLASS `InterpM:
     VAR `next_pcounter = `instruction[1]
     VAR `alt_pcounter = `instruction[2]
     VAR `vvar = `instruction[3]
-    IF `indexof(THIS.`_repeat_vars, `vvar) >= 0:
+    IF THIS.`inRepeatVars(`vvar):
       THIS.`_setRuntimeError("REPEAT"+" "+"VARIABLE"+" "+"INSIDE"+" "+"REPEAT")
       return
     ENDIF
@@ -5252,10 +6126,13 @@ CLASS `InterpM:
     VAR `plindex
     VAR `plindexn
     VAR `j
+    VAR `csinstance
+    VAR `pmod
     IF `pvarexprs[0] == `OPCODE_VAR:
       `pvalue[2] += `delta_cost_l
       `pvalue[3] += `delta_cost_n
-    ELSE:
+      `csinstance = THIS.`_instance
+    ELSIF `pvarexprs[0] == `OPCODE_LIST_AT_VAR:
       `pexprs = `pvarexprs[2]
       `pevalue = THIS.`getVar(`pvar)
       `pevalue[2] += `delta_cost_l
@@ -5267,10 +6144,31 @@ CLASS `InterpM:
         `pevalue[2] += `delta_cost_l
         `pevalue[3] += `delta_cost_n
       ENDFOR
+      `csinstance = THIS.`_instance
+    ELSIF `pvarexprs[0] == `OPCODE_CSVAR:
+      `pvalue[2] += `delta_cost_l
+      `pvalue[3] += `delta_cost_n
+      `pmod = `pvarexprs[2]
+      `csinstance = THIS.`_getCsinstance(`pvar, `pmod, THIS.`_instance)
+    ELSIF `pvarexprs[0] == `OPCODE_LIST_AT_CSVAR:
+      `pexprs = `pvarexprs[2]
+      `pmod = `pvarexprs[3]
+      `csinstance = THIS.`_getCsinstance(`pvar, `pmod, THIS.`_instance)
+      `pevalue = THIS.`_getInstanceCsvar(`csinstance, `pvar)
+      `pevalue[2] += `delta_cost_l
+      `pevalue[3] += `delta_cost_n
+      FORINCR `j(0 `length(`pexprs)):
+        `plindex = THIS.`_interpExpr(`pexprs[`j])
+        `plindexn = `fp[0].FloorToInt(`plindex[1])
+        `pevalue = `pevalue[1][`plindexn]
+        `pevalue[2] += `delta_cost_l
+        `pevalue[3] += `delta_cost_n
+      ENDFOR
+    ELSE:
+      THIS.`_setRuntimeError("UNEXPECTED"+" "+"OPCODE")
+      return
     ENDIF
-    THIS.`_memory_delta_n += `delta_cost_n
-    THIS.`_memory_delta_l += `delta_cost_l
-    THIS.`_addChangedVar(`pvar)
+    THIS.`_updateInstanceCsvarDeltaCost(THIS.`_instance, `pvar, `csinstance, `delta_cost_n, `delta_cost_l)
     THIS.`_pcounter = `next_pcounter
 
   METHOD `_istmtQueue(`instruction):
@@ -5298,10 +6196,13 @@ CLASS `InterpM:
     VAR `qlindex
     VAR `qlindexn
     VAR `j
+    VAR `csinstance
+    VAR `qmod
     IF `qvarexprs[0] == `OPCODE_VAR:
       `qvalue[2] += `delta_cost_l
       `qvalue[3] += `delta_cost_n
-    ELSE:
+      `csinstance = THIS.`_instance
+    ELSIF `qvarexprs[0] == `OPCODE_LIST_AT_VAR:
       `qexprs = `qvarexprs[2]
       `qevalue = THIS.`getVar(`qvar)
       `qevalue[2] += `delta_cost_l
@@ -5313,17 +6214,38 @@ CLASS `InterpM:
         `qevalue[2] += `delta_cost_l
         `qevalue[3] += `delta_cost_n
       ENDFOR
+      `csinstance = THIS.`_instance
+    ELSIF `qvarexprs[0] == `OPCODE_CSVAR:
+      `qvalue[2] += `delta_cost_l
+      `qvalue[3] += `delta_cost_n
+      `qmod = `qvarexprs[2]
+      `csinstance = THIS.`_getCsinstance(`qvar, `qmod, THIS.`_instance)
+    ELSIF `qvarexprs[0] == `OPCODE_LIST_AT_CSVAR:
+      `qexprs = `qvarexprs[2]
+      `qmod = `qvarexprs[3]
+      `csinstance = THIS.`_getCsinstance(`qvar, `qmod, THIS.`_instance)
+      `qevalue = THIS.`_getInstanceCsvar(`csinstance, `qvar)
+      `qevalue[2] += `delta_cost_l
+      `qevalue[3] += `delta_cost_n
+      FORINCR `j(0 `length(`qexprs)):
+        `qlindex = THIS.`_interpExpr(`qexprs[`j])
+        `qlindexn = `fp[0].FloorToInt(`qlindex[1])
+        `qevalue = `qevalue[1][`qlindexn]
+        `qevalue[2] += `delta_cost_l
+        `qevalue[3] += `delta_cost_n
+      ENDFOR
+    ELSE:
+      THIS.`_setRuntimeError("UNEXPECTED"+" "+"OPCODE")
+      return
     ENDIF
-    THIS.`_memory_delta_n += `delta_cost_n
-    THIS.`_memory_delta_l += `delta_cost_l
-    THIS.`_addChangedVar(`qvar)
+    THIS.`_updateInstanceCsvarDeltaCost(THIS.`_instance, `qvar, `csinstance, `delta_cost_n, `delta_cost_l)
     THIS.`_pcounter = `next_pcounter
 
   METHOD `_istmtUnassign(`instruction):
     VAR `next_pcounter = `instruction[1]
     VAR `vvar = `instruction[2]
-    IF `indexof(THIS.`_repeat_vars, `vvar) >= 0:
-      THIS.`_setRuntimeError("REPEAT"+" "+"VARIABLE"+" "+"IN"+" "+"UNASSIGNMENT")
+    IF THIS.`inRepeatVars(`vvar):
+      THIS.`_setRuntimeError("REPEAT"+" "+"VARIABLE"+" "+"IN"+" "+"UNASSIGN")
       return
     ENDIF
     VAR `evalue = THIS.`getVar(`vvar)
@@ -5337,6 +6259,30 @@ CLASS `InterpM:
     THIS.`_memory_delta_n += `delta_cost_n
     THIS.`_memory_delta_l += `delta_cost_l
     THIS.`_addChangedVar(`vvar)
+    THIS.`_pcounter = `next_pcounter
+
+  METHOD `_istmtUnassignCsvar(`instruction):
+    VAR `vvar = `instruction[2]
+    VAR `vmod = `instruction[3]
+    VAR `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+    IF `isnull(`csinstance):
+      THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return
+    ENDIF
+    IF `csinstance == THIS.`_instance:
+      THIS.`_istmtUnassign(`instruction)
+      return
+    ENDIF
+    IF `not(THIS.`_existsInstanceCsvar(`csinstance, `vvar)):
+      THIS.`_setRuntimeError("UNDEFINED"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return
+    ENDIF
+    IF THIS.`_inInstanceRepeatCsvars(`csinstance, `vvar) AND THIS.`_isCsinstanceStatusCodeNull(`csinstance):
+      THIS.`_setRuntimeError("REPEAT"+" "+"VARIABLE"+" "+"IN"+" "+"UNASSIGN")
+      return
+    ENDIF
+    THIS.`_removeInstanceCsvar(THIS.`_instance, `vvar, `csinstance)
+    VAR `next_pcounter = `instruction[1]
     THIS.`_pcounter = `next_pcounter
 
   METHOD `_istmtDebugl(`instruction):
@@ -5528,11 +6474,12 @@ CLASS `InterpM:
 
   METHOD `_iexprByRef(`expression):
     VAR `vvar = `expression[1][0]
-    VAR `values = [`vvar]
+    VAR `vmod = `expression[1][1]
+    VAR `values = [`vvar, `vmod]
     VAR `lindex
     VAR `lindexn
     VAR `j
-    FORINCR `j(1 `length(`expression[1])):
+    FORINCR `j(2 `length(`expression[1])):
       `lindex = THIS.`_interpExpr(`expression[1][`j])
       IF `isnull(`lindex):
         return NULL
@@ -5575,6 +6522,28 @@ CLASS `InterpM:
     VAR `evalue = THIS.`_getQualvar(`vvar)
     IF `isnull(`evalue):
       THIS.`_setRuntimeError("UNDEFINED"+" "+"VARIABLE")
+      return NULL
+    ENDIF
+    IF (`evalue[0] != `key_interp_number) AND (`evalue[0] != `key_interp_list):
+      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER"+" "+"OR"+" "+"LIST")
+      return NULL
+    ENDIF
+    return `evalue
+
+  METHOD `_iexprCsvar(`expression):
+    VAR `vvar = `expression[1]
+    VAR `vmod = `expression[2]
+    VAR `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+    IF `isnull(`csinstance):
+      THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return NULL
+    ENDIF
+    IF `csinstance == THIS.`_instance:
+      return THIS.`_iexprVar(`expression)
+    ENDIF
+    VAR `evalue = THIS.`_getInstanceCsvar(`csinstance, `vvar)
+    IF `isnull(`evalue):
+      THIS.`_setRuntimeError("UNDEFINED"+" "+"CALLSTACK"+" "+"VARIABLE")
       return NULL
     ENDIF
     IF (`evalue[0] != `key_interp_number) AND (`evalue[0] != `key_interp_list):
@@ -5626,6 +6595,86 @@ CLASS `InterpM:
       `evalue = THIS.`getVar(`vvar)
     ELSIF `vvarexprs[0] == `OPCODE_QUALVAR:
       `evalue = THIS.`_getQualvar(`vvar)
+    ELSE:
+      `evalue = THIS.`_interpExpr(`vvarexprs)
+      IF `isnull(`evalue):
+        return NULL
+      ENDIF
+    ENDIF
+    IF `isnull(`evalue):
+      THIS.`_tmpBoolean[1] = (`vvar_typetokenid != `key_token_UNDEFINED)
+      return THIS.`_tmpBoolean
+    ENDIF
+    IF `evalue[0] == `key_interp_number:
+      THIS.`_tmpBoolean[1] = (`vvar_typetokenid != `key_token_NUMBER)
+      return THIS.`_tmpBoolean
+    ENDIF
+    IF `evalue[0] == `key_interp_list:
+      THIS.`_tmpBoolean[1] = ((`vvar_typetokenid != `key_token_LIST) AND ((`vvar_typetokenid != `key_token_EMPTY) OR (`length(`evalue[1]) > 0)))
+      return THIS.`_tmpBoolean
+    ENDIF
+    IF `evalue[0] == `key_interp_procedure:
+      THIS.`_tmpBoolean[1] = (`vvar_typetokenid != `key_token_PROCEDURE)
+      return THIS.`_tmpBoolean
+    ENDIF
+    THIS.`_tmpBoolean[1] = TRUE
+    return THIS.`_tmpBoolean
+
+  METHOD `_iexprIsCsvar(`expression):
+    VAR `vvarexprs = `expression[1]
+    VAR `vvar_typetokenid = `expression[2]
+    VAR `vvar = `vvarexprs[1]
+    VAR `vmod
+    VAR `csinstance
+    VAR `evalue
+    IF `vvarexprs[0] == `OPCODE_CSVAR:
+      `vmod = `vvarexprs[2]
+      `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+      IF `isnull(`csinstance):
+        THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+        return NULL
+      ENDIF
+      `evalue = THIS.`_getInstanceCsvar(`csinstance, `vvar)
+    ELSE:
+      `evalue = THIS.`_interpExpr(`vvarexprs)
+      IF `isnull(`evalue):
+        return NULL
+      ENDIF
+    ENDIF
+    IF `isnull(`evalue):
+      THIS.`_tmpBoolean[1] = (`vvar_typetokenid == `key_token_UNDEFINED)
+      return THIS.`_tmpBoolean
+    ENDIF
+    IF `evalue[0] == `key_interp_number:
+      THIS.`_tmpBoolean[1] = (`vvar_typetokenid == `key_token_NUMBER)
+      return THIS.`_tmpBoolean
+    ENDIF
+    IF `evalue[0] == `key_interp_list:
+      THIS.`_tmpBoolean[1] = ((`vvar_typetokenid == `key_token_LIST) OR ((`vvar_typetokenid == `key_token_EMPTY) AND (`length(`evalue[1]) == 0)))
+      return THIS.`_tmpBoolean
+    ENDIF
+    IF `evalue[0] == `key_interp_procedure:
+      THIS.`_tmpBoolean[1] = (`vvar_typetokenid == `key_token_PROCEDURE)
+      return THIS.`_tmpBoolean
+    ENDIF
+    THIS.`_tmpBoolean[1] = FALSE
+    return THIS.`_tmpBoolean
+
+  METHOD `_iexprIsNotCsvar(`expression):
+    VAR `vvarexprs = `expression[1]
+    VAR `vvar_typetokenid = `expression[2]
+    VAR `vvar = `vvarexprs[1]
+    VAR `vmod
+    VAR `csinstance
+    VAR `evalue
+    IF `vvarexprs[0] == `OPCODE_CSVAR:
+      `vmod = `vvarexprs[2]
+      `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+      IF `isnull(`csinstance):
+        THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+        return NULL
+      ENDIF
+      `evalue = THIS.`_getInstanceCsvar(`csinstance, `vvar)
     ELSE:
       `evalue = THIS.`_interpExpr(`vvarexprs)
       IF `isnull(`evalue):
@@ -5797,6 +6846,48 @@ CLASS `InterpM:
     ENDFOR
     return `evalue
 
+  METHOD `_iexprListAtCsvar(`expression):
+    VAR `vvar = `expression[1]
+    VAR `vmod = `expression[3]
+    VAR `csinstance = THIS.`_getCsinstance(`vvar, `vmod, THIS.`_instance)
+    IF `isnull(`csinstance):
+      THIS.`_setRuntimeError("INVALID"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return NULL
+    ENDIF
+    IF `csinstance == THIS.`_instance:
+      return THIS.`_iexprListAtVar(`expression)
+    ENDIF
+    VAR `evalue = THIS.`_getInstanceCsvar(`csinstance, `vvar)
+    IF `isnull(`evalue):
+      THIS.`_setRuntimeError("UNDEFINED"+" "+"CALLSTACK"+" "+"VARIABLE")
+      return NULL
+    ENDIF
+    VAR `exprs = `expression[2]
+    VAR `lindex
+    VAR `lindexn
+    VAR `j
+    FORINCR `j(0 `length(`exprs)):
+      IF `evalue[0] != `key_interp_list:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
+        return NULL
+      ENDIF
+      `lindex = THIS.`_interpExpr(`exprs[`j])
+      IF `isnull(`lindex):
+        return NULL
+      ENDIF
+      IF `lindex[0] != `key_interp_number:
+        THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
+        return NULL
+      ENDIF
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
+        THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
+        return NULL
+      ENDIF
+      `evalue = `evalue[1][`lindexn]
+    ENDFOR
+    return `evalue
+
   METHOD `_iexprMathOp(`expression `mathOp):
     VAR `expr1
     VAR `evalue1
@@ -5901,12 +6992,49 @@ CLASS `PrequelM:
       return NULL
     ENDCLOSURE
     THIS.`_getQualvar = `closure_getQualvar
+    CLOSURE `closure_existsInstanceCsvar(`csinstance `vvar):
+      VAR `ivarnames = `that.`getInstanceVarNames(`csinstance)
+      return (`indexof(`ivarnames, `vvar) >= 0)
+    ENDCLOSURE
+    THIS.`_existsInstanceCsvar = `closure_existsInstanceCsvar
+    CLOSURE `closure_getInstanceCsvar(`csinstance `vvar):
+      VAR `evalue = `that.`getInstanceVar(`csinstance, `vvar)
+      return `evalue
+    ENDCLOSURE
+    THIS.`_getInstanceCsvar = `closure_getInstanceCsvar
+    CLOSURE `closure_addInstanceCsvar(`instance `vvar `evalue `csinstance):
+      return `that.`addInstanceCsvar(`instance, `vvar, `evalue, `csinstance)
+    ENDCLOSURE
+    THIS.`_addInstanceCsvar = `closure_addInstanceCsvar
+    CLOSURE `closure_removeInstanceCsvar(`instance `vvar `csinstance):
+      `that.`removeInstanceCsvar(`instance, `vvar, `csinstance)
+    ENDCLOSURE
+    THIS.`_removeInstanceCsvar = `closure_removeInstanceCsvar
+    CLOSURE `closure_updateInstanceCsvarDeltaCost(`instance `vvar `csinstance `delta_cost_n `delta_cost_l):
+      `that.`updateInstanceCsvarDeltaCost(`instance, `vvar, `csinstance, `delta_cost_n, `delta_cost_l)
+    ENDCLOSURE
+    THIS.`_updateInstanceCsvarDeltaCost = `closure_updateInstanceCsvarDeltaCost
+    CLOSURE `closure_inInstanceRepeatCsvars(`csinstance `vvar):
+      return `that.`inRepeatVars(`csinstance, `vvar)
+    ENDCLOSURE
+    THIS.`_inInstanceRepeatCsvars = `closure_inInstanceRepeatCsvars
+    CLOSURE `closure_isCsinstanceStatusCodeNull(`csinstance):
+      return `isnull(`that.`getStatusCode(`csinstance))
+    ENDCLOSURE
+    THIS.`_isCsinstanceStatusCodeNull = `closure_isCsinstanceStatusCodeNull
+    CLOSURE `closure_getCsinstance(`vvar `vmod `instance):
+      return `instance
+    ENDCLOSURE
+    THIS.`_getCsinstance = `closure_getCsinstance
 
   METHOD `setCallbacks(`onProcedure `onYieldResume `rnd32b `now):
     THIS.`_onProcedure = `onProcedure
     THIS.`_onYieldResume = `onYieldResume
     THIS.`_rnd32b = `rnd32b
     THIS.`_now = `now
+
+  METHOD `setCbGetCsinstance(`cbGetCsinstance):
+    THIS.`_getCsinstance = `cbGetCsinstance
 
   METHOD `getModules():
     return THIS.`_module_list
@@ -6054,7 +7182,7 @@ CLASS `PrequelM:
 
   METHOD `addInstance(`module):
     VAR `instance = THIS.`_ihandle.`alloc()
-    VAR `interp_m = NEW `InterpM(THIS.`_modules[`module][`key_modules_editor_m], THIS.`_getQualvar, THIS.`_onProcedure, THIS.`_onYieldResume, THIS.`_rnd32b, THIS.`_now)
+    VAR `interp_m = NEW `InterpM(THIS.`_modules[`module][`key_modules_editor_m], THIS.`_getQualvar, THIS.`_onProcedure, THIS.`_onYieldResume, THIS.`_rnd32b, THIS.`_now, `instance, THIS.`_existsInstanceCsvar, THIS.`_getInstanceCsvar, THIS.`_addInstanceCsvar, THIS.`_removeInstanceCsvar, THIS.`_updateInstanceCsvarDeltaCost, THIS.`_inInstanceRepeatCsvars, THIS.`_isCsinstanceStatusCodeNull, THIS.`_getCsinstance)
     `push(THIS.`_instance_list, `instance)
     THIS.`_instances[`instance] = {}
     THIS.`_instances[`instance][`key_instances_interp_m] = `interp_m
@@ -6195,6 +7323,25 @@ CLASS `PrequelM:
   METHOD `removeInstanceVar(`instance `ivarname):
     THIS.`_instances[`instance][`key_instances_interp_m].`removeVar(`ivarname)
 
+  METHOD `addInstanceCsvar(`instance `ivarname `evalue `csinstance):
+    VAR `csvarname = `ivarname+"@"+THIS.`getModuleName(THIS.`getInstanceModule(`csinstance))
+    THIS.`_instances[`csinstance][`key_instances_interp_m].`addCsvar(`ivarname, `evalue)
+    THIS.`_instances[`instance][`key_instances_interp_m].`addCsvarCost(`csvarname, `evalue)
+
+  METHOD `removeInstanceCsvar(`instance `ivarname `csinstance):
+    VAR `csvarname = `ivarname+"@"+THIS.`getModuleName(THIS.`getInstanceModule(`csinstance))
+    VAR `evalue = THIS.`_instances[`csinstance][`key_instances_interp_m].`removeCsvar(`ivarname)
+    THIS.`_instances[`instance][`key_instances_interp_m].`removeCsvarCost(`csvarname, `evalue)
+
+  METHOD `updateInstanceCsvarDeltaCost(`instance `ivarname `csinstance `delta_cost_n `delta_cost_l):
+    VAR `csvarname
+    IF `instance == `csinstance:
+      THIS.`_instances[`instance][`key_instances_interp_m].`updateCsvarDeltaCost(`ivarname, `delta_cost_n, `delta_cost_l)
+    ELSE:
+      `csvarname = `ivarname+"@"+THIS.`getModuleName(THIS.`getInstanceModule(`csinstance))
+      THIS.`_instances[`instance][`key_instances_interp_m].`updateCsvarDeltaCost(`csvarname, `delta_cost_n, `delta_cost_l)
+    ENDIF
+
   METHOD `getRunningInstance():
     return THIS.`_running_instance
 
@@ -6324,6 +7471,15 @@ CLASS Prequel:
       return NULL
     ENDIF
     THIS.`_prequel_m.`setCallbacks(`onProcedure, `onYieldResume, `rnd32b, `now)
+    return TRUE
+
+  METHOD setCbGetCsinstance(`cbGetCsinstance):
+    VAR `instances = THIS.`_prequel_m.`getInstances()
+    IF `length(`instances) > 0:
+      THIS.`_error = "NON"+"-"+"EMPTY"+" "+"INSTANCES"
+      return NULL
+    ENDIF
+    THIS.`_prequel_m.`setCbGetCsinstance(`cbGetCsinstance)
     return TRUE
 
   METHOD getModules():
@@ -6507,12 +7663,19 @@ CLASS Prequel:
     VAR `token_str
     VAR `token_value
     VAR `token_extra
+    VAR `indexof_csvar
     FORINCR `j(0 `length(`raw_tokens)-1):
       `token_str = `lexer.`tokenIdToString(`lexer.`tokenId(`raw_tokens[`j]))
       `token_value = `lexer.`tokenValue(`raw_tokens[`j])
       IF `lexer.`isCompoundToken(`token_str):
         `token_extra = `lexer.`tokenExtra(`raw_tokens[`j])
-        `push(`tokens, [TERNARY{`indexof(`token_extra, ".") >= 0}{"QUALVAR"}{"VAR"}, `substring(`token_value, 0, `length(`token_extra))])
+        IF `token_extra[0] == "!":
+          `push(`tokens, ["CSVAR", `substring(`token_value, 0, `length(`token_extra))])
+        ELSIF `indexof(`token_extra, ".") >= 0:
+          `push(`tokens, ["QUALVAR", `substring(`token_value, 0, `length(`token_extra))])
+        ELSE:
+          `push(`tokens, ["VAR", `substring(`token_value, 0, `length(`token_extra))])
+        ENDIF
         `push(`tokens, [`token_str, "."+`substring(`token_value, `length(`token_value)-`length(`token_str), `length(`token_value))])
       ELSE:
         `push(`tokens, [`token_str, `token_value])
@@ -6976,6 +8139,14 @@ CLASS Prequel:
     ENDIF
     return `utils.`deepCopy(THIS.`_prequel_m.`getInstanceVarNames(`instance))
 
+  METHOD existsInstanceVar(`instance `ivarname):
+    VAR `instances = THIS.`_prequel_m.`getInstances()
+    IF `indexof(`instances, `instance) < 0:
+      return FALSE
+    ENDIF
+    VAR `ivarnames = THIS.`_prequel_m.`getInstanceVarNames(`instance)
+    return (`indexof(`ivarnames, `ivarname) >= 0)
+
   METHOD addInstanceVar(`ivarname `ivarvalue):
     VAR `instance = THIS.`_prequel_m.`getRunningInstance()
     IF `isnull(`instance):
@@ -7041,6 +8212,75 @@ CLASS Prequel:
       return NULL
     ENDIF
     THIS.`_prequel_m.`removeInstanceVar(`instance, `ivarname)
+    return TRUE
+
+  METHOD addInstanceCsvar(`csinstance `ivarname `ivarvalue):
+    VAR `instance = THIS.`_prequel_m.`getRunningInstance()
+    IF `instance == `csinstance:
+      return THIS.addInstanceVar(`ivarname, `ivarvalue)
+    ENDIF
+    IF `isnull(`instance):
+      THIS.`_error = "NOT"+" "+"RUNNING"+" "+"INSTANCE"
+      return NULL
+    ENDIF
+    IF `not(`lexer.`isValidIvarname(`ivarname)):
+      THIS.`_error = "INVALID"+" "+"IVARNAME"
+      return NULL
+    ENDIF
+    VAR `instances = THIS.`_prequel_m.`getInstances()
+    IF `indexof(`instances, `csinstance) < 0:
+      THIS.`_error = "INVALID"+" "+"INSTANCE"
+      return NULL
+    ENDIF
+    IF (THIS.`_prequel_m.`getInstanceState(`csinstance) != `INTERP_STATE_YIELD) AND (`csinstance != `instance):
+      THIS.`_error = "INSTANCE"+" "+"NOT"+" "+"IN"+" "+"CALLSTACK"
+      return NULL
+    ENDIF
+    VAR `ivarnames = THIS.`_prequel_m.`getInstanceVarNames(`csinstance)
+    IF `indexof(`ivarnames, `ivarname) >= 0:
+      THIS.`_error = "DUPLICATE"+" "+"IVARNAME"
+      return NULL
+    ENDIF
+    VAR `evalue = `utils.`encodeData(`ivarvalue)
+    IF `isnull(`evalue):
+      THIS.`_error = "INVALID"+" "+"IVARVALUE"
+      return NULL
+    ENDIF
+    THIS.`_prequel_m.`addInstanceCsvar(`instance, `ivarname, `evalue, `csinstance)
+    return TRUE
+
+  METHOD removeInstanceCsvar(`csinstance `ivarname):
+    VAR `instance = THIS.`_prequel_m.`getRunningInstance()
+    IF `instance == `csinstance:
+      return THIS.removeInstanceVar(`ivarname)
+    ENDIF
+    IF `isnull(`instance):
+      THIS.`_error = "NOT"+" "+"RUNNING"+" "+"INSTANCE"
+      return NULL
+    ENDIF
+    VAR `instances = THIS.`_prequel_m.`getInstances()
+    IF `indexof(`instances, `csinstance) < 0:
+      THIS.`_error = "INVALID"+" "+"INSTANCE"
+      return NULL
+    ENDIF
+    IF (THIS.`_prequel_m.`getInstanceState(`csinstance) != `INTERP_STATE_YIELD) AND (`csinstance != `instance):
+      THIS.`_error = "INSTANCE"+" "+"NOT"+" "+"IN"+" "+"CALLSTACK"
+      return NULL
+    ENDIF
+    VAR `ivarnames = THIS.`_prequel_m.`getInstanceVarNames(`csinstance)
+    IF `indexof(`ivarnames, `ivarname) < 0:
+      IF `not(`lexer.`isValidIvarname(`ivarname)):
+        THIS.`_error = "INVALID"+" "+"IVARNAME"
+        return NULL
+      ENDIF
+      THIS.`_error = "UNKNOWN"+" "+"IVARNAME"
+      return NULL
+    ENDIF
+    IF THIS.`_prequel_m.`inRepeatVars(`csinstance, `ivarname) AND `isnull(THIS.`_prequel_m.`getStatusCode(`csinstance)):
+      THIS.`_error = "IVARNAME"+" "+"IN"+" "+"REPEAT"+" "+"VARIABLES"
+      return NULL
+    ENDIF
+    THIS.`_prequel_m.`removeInstanceCsvar(`instance, `ivarname, `csinstance)
     return TRUE
 
   METHOD getInstanceState(`instance):
@@ -7212,6 +8452,14 @@ CLASS Prequel:
       return NULL
     ENDIF
     return THIS.`_prequel_m.`readChangedVars(`instance)
+
+  METHOD getRunningModule():
+    VAR `instance = THIS.`_prequel_m.`getRunningInstance()
+    IF `isnull(`instance):
+      THIS.`_error = "NOT"+" "+"RUNNING"+" "+"INSTANCE"
+      return NULL
+    ENDIF
+    return THIS.`_prequel_m.`getInstanceModule(`instance)
 
   METHOD edAddLine(`module `lnno):
     THIS.`_error = "NOT"+" "+"IMPLEMENTED"
