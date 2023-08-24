@@ -1864,84 +1864,84 @@ VAR `UNARYOP_BIT_NOT = 3
 
 VAR `OPCODE_ERROR = 0
 VAR `OPCODE_SUFFIX = 1
-VAR `OPCODE_ABS = 2
-VAR `OPCODE_ACOS = 3
-VAR `OPCODE_AND = 4
-VAR `OPCODE_ASIN = 5
-VAR `OPCODE_ATAN = 6
-VAR `OPCODE_ATAN2 = 7
-VAR `OPCODE_ASSIGN_OP = 8
-VAR `OPCODE_ASSIGN_OP_CSVAR = 9
-VAR `OPCODE_ASSIGN_OP_RANDOM = 10
-VAR `OPCODE_ASSIGN_POP = 11
-VAR `OPCODE_ASSIGN_UNQUEUE = 12
-VAR `OPCODE_BIT_AND = 13
-VAR `OPCODE_BIT_NOT = 14
-VAR `OPCODE_BIT_OR = 15
-VAR `OPCODE_BIT_SHL = 16
-VAR `OPCODE_BIT_SHR = 17
-VAR `OPCODE_BIT_XOR = 18
-VAR `OPCODE_BY_REF = 19
-VAR `OPCODE_CEIL = 20
-VAR `OPCODE_COS = 21
-VAR `OPCODE_CSVAR = 22
-VAR `OPCODE_DEBUGL = 23
-VAR `OPCODE_DIV = 24
-VAR `OPCODE_ELSE = 25
-VAR `OPCODE_ELSIF = 26
-VAR `OPCODE_ENDIF = 27
-VAR `OPCODE_ENDREP = 28
-VAR `OPCODE_EQ = 29
-VAR `OPCODE_EXP = 30
-VAR `OPCODE_EXP2 = 31
-VAR `OPCODE_FLOOR = 32
-VAR `OPCODE_GE = 33
-VAR `OPCODE_GT = 34
-VAR `OPCODE_IDV = 35
-VAR `OPCODE_IF = 36
-VAR `OPCODE_INDEXOF_VAR = 37
-VAR `OPCODE_IS_CSVAR = 38
-VAR `OPCODE_IS_NOT_CSVAR = 39
-VAR `OPCODE_IS_NOT_VAR = 40
-VAR `OPCODE_IS_VAR = 41
-VAR `OPCODE_LE = 42
-VAR `OPCODE_LENGTH_VAR = 43
-VAR `OPCODE_LIST = 44
-VAR `OPCODE_LIST_AT_CSVAR = 45
-VAR `OPCODE_LIST_AT_QUALVAR = 46
-VAR `OPCODE_LIST_AT_VAR = 47
-VAR `OPCODE_LOG = 48
-VAR `OPCODE_LOG2 = 49
-VAR `OPCODE_LSIZE_VAR = 50
-VAR `OPCODE_LT = 51
-VAR `OPCODE_MAX = 52
-VAR `OPCODE_MIN = 53
-VAR `OPCODE_MINUS = 54
-VAR `OPCODE_MOD = 55
-VAR `OPCODE_MODULE_NAME = 56
-VAR `OPCODE_MUL = 57
-VAR `OPCODE_NE = 58
-VAR `OPCODE_NEG = 59
-VAR `OPCODE_NOT = 60
-VAR `OPCODE_NSIZE_VAR = 61
-VAR `OPCODE_NUMBER = 62
-VAR `OPCODE_OR = 63
-VAR `OPCODE_PLUS = 64
-VAR `OPCODE_POW = 65
-VAR `OPCODE_PROCEDURE = 66
-VAR `OPCODE_PUSH = 67
-VAR `OPCODE_QUALVAR = 68
-VAR `OPCODE_QUEUE = 69
-VAR `OPCODE_REPEAT = 70
-VAR `OPCODE_REPNEXT = 71
-VAR `OPCODE_REPSTOP = 72
-VAR `OPCODE_ROUND = 73
-VAR `OPCODE_SIGN = 74
-VAR `OPCODE_SIN = 75
-VAR `OPCODE_SIZE_VAR = 76
-VAR `OPCODE_SQRT = 77
-VAR `OPCODE_STRING = 78
-VAR `OPCODE_TAN = 79
+VAR `OPCODE_AND = 2
+VAR `OPCODE_ASSIGN_OP = 3
+VAR `OPCODE_ASSIGN_OP_CSVAR = 4
+VAR `OPCODE_ASSIGN_OP_RANDOM = 5
+VAR `OPCODE_ASSIGN_POP = 6
+VAR `OPCODE_ASSIGN_UNQUEUE = 7
+VAR `OPCODE_BIT_AND = 8
+VAR `OPCODE_BIT_NOT = 9
+VAR `OPCODE_BIT_OR = 10
+VAR `OPCODE_BIT_SHL = 11
+VAR `OPCODE_BIT_SHR = 12
+VAR `OPCODE_BIT_XOR = 13
+VAR `OPCODE_BY_REF = 14
+VAR `OPCODE_CSVAR = 15
+VAR `OPCODE_DEBUGL = 16
+VAR `OPCODE_DIV = 17
+VAR `OPCODE_ELSE = 18
+VAR `OPCODE_ELSIF = 19
+VAR `OPCODE_ENDIF = 20
+VAR `OPCODE_ENDREP = 21
+VAR `OPCODE_EQ = 22
+VAR `OPCODE_GE = 23
+VAR `OPCODE_GT = 24
+VAR `OPCODE_IDV = 25
+VAR `OPCODE_IF = 26
+VAR `OPCODE_INDEXOF_VAR = 27
+VAR `OPCODE_IS_CSVAR = 28
+VAR `OPCODE_IS_NOT_CSVAR = 29
+VAR `OPCODE_IS_NOT_VAR = 30
+VAR `OPCODE_IS_VAR = 31
+VAR `OPCODE_LE = 32
+VAR `OPCODE_LENGTH_VAR = 33
+VAR `OPCODE_LIST = 34
+VAR `OPCODE_LIST_AT_CSVAR = 35
+VAR `OPCODE_LIST_AT_QUALVAR = 36
+VAR `OPCODE_LIST_AT_VAR = 37
+VAR `OPCODE_LSIZE_VAR = 38
+VAR `OPCODE_LT = 39
+VAR `OPCODE_MATH_ABS = 40
+VAR `OPCODE_MATH_ACOS = 41
+VAR `OPCODE_MATH_ASIN = 42
+VAR `OPCODE_MATH_ATAN = 43
+VAR `OPCODE_MATH_ATAN2 = 44
+VAR `OPCODE_MATH_CEIL = 45
+VAR `OPCODE_MATH_COS = 46
+VAR `OPCODE_MATH_EXP = 47
+VAR `OPCODE_MATH_EXP2 = 48
+VAR `OPCODE_MATH_FLOOR = 49
+VAR `OPCODE_MATH_LOG = 50
+VAR `OPCODE_MATH_LOG2 = 51
+VAR `OPCODE_MATH_MAX = 52
+VAR `OPCODE_MATH_MIN = 53
+VAR `OPCODE_MATH_POW = 54
+VAR `OPCODE_MATH_ROUND = 55
+VAR `OPCODE_MATH_SIGN = 56
+VAR `OPCODE_MATH_SIN = 57
+VAR `OPCODE_MATH_SQRT = 58
+VAR `OPCODE_MATH_TAN = 59
+VAR `OPCODE_MINUS = 60
+VAR `OPCODE_MOD = 61
+VAR `OPCODE_MODULE_NAME = 62
+VAR `OPCODE_MUL = 63
+VAR `OPCODE_NE = 64
+VAR `OPCODE_NEG = 65
+VAR `OPCODE_NOT = 66
+VAR `OPCODE_NSIZE_VAR = 67
+VAR `OPCODE_NUMBER = 68
+VAR `OPCODE_OR = 69
+VAR `OPCODE_PLUS = 70
+VAR `OPCODE_PROCEDURE = 71
+VAR `OPCODE_PUSH = 72
+VAR `OPCODE_QUALVAR = 73
+VAR `OPCODE_QUEUE = 74
+VAR `OPCODE_REPEAT = 75
+VAR `OPCODE_REPNEXT = 76
+VAR `OPCODE_REPSTOP = 77
+VAR `OPCODE_SIZE_VAR = 78
+VAR `OPCODE_STRING = 79
 VAR `OPCODE_UNASSIGN = 80
 VAR `OPCODE_UNASSIGN_CSVAR = 81
 VAR `OPCODE_VAR = 82
@@ -3604,7 +3604,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_ABS, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_ABS, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "ACOS":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3613,7 +3613,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_ACOS, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_ACOS, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "ASIN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3622,7 +3622,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_ASIN, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_ASIN, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "ATAN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3631,7 +3631,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_ATAN, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_ATAN, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "ATAN2":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3640,7 +3640,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 2:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_ATAN2, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_ATAN2, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "CEIL":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3649,7 +3649,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_CEIL, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_CEIL, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "COS":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3658,7 +3658,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_COS, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_COS, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "E":
         return [`lidx+1, [`OPCODE_NUMBER, `fp[0].E()]]
       ELSIF `mathsymb == "EXP":
@@ -3669,7 +3669,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_EXP, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_EXP, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "EXP2":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3678,7 +3678,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_EXP2, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_EXP2, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "FLOOR":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3687,7 +3687,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_FLOOR, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_FLOOR, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "LOG":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3696,7 +3696,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_LOG, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_LOG, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "LOG2":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3705,7 +3705,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_LOG2, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_LOG2, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "MAX":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3714,7 +3714,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 2:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_MAX, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_MAX, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "MIN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3723,7 +3723,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 2:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_MIN, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_MIN, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "PI":
         return [`lidx+1, [`OPCODE_NUMBER, `fp[0].PI()]]
       ELSIF `mathsymb == "POW":
@@ -3734,7 +3734,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 2:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_POW, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_POW, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "ROUND":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3743,7 +3743,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_ROUND, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_ROUND, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "SIGN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3752,7 +3752,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_SIGN, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_SIGN, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "SIN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3761,7 +3761,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_SIN, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_SIN, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "SQRT":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3770,7 +3770,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_SQRT, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_SQRT, `lidx_mathexprs[1]]]
       ELSIF `mathsymb == "TAN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
@@ -3779,7 +3779,7 @@ CLASS `Parser:
         IF `length(`lidx_mathexprs[1]) != 1:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
-        return [`lidx_mathexprs[0], [`OPCODE_TAN, `lidx_mathexprs[1]]]
+        return [`lidx_mathexprs[0], [`OPCODE_MATH_TAN, `lidx_mathexprs[1]]]
       ENDIF
     ENDIF
     VAR `lidx_sfxexpr = THIS.`_parseVarSuffix(`tokens, `lidxs, `lidx)
@@ -5206,26 +5206,26 @@ CLASS `InterpM:
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_VAR] = `closure_iexpr_list_at_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_QUALVAR] = `closure_iexpr_list_at_qualvar
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_CSVAR] = `closure_iexpr_list_at_csvar
-    THIS.`_dispatch_expr[`OPCODE_ABS] = `closure_iexpr_math_op_abs
-    THIS.`_dispatch_expr[`OPCODE_ACOS] = `closure_iexpr_math_op_acos
-    THIS.`_dispatch_expr[`OPCODE_ASIN] = `closure_iexpr_math_op_asin
-    THIS.`_dispatch_expr[`OPCODE_ATAN] = `closure_iexpr_math_op_atan
-    THIS.`_dispatch_expr[`OPCODE_ATAN2] = `closure_iexpr_math_op_atan2
-    THIS.`_dispatch_expr[`OPCODE_CEIL] = `closure_iexpr_math_op_ceil
-    THIS.`_dispatch_expr[`OPCODE_COS] = `closure_iexpr_math_op_cos
-    THIS.`_dispatch_expr[`OPCODE_EXP] = `closure_iexpr_math_op_exp
-    THIS.`_dispatch_expr[`OPCODE_EXP2] = `closure_iexpr_math_op_exp2
-    THIS.`_dispatch_expr[`OPCODE_FLOOR] = `closure_iexpr_math_op_floor
-    THIS.`_dispatch_expr[`OPCODE_LOG] = `closure_iexpr_math_op_log
-    THIS.`_dispatch_expr[`OPCODE_LOG2] = `closure_iexpr_math_op_log2
-    THIS.`_dispatch_expr[`OPCODE_MAX] = `closure_iexpr_math_op_max
-    THIS.`_dispatch_expr[`OPCODE_MIN] = `closure_iexpr_math_op_min
-    THIS.`_dispatch_expr[`OPCODE_POW] = `closure_iexpr_math_op_pow
-    THIS.`_dispatch_expr[`OPCODE_ROUND] = `closure_iexpr_math_op_round
-    THIS.`_dispatch_expr[`OPCODE_SIGN] = `closure_iexpr_math_op_sign
-    THIS.`_dispatch_expr[`OPCODE_SIN] = `closure_iexpr_math_op_sin
-    THIS.`_dispatch_expr[`OPCODE_SQRT] = `closure_iexpr_math_op_sqrt
-    THIS.`_dispatch_expr[`OPCODE_TAN] = `closure_iexpr_math_op_tan
+    THIS.`_dispatch_expr[`OPCODE_MATH_ABS] = `closure_iexpr_math_op_abs
+    THIS.`_dispatch_expr[`OPCODE_MATH_ACOS] = `closure_iexpr_math_op_acos
+    THIS.`_dispatch_expr[`OPCODE_MATH_ASIN] = `closure_iexpr_math_op_asin
+    THIS.`_dispatch_expr[`OPCODE_MATH_ATAN] = `closure_iexpr_math_op_atan
+    THIS.`_dispatch_expr[`OPCODE_MATH_ATAN2] = `closure_iexpr_math_op_atan2
+    THIS.`_dispatch_expr[`OPCODE_MATH_CEIL] = `closure_iexpr_math_op_ceil
+    THIS.`_dispatch_expr[`OPCODE_MATH_COS] = `closure_iexpr_math_op_cos
+    THIS.`_dispatch_expr[`OPCODE_MATH_EXP] = `closure_iexpr_math_op_exp
+    THIS.`_dispatch_expr[`OPCODE_MATH_EXP2] = `closure_iexpr_math_op_exp2
+    THIS.`_dispatch_expr[`OPCODE_MATH_FLOOR] = `closure_iexpr_math_op_floor
+    THIS.`_dispatch_expr[`OPCODE_MATH_LOG] = `closure_iexpr_math_op_log
+    THIS.`_dispatch_expr[`OPCODE_MATH_LOG2] = `closure_iexpr_math_op_log2
+    THIS.`_dispatch_expr[`OPCODE_MATH_MAX] = `closure_iexpr_math_op_max
+    THIS.`_dispatch_expr[`OPCODE_MATH_MIN] = `closure_iexpr_math_op_min
+    THIS.`_dispatch_expr[`OPCODE_MATH_POW] = `closure_iexpr_math_op_pow
+    THIS.`_dispatch_expr[`OPCODE_MATH_ROUND] = `closure_iexpr_math_op_round
+    THIS.`_dispatch_expr[`OPCODE_MATH_SIGN] = `closure_iexpr_math_op_sign
+    THIS.`_dispatch_expr[`OPCODE_MATH_SIN] = `closure_iexpr_math_op_sin
+    THIS.`_dispatch_expr[`OPCODE_MATH_SQRT] = `closure_iexpr_math_op_sqrt
+    THIS.`_dispatch_expr[`OPCODE_MATH_TAN] = `closure_iexpr_math_op_tan
     THIS.`_data_v = NULL
 
   METHOD `readDebugl():
