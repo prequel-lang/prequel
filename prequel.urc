@@ -594,28 +594,6 @@ CLASS `Lexer:
     `push(THIS.`_reserved_words, "PROCEDURE")
     `push(THIS.`_reserved_words, "RANDOM")
     `push(THIS.`_reserved_words, "UNDEFINED")
-    `push(THIS.`_reserved_words, "ABS")
-    `push(THIS.`_reserved_words, "ACOS")
-    `push(THIS.`_reserved_words, "ASIN")
-    `push(THIS.`_reserved_words, "ATAN")
-    `push(THIS.`_reserved_words, "ATAN2")
-    `push(THIS.`_reserved_words, "CEIL")
-    `push(THIS.`_reserved_words, "COS")
-    `push(THIS.`_reserved_words, "E")
-    `push(THIS.`_reserved_words, "EXP")
-    `push(THIS.`_reserved_words, "EXP2")
-    `push(THIS.`_reserved_words, "FLOOR")
-    `push(THIS.`_reserved_words, "LOG")
-    `push(THIS.`_reserved_words, "LOG2")
-    `push(THIS.`_reserved_words, "MAX")
-    `push(THIS.`_reserved_words, "MIN")
-    `push(THIS.`_reserved_words, "PI")
-    `push(THIS.`_reserved_words, "POW")
-    `push(THIS.`_reserved_words, "ROUND")
-    `push(THIS.`_reserved_words, "SIGN")
-    `push(THIS.`_reserved_words, "SIN")
-    `push(THIS.`_reserved_words, "SQRT")
-    `push(THIS.`_reserved_words, "TAN")
 
     THIS.`_reserved_vlast_words = []
     `push(THIS.`_reserved_vlast_words, "UNASSIGN")
@@ -635,6 +613,30 @@ CLASS `Lexer:
     `push(THIS.`_reserved_qlast_words, "NSIZE")
     `push(THIS.`_reserved_qlast_words, "LSIZE")
     `push(THIS.`_reserved_qlast_words, "INDEXOF")
+
+    THIS.`_math_tokens = []
+    `push(THIS.`_math_tokens, "MATH"+"."+"ABS")
+    `push(THIS.`_math_tokens, "MATH"+"."+"ACOS")
+    `push(THIS.`_math_tokens, "MATH"+"."+"ASIN")
+    `push(THIS.`_math_tokens, "MATH"+"."+"ATAN")
+    `push(THIS.`_math_tokens, "MATH"+"."+"ATAN2")
+    `push(THIS.`_math_tokens, "MATH"+"."+"CEIL")
+    `push(THIS.`_math_tokens, "MATH"+"."+"COS")
+    `push(THIS.`_math_tokens, "MATH"+"."+"E")
+    `push(THIS.`_math_tokens, "MATH"+"."+"EXP")
+    `push(THIS.`_math_tokens, "MATH"+"."+"EXP2")
+    `push(THIS.`_math_tokens, "MATH"+"."+"FLOOR")
+    `push(THIS.`_math_tokens, "MATH"+"."+"LOG")
+    `push(THIS.`_math_tokens, "MATH"+"."+"LOG2")
+    `push(THIS.`_math_tokens, "MATH"+"."+"MAX")
+    `push(THIS.`_math_tokens, "MATH"+"."+"MIN")
+    `push(THIS.`_math_tokens, "MATH"+"."+"PI")
+    `push(THIS.`_math_tokens, "MATH"+"."+"POW")
+    `push(THIS.`_math_tokens, "MATH"+"."+"ROUND")
+    `push(THIS.`_math_tokens, "MATH"+"."+"SIGN")
+    `push(THIS.`_math_tokens, "MATH"+"."+"SIN")
+    `push(THIS.`_math_tokens, "MATH"+"."+"SQRT")
+    `push(THIS.`_math_tokens, "MATH"+"."+"TAN")
 
     THIS.`_token_strs = []
     `push(THIS.`_token_strs, "_"+"UNKNOWN"+"_")
@@ -1021,33 +1023,12 @@ CLASS `Lexer:
           `col += `tlen
           continue
         ENDIF
-        `tname = "ROUND"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
       ENDIF
       IF `ic == "L":
         `tname = "LIST"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_LIST, `col, `substring(`line, `col, `col+`tlen)])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "LOG"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "LOG2"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -1060,61 +1041,12 @@ CLASS `Lexer:
           `col += `tlen
           continue
         ENDIF
-        `tname = "ABS"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "ACOS"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "ASIN"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "ATAN"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "ATAN2"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
       ENDIF
       IF `ic == "P":
         `tname = "PROCEDURE"
         IF THIS.`isTokenEndOther(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_PROCEDURE, `col, `substring(`line, `col, `col+`tlen)])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "PI"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "POW"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -1152,27 +1084,6 @@ CLASS `Lexer:
         IF THIS.`isTokenEndOther(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_EMPTY, `col, `substring(`line, `col, `col+`tlen)])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "E"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "EXP"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "EXP2"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
           `col += `tlen
           continue
         ENDIF
@@ -1703,76 +1614,19 @@ CLASS `Lexer:
           continue
         ENDIF
       ENDIF
-      IF `ic == "S":
-        `tname = "SQRT"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "SIGN"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "SIN"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-      ENDIF
-      IF `ic == "C":
-        `tname = "CEIL"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "COS"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-      ENDIF
-      IF `ic == "F":
-        `tname = "FLOOR"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-      ENDIF
       IF `ic == "M":
-        `tname = "MAX"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-        `tname = "MIN"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
-          continue
-        ENDIF
-      ENDIF
-      IF `ic == "T":
-        `tname = "TAN"
-        IF THIS.`isTokenEndOther(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
-          `col += `tlen
+        `textra = NULL
+        FORINCR `j(0 `length(THIS.`_math_tokens)):
+          `tname = THIS.`_math_tokens[`j]
+          IF THIS.`isTokenEndOther(`line, `col, `tname):
+            `tlen = `length(`tname)
+            `push(`tokens, [`key_token_MATHSYMB, `col, `substring(`line, `col, `col+`tlen), `tname])
+            `col += `tlen
+            `textra = `tname
+            break
+          ENDIF
+        ENDFOR
+        IF `not(`isnull(`textra)):
           continue
         ENDIF
       ENDIF
@@ -3596,7 +3450,7 @@ CLASS `Parser:
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_MATHSYMB:
       `mathsymb = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
-      IF `mathsymb == "ABS":
+      IF `mathsymb == "MATH"+"."+"ABS":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3605,7 +3459,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_ABS, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "ACOS":
+      ELSIF `mathsymb == "MATH"+"."+"ACOS":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3614,7 +3468,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_ACOS, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "ASIN":
+      ELSIF `mathsymb == "MATH"+"."+"ASIN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3623,7 +3477,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_ASIN, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "ATAN":
+      ELSIF `mathsymb == "MATH"+"."+"ATAN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3632,7 +3486,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_ATAN, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "ATAN2":
+      ELSIF `mathsymb == "MATH"+"."+"ATAN2":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3641,7 +3495,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_ATAN2, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "CEIL":
+      ELSIF `mathsymb == "MATH"+"."+"CEIL":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3650,7 +3504,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_CEIL, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "COS":
+      ELSIF `mathsymb == "MATH"+"."+"COS":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3659,9 +3513,9 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_COS, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "E":
+      ELSIF `mathsymb == "MATH"+"."+"E":
         return [`lidx+1, [`OPCODE_NUMBER, `fp[0].E()]]
-      ELSIF `mathsymb == "EXP":
+      ELSIF `mathsymb == "MATH"+"."+"EXP":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3670,7 +3524,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_EXP, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "EXP2":
+      ELSIF `mathsymb == "MATH"+"."+"EXP2":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3679,7 +3533,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_EXP2, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "FLOOR":
+      ELSIF `mathsymb == "MATH"+"."+"FLOOR":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3688,7 +3542,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_FLOOR, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "LOG":
+      ELSIF `mathsymb == "MATH"+"."+"LOG":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3697,7 +3551,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_LOG, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "LOG2":
+      ELSIF `mathsymb == "MATH"+"."+"LOG2":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3706,7 +3560,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_LOG2, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "MAX":
+      ELSIF `mathsymb == "MATH"+"."+"MAX":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3715,7 +3569,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_MAX, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "MIN":
+      ELSIF `mathsymb == "MATH"+"."+"MIN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3724,9 +3578,9 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_MIN, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "PI":
+      ELSIF `mathsymb == "MATH"+"."+"PI":
         return [`lidx+1, [`OPCODE_NUMBER, `fp[0].PI()]]
-      ELSIF `mathsymb == "POW":
+      ELSIF `mathsymb == "MATH"+"."+"POW":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3735,7 +3589,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_POW, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "ROUND":
+      ELSIF `mathsymb == "MATH"+"."+"ROUND":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3744,7 +3598,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_ROUND, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "SIGN":
+      ELSIF `mathsymb == "MATH"+"."+"SIGN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3753,7 +3607,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_SIGN, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "SIN":
+      ELSIF `mathsymb == "MATH"+"."+"SIN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3762,7 +3616,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_SIN, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "SQRT":
+      ELSIF `mathsymb == "MATH"+"."+"SQRT":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
@@ -3771,7 +3625,7 @@ CLASS `Parser:
           return [[`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"MATH"+" "+"FUNCTION"+" "+"ARITY", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
         ENDIF
         return [`lidx_mathexprs[0], [`OPCODE_MATH_SQRT, `lidx_mathexprs[1]]]
-      ELSIF `mathsymb == "TAN":
+      ELSIF `mathsymb == "MATH"+"."+"TAN":
         `lidx_mathexprs = THIS.`_parseMathArith(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_mathexprs) == 1:
           return `lidx_mathexprs
