@@ -1023,6 +1023,13 @@ CLASS `Lexer:
           `col += `tlen
           continue
         ENDIF
+        `tname = "RETURN"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_QUALVAR, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
       ENDIF
       IF `ic == "L":
         `tname = "LIST"
@@ -1604,6 +1611,15 @@ CLASS `Lexer:
         `literal = `parse_float(`substring(`line, `start, `col))
         `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal)])
         continue
+      ENDIF
+      IF `ic == "C":
+        `tname = "CALL"
+        IF THIS.`isTokenEndOther(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_QUALVAR, `col, `substring(`line, `col, `col+`tlen), `tname])
+          `col += `tlen
+          continue
+        ENDIF
       ENDIF
       IF `ic == "D":
         `tname = "DEBUGL"
