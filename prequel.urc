@@ -1621,15 +1621,6 @@ CLASS `Lexer:
           continue
         ENDIF
       ENDIF
-      IF `ic == "D":
-        `tname = "DEBUGL"
-        IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `tlen = `length(`tname)
-          `push(`tokens, [`key_token_DEBUGL, `col, `substring(`line, `col, `col+`tlen)])
-          `col += `tlen
-          continue
-        ENDIF
-      ENDIF
       IF `ic == "M":
         `textra = NULL
         FORINCR `j(0 `length(THIS.`_math_tokens)):
@@ -1643,6 +1634,15 @@ CLASS `Lexer:
           ENDIF
         ENDFOR
         IF `not(`isnull(`textra)):
+          continue
+        ENDIF
+      ENDIF
+      IF `ic == "D":
+        `tname = "DEBUGL"
+        IF THIS.`isTokenEndSpace(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_DEBUGL, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
           continue
         ENDIF
       ENDIF
