@@ -6910,7 +6910,6 @@ CLASS `PrequelM:
     return THIS.`_module_list
 
   METHOD `openModule(`source_code `module_name):
-    VAR `extension
     VAR `j
     VAR `module_idx
     VAR `module_j
@@ -6919,12 +6918,11 @@ CLASS `PrequelM:
     VAR `ok
     VAR `prefix
     IF `isnull(`module_name):
-      `prefix = "Untitled"
+      `prefix = "untitled"
       `num = 1
-      `extension = "."+"pre"
       WHILE TRUE:
         `ok = TRUE
-        `module_name = `prefix+`str(`num)+`extension
+        `module_name = `prefix+`str(`num)
         `module_name_lcase = `lowercase(`module_name)
         `module_idx = `length(THIS.`_module_list)
         FORINCR `j(0 `length(THIS.`_module_list)):
