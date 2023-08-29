@@ -3120,7 +3120,7 @@ CLASS `Parser:
       ELSE:
         `logical_factor = [`OPCODE_NOT, `lidx_factor[1]]
       ENDIF
-      return `logical_factor
+      return [`lidx_factor[0], `logical_factor]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LPAR:
       `lidx_logexpr = THIS.`_parseLogicalExpression(`tokens, `lidxs, `lidx+1)
