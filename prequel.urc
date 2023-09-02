@@ -4406,9 +4406,7 @@ CLASS `EditorM:
               `lnno_prev_elsif_else -= 1
               continue
             ENDIF
-            IF `ast_node_prev_elsif_else[0] == `OPCODE_IF:
-              break
-            ELSIF `ast_node_prev_elsif_else[0] == `OPCODE_REPNEXT:
+            IF `ast_node_prev_elsif_else[0] == `OPCODE_REPNEXT:
               break
             ELSIF `ast_node_prev_elsif_else[0] == `OPCODE_REPSTOP:
               break
