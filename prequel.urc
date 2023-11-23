@@ -41,7 +41,6 @@ VAR `key_limits_max_memory = 1
 VAR `key_limits_memory = 2
 VAR `key_limits_memory_n = 3
 VAR `key_limits_memory_l = 4
-VAR `key_limits_time = 5
 
 VAR `key_interp_boolean = 0
 VAR `key_interp_by_ref = 1
@@ -122,7 +121,6 @@ CLASS `Utils:
     `limits[`key_limits_memory] = NULL
     `limits[`key_limits_memory_n] = NULL
     `limits[`key_limits_memory_l] = NULL
-    `limits[`key_limits_time] = NULL
     IF `is_type_dict(`get_type(`limits_)):
       IF "instructions" in `limits_:
         IF `not(THIS.`isInt32b(`limits_["instructions"])):
@@ -148,12 +146,6 @@ CLASS `Utils:
         ENDIF
         `limits[`key_limits_memory_l] = `limits_["memory_l"]
       ENDIF
-      IF "time" in `limits_:
-        IF `not(THIS.`isInt32b(`limits_["time"])):
-          return NULL
-        ENDIF
-        `limits[`key_limits_time] = `limits_["time"]
-      ENDIF
     ELSIF `not(`isnull(`limits_)):
       return NULL
     ENDIF
@@ -166,7 +158,6 @@ CLASS `Utils:
     `limits["memory"] = `limits_[`key_limits_memory]
     `limits["memory_n"] = `limits_[`key_limits_memory_n]
     `limits["memory_l"] = `limits_[`key_limits_memory_l]
-    `limits["time"] = `limits_[`key_limits_time]
     return `limits
 
   METHOD `elemEqElem(`xs `ys):
@@ -4718,7 +4709,7 @@ ENDFUNC
 
 CLASS `InterpM:
 
-  METHOD_INIT(`editor_m `getQualvar `onProcedure `onYieldResume `rnd32b `now `instance `existsInstanceCsvar `getInstanceCsvar `__addInstanceCsvar `__removeInstanceCsvar `__updateInstanceCsvarDeltaCost `inInstanceRepeatCsvars `isCsinstanceStatusCodeNull `getCsinstance):
+  METHOD_INIT(`editor_m `getQualvar `onProcedure `onYieldResume `rnd32b `instance `existsInstanceCsvar `getInstanceCsvar `__addInstanceCsvar `__removeInstanceCsvar `__updateInstanceCsvarDeltaCost `inInstanceRepeatCsvars `isCsinstanceStatusCodeNull `getCsinstance):
     THIS.`_lines_id = `editor_m.`getLinesId()
     THIS.`_lines_ast = `editor_m.`getLinesAst()
     VAR `breakpoints_info = `editor_m.`getBreakpointsInfo()
@@ -4728,7 +4719,6 @@ CLASS `InterpM:
     THIS.`_onProcedure = `onProcedure
     THIS.`_onYieldResume = `onYieldResume
     THIS.`_rnd32b = `rnd32b
-    THIS.`_now = `now
     THIS.`_instance = `instance
     THIS.`_existsInstanceCsvar = `existsInstanceCsvar
     THIS.`_getInstanceCsvar = `getInstanceCsvar
@@ -4761,7 +4751,6 @@ CLASS `InterpM:
     THIS.`_count[`key_limits_memory] = NULL
     THIS.`_count[`key_limits_memory_n] = NULL
     THIS.`_count[`key_limits_memory_l] = NULL
-    THIS.`_count[`key_limits_time] = NULL
     THIS.`_tmpNumber = [`key_interp_number, 0, 0, 1]
     THIS.`_tmpBoolean = [`key_interp_boolean, TRUE]
     THIS.`_tmpByRef = [`key_interp_by_ref, NULL]
@@ -5204,9 +5193,6 @@ CLASS `InterpM:
       IF `not(`isnull(`limits[`key_limits_memory_l])):
         `limits[`key_limits_memory_l] -= THIS.`_count[`key_limits_memory_l]
       ENDIF
-      IF `not(`isnull(`limits[`key_limits_time])):
-        `limits[`key_limits_time] -= THIS.`_count[`key_limits_time]
-      ENDIF
     ENDIF
     return THIS.`_run(`instance, `resume_yield, `stepping, `limits)
 
@@ -5247,20 +5233,17 @@ CLASS `InterpM:
     THIS.`_count[`key_limits_memory] = 0
     THIS.`_count[`key_limits_memory_n] = 0
     THIS.`_count[`key_limits_memory_l] = 0
-    THIS.`_count[`key_limits_time] = 0
     THIS.`_yield = FALSE
     VAR `force
     VAR `instruction
     VAR `next_pcounter
     VAR `status_code
-    VAR `time_start
     VAR `was_procedure
     IF `resume_yield:
       THIS.`_error = NULL
       THIS.`_status_code = NULL
       THIS.`_memory_delta_n = 0
       THIS.`_memory_delta_l = 0
-      `time_start = THIS.`_now()
       THIS.`_onYieldResume(`instance)
       IF `not(`isnull(THIS.`_error)):
         return [`INTERP_STATE_ERROR, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter), THIS.`_error]
@@ -5271,7 +5254,6 @@ CLASS `InterpM:
       IF THIS.`_count[`key_limits_max_memory] < THIS.`_count[`key_limits_memory]:
         THIS.`_count[`key_limits_max_memory] = THIS.`_count[`key_limits_memory]
       ENDIF
-      THIS.`_count[`key_limits_time] = THIS.`_now()-`time_start
       IF THIS.`_yield:
         return [`INTERP_STATE_YIELD, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter)]
       ENDIF
@@ -5287,7 +5269,7 @@ CLASS `InterpM:
         `status_code = 0
         return [`INTERP_STATE_ENDED, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter), `status_code]
       ENDIF
-      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_n])) AND (THIS.`_limits[`key_limits_memory_n] <= THIS.`_count[`key_limits_memory_n])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])) OR (`not(`isnull(THIS.`_limits[`key_limits_time])) AND (THIS.`_limits[`key_limits_time] <= THIS.`_count[`key_limits_time])):
+      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_n])) AND (THIS.`_limits[`key_limits_memory_n] <= THIS.`_count[`key_limits_memory_n])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])):
         return [`INTERP_STATE_LIMIT, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter)]
       ENDIF
     ENDIF
@@ -5297,7 +5279,6 @@ CLASS `InterpM:
     ENDIF
     `force = (THIS.`_pcounter == THIS.`_prev_pcounter)
     `was_procedure = FALSE
-    `time_start = THIS.`_now()
     WHILE TRUE:
       `instruction = `utils_editor_m.`lineastAst(THIS.`_lines_ast[THIS.`_pcounter])
       IF (`stepping OR (`indexof(THIS.`_breakpoints, THIS.`_pcounter) >= 0)) AND `not(`force):
@@ -5324,7 +5305,6 @@ CLASS `InterpM:
       IF THIS.`_count[`key_limits_max_memory] < THIS.`_count[`key_limits_memory]:
         THIS.`_count[`key_limits_max_memory] = THIS.`_count[`key_limits_memory]
       ENDIF
-      THIS.`_count[`key_limits_time] = THIS.`_now()-`time_start
       IF THIS.`_yield:
         return [`INTERP_STATE_YIELD, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter)]
       ENDIF
@@ -5342,7 +5322,7 @@ CLASS `InterpM:
         `status_code = 0
         return [`INTERP_STATE_ENDED, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter), `status_code]
       ENDIF
-      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_n])) AND (THIS.`_limits[`key_limits_memory_n] <= THIS.`_count[`key_limits_memory_n])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])) OR (`not(`isnull(THIS.`_limits[`key_limits_time])) AND (THIS.`_limits[`key_limits_time] <= THIS.`_count[`key_limits_time])):
+      IF (`not(`isnull(THIS.`_limits[`key_limits_instructions])) AND (THIS.`_limits[`key_limits_instructions] <= THIS.`_count[`key_limits_instructions])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory])) AND (THIS.`_limits[`key_limits_memory] <= THIS.`_count[`key_limits_memory])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_n])) AND (THIS.`_limits[`key_limits_memory_n] <= THIS.`_count[`key_limits_memory_n])) OR (`not(`isnull(THIS.`_limits[`key_limits_memory_l])) AND (THIS.`_limits[`key_limits_memory_l] <= THIS.`_count[`key_limits_memory_l])):
         return [`INTERP_STATE_LIMIT, THIS.`_count, THIS.`_getLnno(THIS.`_pcounter)]
       ENDIF
     ENDWHILE
@@ -6821,7 +6801,7 @@ CLASS `PrequelM:
   METHOD_INIT(`args):
     VAR `x = NULL
 
-  METHOD `init(`onProcedure `onYieldResume `rnd32b `now):
+  METHOD `init(`onProcedure `onYieldResume `rnd32b):
     THIS.`_ihandle = NEW `ResourceIds()
     THIS.`_modules = {}
     THIS.`_module_list = []
@@ -6839,7 +6819,6 @@ CLASS `PrequelM:
     THIS.`_onProcedure = `onProcedure
     THIS.`_onYieldResume = `onYieldResume
     THIS.`_rnd32b = `rnd32b
-    THIS.`_now = `now
     VAR `that = THIS
     CLOSURE `closure_getQualvar(`qualvar):
       IF `isnull(`that.`_running_instance):
@@ -6895,11 +6874,10 @@ CLASS `PrequelM:
     ENDCLOSURE
     THIS.`_getCsinstance = `closure_getCsinstance
 
-  METHOD `setCallbacks(`onProcedure `onYieldResume `rnd32b `now):
+  METHOD `setCallbacks(`onProcedure `onYieldResume `rnd32b):
     THIS.`_onProcedure = `onProcedure
     THIS.`_onYieldResume = `onYieldResume
     THIS.`_rnd32b = `rnd32b
-    THIS.`_now = `now
 
   METHOD `setCbGetCsinstance(`cbGetCsinstance):
     THIS.`_getCsinstance = `cbGetCsinstance
@@ -7048,7 +7026,7 @@ CLASS `PrequelM:
 
   METHOD `addInstance(`module):
     VAR `instance = THIS.`_ihandle.`alloc()
-    VAR `interp_m = NEW `InterpM(THIS.`_modules[`module][`key_modules_editor_m], THIS.`_getQualvar, THIS.`_onProcedure, THIS.`_onYieldResume, THIS.`_rnd32b, THIS.`_now, `instance, THIS.`_existsInstanceCsvar, THIS.`_getInstanceCsvar, THIS.`_addInstanceCsvar, THIS.`_removeInstanceCsvar, THIS.`_updateInstanceCsvarDeltaCost, THIS.`_inInstanceRepeatCsvars, THIS.`_isCsinstanceStatusCodeNull, THIS.`_getCsinstance)
+    VAR `interp_m = NEW `InterpM(THIS.`_modules[`module][`key_modules_editor_m], THIS.`_getQualvar, THIS.`_onProcedure, THIS.`_onYieldResume, THIS.`_rnd32b, `instance, THIS.`_existsInstanceCsvar, THIS.`_getInstanceCsvar, THIS.`_addInstanceCsvar, THIS.`_removeInstanceCsvar, THIS.`_updateInstanceCsvarDeltaCost, THIS.`_inInstanceRepeatCsvars, THIS.`_isCsinstanceStatusCodeNull, THIS.`_getCsinstance)
     `push(THIS.`_instance_list, `instance)
     THIS.`_instances[`instance] = {}
     THIS.`_instances[`instance][`key_instances_interp_m] = `interp_m
@@ -7318,10 +7296,10 @@ ENDCLASS
 
 CLASS Prequel:
 
-  METHOD_INIT(`onProcedure `onYieldResume `rnd32b `now `_fp):
+  METHOD_INIT(`onProcedure `onYieldResume `rnd32b `_fp):
     `fp[0] = `_fp
     THIS.`_prequel_m = NEW `PrequelM({})
-    THIS.`_prequel_m.`init(`onProcedure, `onYieldResume, `rnd32b, `now)
+    THIS.`_prequel_m.`init(`onProcedure, `onYieldResume, `rnd32b)
     THIS.`_error = NULL
 
   METHOD getVersion():
@@ -7330,13 +7308,13 @@ CLASS Prequel:
   METHOD setFP(`_fp):
     `fp[0] = `_fp
 
-  METHOD setCallbacks(`onProcedure `onYieldResume `rnd32b `now):
+  METHOD setCallbacks(`onProcedure `onYieldResume `rnd32b):
     VAR `instances = THIS.`_prequel_m.`getInstances()
     IF `length(`instances) > 0:
       THIS.`_error = "NON"+"-"+"EMPTY"+" "+"INSTANCES"
       return NULL
     ENDIF
-    THIS.`_prequel_m.`setCallbacks(`onProcedure, `onYieldResume, `rnd32b, `now)
+    THIS.`_prequel_m.`setCallbacks(`onProcedure, `onYieldResume, `rnd32b)
     return TRUE
 
   METHOD setCbGetCsinstance(`cbGetCsinstance):
