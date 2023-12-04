@@ -1759,53 +1759,54 @@ VAR `OPCODE_LE = 32
 VAR `OPCODE_LENGTH_VAR = 33
 VAR `OPCODE_LIST = 34
 VAR `OPCODE_LIST_AT_CSVAR = 35
-VAR `OPCODE_LIST_AT_QUALVAR = 36
-VAR `OPCODE_LIST_AT_VAR = 37
-VAR `OPCODE_LSIZE_VAR = 38
-VAR `OPCODE_LT = 39
-VAR `OPCODE_MATH_ABS = 40
-VAR `OPCODE_MATH_ACOS = 41
-VAR `OPCODE_MATH_ASIN = 42
-VAR `OPCODE_MATH_ATAN = 43
-VAR `OPCODE_MATH_ATAN2 = 44
-VAR `OPCODE_MATH_CEIL = 45
-VAR `OPCODE_MATH_COS = 46
-VAR `OPCODE_MATH_EXP = 47
-VAR `OPCODE_MATH_EXP2 = 48
-VAR `OPCODE_MATH_FLOOR = 49
-VAR `OPCODE_MATH_LOG = 50
-VAR `OPCODE_MATH_LOG2 = 51
-VAR `OPCODE_MATH_MAX = 52
-VAR `OPCODE_MATH_MIN = 53
-VAR `OPCODE_MATH_POW = 54
-VAR `OPCODE_MATH_ROUND = 55
-VAR `OPCODE_MATH_SIGN = 56
-VAR `OPCODE_MATH_SIN = 57
-VAR `OPCODE_MATH_SQRT = 58
-VAR `OPCODE_MATH_TAN = 59
-VAR `OPCODE_MINUS = 60
-VAR `OPCODE_MOD = 61
-VAR `OPCODE_MODULE_NAME = 62
-VAR `OPCODE_MUL = 63
-VAR `OPCODE_NE = 64
-VAR `OPCODE_NEG = 65
-VAR `OPCODE_NOT = 66
-VAR `OPCODE_NSIZE_VAR = 67
-VAR `OPCODE_NUMBER = 68
-VAR `OPCODE_OR = 69
-VAR `OPCODE_PLUS = 70
-VAR `OPCODE_PROCEDURE = 71
-VAR `OPCODE_PUSH = 72
-VAR `OPCODE_QUALVAR = 73
-VAR `OPCODE_QUEUE = 74
-VAR `OPCODE_REPEAT = 75
-VAR `OPCODE_REPNEXT = 76
-VAR `OPCODE_REPSTOP = 77
-VAR `OPCODE_SIZE_VAR = 78
-VAR `OPCODE_STRING = 79
-VAR `OPCODE_UNASSIGN = 80
-VAR `OPCODE_UNASSIGN_CSVAR = 81
-VAR `OPCODE_VAR = 82
+VAR `OPCODE_LIST_AT_LIST = 36
+VAR `OPCODE_LIST_AT_QUALVAR = 37
+VAR `OPCODE_LIST_AT_VAR = 38
+VAR `OPCODE_LSIZE_VAR = 39
+VAR `OPCODE_LT = 40
+VAR `OPCODE_MATH_ABS = 41
+VAR `OPCODE_MATH_ACOS = 42
+VAR `OPCODE_MATH_ASIN = 43
+VAR `OPCODE_MATH_ATAN = 44
+VAR `OPCODE_MATH_ATAN2 = 45
+VAR `OPCODE_MATH_CEIL = 46
+VAR `OPCODE_MATH_COS = 47
+VAR `OPCODE_MATH_EXP = 48
+VAR `OPCODE_MATH_EXP2 = 49
+VAR `OPCODE_MATH_FLOOR = 50
+VAR `OPCODE_MATH_LOG = 51
+VAR `OPCODE_MATH_LOG2 = 52
+VAR `OPCODE_MATH_MAX = 53
+VAR `OPCODE_MATH_MIN = 54
+VAR `OPCODE_MATH_POW = 55
+VAR `OPCODE_MATH_ROUND = 56
+VAR `OPCODE_MATH_SIGN = 57
+VAR `OPCODE_MATH_SIN = 58
+VAR `OPCODE_MATH_SQRT = 59
+VAR `OPCODE_MATH_TAN = 60
+VAR `OPCODE_MINUS = 61
+VAR `OPCODE_MOD = 62
+VAR `OPCODE_MODULE_NAME = 63
+VAR `OPCODE_MUL = 64
+VAR `OPCODE_NE = 65
+VAR `OPCODE_NEG = 66
+VAR `OPCODE_NOT = 67
+VAR `OPCODE_NSIZE_VAR = 68
+VAR `OPCODE_NUMBER = 69
+VAR `OPCODE_OR = 70
+VAR `OPCODE_PLUS = 71
+VAR `OPCODE_PROCEDURE = 72
+VAR `OPCODE_PUSH = 73
+VAR `OPCODE_QUALVAR = 74
+VAR `OPCODE_QUEUE = 75
+VAR `OPCODE_REPEAT = 76
+VAR `OPCODE_REPNEXT = 77
+VAR `OPCODE_REPSTOP = 78
+VAR `OPCODE_SIZE_VAR = 79
+VAR `OPCODE_STRING = 80
+VAR `OPCODE_UNASSIGN = 81
+VAR `OPCODE_UNASSIGN_CSVAR = 82
+VAR `OPCODE_VAR = 83
 
 CLASS `Parser:
 
@@ -3206,9 +3207,28 @@ CLASS `Parser:
   METHOD `_parseArithmeticOrListExpression(`tokens `lidxs `lidx):
     VAR `exprs
     VAR `lidx_expr
+    VAR `idxexprs
+    VAR `lidx_idxexpr
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_RSQR:
-        return [`lidx+2, [`OPCODE_LIST, []]]
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_LSQR:
+          return [`lidx+2, [`OPCODE_LIST, []]]
+        ENDIF
+        `lidx += 2
+        `idxexprs = []
+        WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
+          `lidx_idxexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+          IF `length(`lidx_idxexpr) == 1:
+            return `lidx_idxexpr
+          ENDIF
+          `lidx = `lidx_idxexpr[0]
+          IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
+            return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+          ENDIF
+          `push(`idxexprs, `lidx_idxexpr[1])
+          `lidx += 1
+        ENDWHILE
+        return [`lidx, [`OPCODE_LIST_AT_LIST, [], `idxexprs]]
       ENDIF
       `exprs = []
       `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx+1)
@@ -3232,7 +3252,24 @@ CLASS `Parser:
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
         return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
       ENDIF
-      return [`lidx+1, [`OPCODE_LIST, `exprs]]
+      IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) != `key_token_LSQR:
+        return [`lidx+1, [`OPCODE_LIST, `exprs]]
+      ENDIF
+      `lidx += 1
+      `idxexprs = []
+      WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
+        `lidx_idxexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
+        IF `length(`lidx_idxexpr) == 1:
+          return `lidx_idxexpr
+        ENDIF
+        `lidx = `lidx_idxexpr[0]
+        IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
+          return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"RSQR"+" "+"IN"+" "+"LIST"+" "+"INDEX", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]]
+        ENDIF
+        `push(`idxexprs, `lidx_idxexpr[1])
+        `lidx += 1
+      ENDWHILE
+      return [`lidx, [`OPCODE_LIST_AT_LIST, `exprs, `idxexprs]]
     ENDIF
     return THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx)
 
@@ -4951,6 +4988,9 @@ CLASS `InterpM:
     CLOSURE `closure_iexpr_indexof_var(`expression):
       return `that.`_iexprIndexofVar(`expression)
     ENDCLOSURE
+    CLOSURE `closure_iexpr_list_at_list(`expression):
+      return `that.`_iexprListAtList(`expression)
+    ENDCLOSURE
     CLOSURE `closure_iexpr_list_at_var(`expression):
       return `that.`_iexprListAtVar(`expression)
     ENDCLOSURE
@@ -5060,6 +5100,7 @@ CLASS `InterpM:
     THIS.`_dispatch_expr[`OPCODE_NSIZE_VAR] = `closure_iexpr_size_var_nsize
     THIS.`_dispatch_expr[`OPCODE_LSIZE_VAR] = `closure_iexpr_size_var_lsize
     THIS.`_dispatch_expr[`OPCODE_INDEXOF_VAR] = `closure_iexpr_indexof_var
+    THIS.`_dispatch_expr[`OPCODE_LIST_AT_LIST] = `closure_iexpr_list_at_list
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_VAR] = `closure_iexpr_list_at_var
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_QUALVAR] = `closure_iexpr_list_at_qualvar
     THIS.`_dispatch_expr[`OPCODE_LIST_AT_CSVAR] = `closure_iexpr_list_at_csvar
@@ -6676,6 +6717,48 @@ CLASS `InterpM:
     ENDIF
     THIS.`_tmpNumber[1] = `fp[0].FromFloat(`result)
     return THIS.`_tmpNumber
+
+  METHOD `_iexprListAtList(`expression):
+    VAR `exprs = `expression[1]
+    VAR `nsize = 0
+    VAR `lsize = 1
+    VAR `lvalue = []
+    VAR `j
+    VAR `evalue
+    FORINCR `j(0 `length(`exprs)):
+      `evalue = `utils.`deepCopy(THIS.`_interpExpr(`exprs[`j]))
+      IF `isnull(`evalue):
+        return NULL
+      ENDIF
+      `push(`lvalue, `evalue)
+      `nsize += `utils.`nsizeEvalue(`evalue)
+      `lsize += `utils.`lsizeEvalue(`evalue)
+    ENDFOR
+    `evalue = [`key_interp_list, `lvalue, `lsize, `nsize]
+    VAR `idxexprs = `expression[2]
+    VAR `lindex
+    VAR `lindexn
+    FORINCR `j(0 `length(`idxexprs)):
+      IF `evalue[0] != `key_interp_list:
+        THIS.`_setRuntimeError("EXPECTED"+" "+"LIST")
+        return NULL
+      ENDIF
+      `lindex = THIS.`_interpExpr(`idxexprs[`j])
+      IF `isnull(`lindex):
+        return NULL
+      ENDIF
+      IF `lindex[0] != `key_interp_number:
+        THIS.`_setRuntimeError("INVALID"+" "+"INDEX")
+        return NULL
+      ENDIF
+      `lindexn = `fp[0].FloorToInt(`lindex[1])
+      IF (`lindexn < 0) OR (`lindexn >= `length(`evalue[1])):
+        THIS.`_setRuntimeError("INDEX"+" "+"OUT-OF-RANGE")
+        return NULL
+      ENDIF
+      `evalue = `evalue[1][`lindexn]
+    ENDFOR
+    return `evalue
 
   METHOD `_iexprListAtVar(`expression):
     VAR `vvar = `expression[1]
