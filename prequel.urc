@@ -3177,11 +3177,11 @@ CLASS `Parser:
       ENDIF
       return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"DATATYPE"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_sfxexpr[0]+1]]), []]]
     ENDIF
-    VAR `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx)
-    IF `length(`lidx_ariexpr) == 1:
-      return `lidx_ariexpr
+    VAR `lidx_expr = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx)
+    IF `length(`lidx_expr) == 1:
+      return `lidx_expr
     ENDIF
-    VAR `rel_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx_ariexpr[0]]])
+    VAR `rel_op_tokenid = `lexer.`tokenId(`tokens[`lidxs[`lidx_expr[0]]])
     IF `rel_op_tokenid == `key_token_EQ:
       `rel_op_opcode = `OPCODE_EQ
     ELSIF `rel_op_tokenid == `key_token_NE:
@@ -3195,13 +3195,13 @@ CLASS `Parser:
     ELSIF `rel_op_tokenid == `key_token_GE:
       `rel_op_opcode = `OPCODE_GE
     ELSE:
-      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"OPERATOR"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_ariexpr[0]]]), []]]
+      return [[`OPCODE_ERROR, NULL, "EXPECTED"+" "+"OPERATOR"+" "+"IN"+" "+"RELATIONAL"+" "+"EXPRESSION", `lexer.`tokenColumn(`tokens[`lidxs[`lidx_expr[0]]]), []]]
     ENDIF
-    VAR `lidx_ariexpr2 = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx_ariexpr[0]+1)
-    IF `length(`lidx_ariexpr2) == 1:
-      return `lidx_ariexpr2
+    VAR `lidx_expr2 = THIS.`_parseArithmeticOrListExpression(`tokens, `lidxs, `lidx_expr[0]+1)
+    IF `length(`lidx_expr2) == 1:
+      return `lidx_expr2
     ENDIF
-    return [`lidx_ariexpr2[0], [`rel_op_opcode, `lidx_ariexpr[1], `lidx_ariexpr2[1]]]
+    return [`lidx_expr2[0], [`rel_op_opcode, `lidx_expr[1], `lidx_expr2[1]]]
 
   METHOD `_parseArithmeticOrListExpression(`tokens `lidxs `lidx):
     VAR `exprs
@@ -6241,22 +6241,71 @@ CLASS `InterpM:
     IF `isnull(`evalue1):
       return NULL
     ENDIF
-    IF `evalue1[0] != `key_interp_number:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
-      return NULL
-    ENDIF
+    VAR `isNumberExpr1 = (`evalue1[0] == `key_interp_number)
     VAR `evalue1n = `evalue1[1]
     VAR `evalue2 = THIS.`_interpExpr(`expr2)
     IF `isnull(`evalue2):
       return NULL
     ENDIF
-    IF `evalue2[0] != `key_interp_number:
-      THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
-      return NULL
+    VAR `value
+    IF `isNumberExpr1:
+      IF `evalue2[0] == `key_interp_number:
+        `value = `binOp(`evalue1n, `evalue2[1])
+      ELSE:
+        `value = `binOp(0, 1)
+      ENDIF
+    ELSE:
+      `value = THIS.`_iexprRelOp_cmp(`evalue1, `evalue2)
+      IF `value == 0:
+        `value = `binOp(0, 0)
+      ELSIF `value < 0:
+        `value = `binOp(0, 1)
+      ELSE:
+        `value = `binOp(1, 0)
+      ENDIF
     ENDIF
-    VAR `value = `binOp(`evalue1n, `evalue2[1])
     THIS.`_tmpBoolean[1] = `value
     return THIS.`_tmpBoolean
+
+  METHOD `_iexprRelOp_cmp(`evalue1 `evalue2):
+    IF `evalue1[0] == `key_interp_number:
+      IF `evalue2[0] == `key_interp_number:
+        IF `evalue1[1] == `evalue2[1]:
+          return 0
+        ELSIF `evalue1[1] < `evalue2[1]:
+          return -1
+        ELSE:
+          return 1
+        ENDIF
+      ENDIF
+      return -1
+    ENDIF
+    IF `evalue2[0] == `key_interp_number:
+      return 1
+    ENDIF
+    VAR `j
+    VAR `value
+    VAR `len1 = `length(`evalue1[1])
+    VAR `len2 = `length(`evalue2[1])
+    IF `len1 <= `len2:
+      FORINCR `j(0 `len1):
+        `value = THIS.`_iexprRelOp_cmp(`evalue1[1][`j], `evalue2[1][`j])
+        IF `value != 0:
+          return `value
+        ENDIF
+      ENDFOR
+      IF `len1 < `len2:
+        return -1
+      ENDIF
+      return 0
+    ENDIF
+    FORINCR `j(0 `len2):
+      `value = THIS.`_iexprRelOp_cmp(`evalue1[1][`j], `evalue2[1][`j])
+      IF `value != 0:
+        return `value
+      ENDIF
+    ENDFOR
+    return 1
 
   METHOD `_iexprUnaryOp(`expression `unaryOp):
     VAR `expr = `expression[1]
