@@ -1949,7 +1949,7 @@ CLASS `Parser:
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
-            return `lidx_ariexpr
+            return `lidx_ariexpr[0]
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
@@ -1997,7 +1997,7 @@ CLASS `Parser:
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
-            return `lidx_ariexpr
+            return `lidx_ariexpr[0]
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
@@ -2046,7 +2046,7 @@ CLASS `Parser:
           WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
             `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
             IF `length(`lidx_ariexpr) == 1:
-              return `lidx_ariexpr
+              return `lidx_ariexpr[0]
             ENDIF
             `lidx = `lidx_ariexpr[0]
             IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
@@ -2458,7 +2458,7 @@ CLASS `Parser:
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
-            return `lidx_ariexpr
+            return `lidx_ariexpr[0]
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
@@ -2507,7 +2507,7 @@ CLASS `Parser:
           WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
             `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
             IF `length(`lidx_ariexpr) == 1:
-              return `lidx_ariexpr
+              return `lidx_ariexpr[0]
             ENDIF
             `lidx = `lidx_ariexpr[0]
             IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
@@ -2731,7 +2731,7 @@ CLASS `Parser:
       WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
         `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
         IF `length(`lidx_ariexpr) == 1:
-          return `lidx_ariexpr
+          return `lidx_ariexpr[0]
         ENDIF
         `lidx = `lidx_ariexpr[0]
         IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
@@ -2780,7 +2780,7 @@ CLASS `Parser:
         WHILE `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LSQR:
           `lidx_ariexpr = THIS.`_parseArithmeticExpression(`tokens, `lidxs, `lidx+1)
           IF `length(`lidx_ariexpr) == 1:
-            return `lidx_ariexpr
+            return `lidx_ariexpr[0]
           ENDIF
           `lidx = `lidx_ariexpr[0]
           IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_RSQR:
