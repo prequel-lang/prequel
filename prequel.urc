@@ -845,12 +845,6 @@ CLASS `Lexer:
         IF `varname[`startIdx] >= "0" AND `varname[`startIdx] <= "9":
           return FALSE
         ENDIF
-        IF THIS.`memberOf(`varname, `startIdx, `j, THIS.`_reserved_words):
-          return FALSE
-        ENDIF
-        IF THIS.`memberOf(`varname, `startIdx, `j, THIS.`_reserved_vlast_words):
-          return FALSE
-        ENDIF
         `dotCount += 1
         `lastDotIdx = `j
         continue
@@ -860,14 +854,14 @@ CLASS `Lexer:
       ENDIF
       return FALSE
     ENDFOR
-    `startIdx = TERNARY{`dotCount == 0}{0}{`lastDotIdx+1}
+    IF `dotCount == 0:
+      return FALSE
+    ENDIF
+    `startIdx = `lastDotIdx+1
     IF `length(`varname)-`startIdx == 0:
       return FALSE
     ENDIF
     IF `varname[`startIdx] >= "0" AND `varname[`startIdx] <= "9":
-      return FALSE
-    ENDIF
-    IF THIS.`memberOf(`varname, `startIdx, `length(`varname), THIS.`_reserved_words):
       return FALSE
     ENDIF
     IF THIS.`memberOf(`varname, `startIdx, `length(`varname), THIS.`_reserved_vlast_words):
@@ -1658,14 +1652,6 @@ CLASS `Lexer:
             break
           ENDIF
           `subtextras[`j] = `uppercase(`subtextras[`j])
-          IF `indexof(THIS.`_reserved_words, `subtextras[`j]) >= 0:
-            `error_msg = "RESERVED"+" "+"WORD"
-            break
-          ENDIF
-          IF (`indexof(THIS.`_reserved_vlast_words, `subtextras[`j]) >= 0) AND ((`j != `length(`subtextras)-1) OR (`length(`subtextras) == 1)):
-            `error_msg = "RESERVED"+" "+"WORD"
-            break
-          ENDIF
         ENDFOR
         `var_op = NULL
         IF `isnull(`error_msg):
@@ -1676,10 +1662,20 @@ CLASS `Lexer:
               `var_op = `subtextras[`length(`subtextras)-1]
               `textra = `substring(`textra, 0, `length(`textra)-`length(`var_op)-1)
               `var_op = `indexof(THIS.`_token_strs, `var_op)
-              IF `length(`subtextras) > 2:
+              IF `length(`subtextras) == 1:
+                `error_msg = "RESERVED"+" "+"WORD"
+              ELSIF `length(`subtextras) > 2:
                 `textra = `uppercase(`textra)
+                IF `indexof(THIS.`_reserved_vlast_words, `subtextras[`length(`subtextras)-2]) >= 0:
+                  `error_msg = "RESERVED"+" "+"WORD"
+                ENDIF
               ELSE:
                 `textra = `lowercase(`textra)
+                IF `indexof(THIS.`_reserved_words, `subtextras[0]) >= 0:
+                  `error_msg = "RESERVED"+" "+"WORD"
+                ELSIF `indexof(THIS.`_reserved_vlast_words, `subtextras[0]) >= 0:
+                  `error_msg = "RESERVED"+" "+"WORD"
+                ENDIF
               ENDIF
             ENDIF
           ELSE:
@@ -1689,6 +1685,9 @@ CLASS `Lexer:
             ELSE:
               `var_op = `key_token_VAR
               `textra = `lowercase(`textra)
+              IF `indexof(THIS.`_reserved_words, `subtextras[0]) >= 0:
+                `error_msg = "RESERVED"+" "+"WORD"
+              ENDIF
             ENDIF
           ENDIF
         ENDIF
@@ -8047,7 +8046,7 @@ CLASS Prequel:
       THIS.`_error = "ENV"+" "+"IN"+" "+"RUNNING"+" "+"INSTANCE"
       return NULL
     ENDIF
-    IF `not(`lexer.`isValidVarname(`procname)):
+    IF `not(`lexer.`isValidVarname(`procname)) AND (`procname != "CALL") AND (`procname != "RETURN"):
       THIS.`_error = "INVALID"+" "+"PROCNAME"
       return NULL
     ENDIF
@@ -8077,7 +8076,7 @@ CLASS Prequel:
     ENDIF
     VAR `procnames = THIS.`_prequel_m.`getProcedureNames(`env)
     IF `indexof(`procnames, `procname) < 0:
-      IF `not(`lexer.`isValidVarname(`procname)):
+      IF `not(`lexer.`isValidVarname(`procname)) AND (`procname != "CALL") AND (`procname != "RETURN"):
         THIS.`_error = "INVALID"+" "+"PROCNAME"
         return NULL
       ENDIF
@@ -8099,7 +8098,7 @@ CLASS Prequel:
     ENDIF
     VAR `procnames = THIS.`_prequel_m.`getProcedureNames(`env)
     IF `indexof(`procnames, `procname) < 0:
-      IF `not(`lexer.`isValidVarname(`procname)):
+      IF `not(`lexer.`isValidVarname(`procname)) AND (`procname != "CALL") AND (`procname != "RETURN"):
         THIS.`_error = "INVALID"+" "+"PROCNAME"
         return NULL
       ENDIF
