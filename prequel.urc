@@ -827,7 +827,8 @@ CLASS `Lexer:
     IF `length(`varname) == 0:
       return FALSE
     ENDIF
-    IF ((`varname[0] < "a") OR (`varname[0] > "z")) AND ((`varname[0] < "A") OR (`varname[0] > "Z")) AND (`varname[0] != "_"):
+    `varname = `uppercase(`varname)
+    IF ((`varname[0] < "A") OR (`varname[0] > "Z")) AND (`varname[0] != "_"):
       return FALSE
     ENDIF
     VAR `dotCount
@@ -854,7 +855,7 @@ CLASS `Lexer:
         `lastDotIdx = `j
         continue
       ENDIF
-      IF ((`varname[`j] >= "0") AND (`varname[`j] <= "9")) OR ((`varname[`j] >= "a") AND (`varname[`j] <= "z")) OR ((`varname[`j] >= "A") AND (`varname[`j] <= "Z")) OR (`varname[`j] == "_"):
+      IF ((`varname[`j] >= "0") AND (`varname[`j] <= "9")) OR ((`varname[`j] >= "A") AND (`varname[`j] <= "Z")) OR (`varname[`j] == "_"):
         continue
       ENDIF
       return FALSE
@@ -881,12 +882,13 @@ CLASS `Lexer:
     IF `length(`ivarname) == 0:
       return FALSE
     ENDIF
-    IF ((`ivarname[0] < "a") OR (`ivarname[0] > "z")) AND ((`ivarname[0] < "A") OR (`ivarname[0] > "Z")) AND (`ivarname[0] != "_"):
+    `ivarname = `uppercase(`ivarname)
+    IF ((`ivarname[0] < "A") OR (`ivarname[0] > "Z")) AND (`ivarname[0] != "_"):
       return FALSE
     ENDIF
     VAR `j
     FORINCR `j(1 `length(`ivarname)):
-      IF ((`ivarname[`j] >= "0") AND (`ivarname[`j] <= "9")) OR ((`ivarname[`j] >= "a") AND (`ivarname[`j] <= "z")) OR ((`ivarname[`j] >= "A") AND (`ivarname[`j] <= "Z")) OR (`ivarname[`j] == "_"):
+      IF ((`ivarname[`j] >= "0") AND (`ivarname[`j] <= "9")) OR ((`ivarname[`j] >= "A") AND (`ivarname[`j] <= "Z")) OR (`ivarname[`j] == "_"):
         continue
       ENDIF
       return FALSE
