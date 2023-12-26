@@ -484,72 +484,74 @@ VAR `key_token_ASSIGN_OP_MUL = 14
 VAR `key_token_ASSIGN_OP_PLUS = 15
 VAR `key_token_ASSIGN_OP_RANDOM = 16
 VAR `key_token_ASSIGN_OP_TOGGLE = 17
-VAR `key_token_BIT_AND = 18
-VAR `key_token_BIT_NOT = 19
-VAR `key_token_BIT_OR = 20
-VAR `key_token_BIT_SHL = 21
-VAR `key_token_BIT_SHR = 22
-VAR `key_token_BIT_XOR = 23
-VAR `key_token_COMMA = 24
-VAR `key_token_COMMENT = 25
-VAR `key_token_CSVAR = 26
-VAR `key_token_DEBUGL = 27
-VAR `key_token_DIV = 28
-VAR `key_token_ELSE = 29
-VAR `key_token_ELSIF = 30
-VAR `key_token_EMPTY = 31
-VAR `key_token_ENDIF = 32
-VAR `key_token_ENDREP = 33
-VAR `key_token_EQ = 34
-VAR `key_token_ERROR = 35
-VAR `key_token_GE = 36
-VAR `key_token_GT = 37
-VAR `key_token_IDV = 38
-VAR `key_token_IF = 39
-VAR `key_token_INDENT = 40
-VAR `key_token_INDEXOF = 41
-VAR `key_token_IS = 42
-VAR `key_token_IS_NOT = 43
-VAR `key_token_LE = 44
-VAR `key_token_LENGTH = 45
-VAR `key_token_LIST = 46
-VAR `key_token_LITERAL = 47
-VAR `key_token_LPAR = 48
-VAR `key_token_LSIZE = 49
-VAR `key_token_LSQR = 50
-VAR `key_token_LT = 51
-VAR `key_token_MATHSYMB = 52
-VAR `key_token_MINUS = 53
-VAR `key_token_MOD = 54
-VAR `key_token_MODULE_NAME = 55
-VAR `key_token_MUL = 56
-VAR `key_token_NE = 57
-VAR `key_token_NEWLINE = 58
-VAR `key_token_NOT = 59
-VAR `key_token_NSIZE = 60
-VAR `key_token_NUMBER = 61
-VAR `key_token_OR = 62
-VAR `key_token_PLUS = 63
-VAR `key_token_POP = 64
-VAR `key_token_POSTERROR = 65
-VAR `key_token_PROCEDURE = 66
-VAR `key_token_PUSH = 67
-VAR `key_token_QUALVAR = 68
-VAR `key_token_QUEUE = 69
-VAR `key_token_RANDOM = 70
-VAR `key_token_REPEAT = 71
-VAR `key_token_REPNEXT = 72
-VAR `key_token_REPSTOP = 73
-VAR `key_token_RPAR = 74
-VAR `key_token_RSQR = 75
-VAR `key_token_SIZE = 76
-VAR `key_token_SPACES = 77
-VAR `key_token_STRING = 78
-VAR `key_token_SUFFIX = 79
-VAR `key_token_UNASSIGN = 80
-VAR `key_token_UNDEFINED = 81
-VAR `key_token_UNQUEUE = 82
-VAR `key_token_VAR = 83
+VAR `key_token_BINARY = 18
+VAR `key_token_BIT_AND = 19
+VAR `key_token_BIT_NOT = 20
+VAR `key_token_BIT_OR = 21
+VAR `key_token_BIT_SHL = 22
+VAR `key_token_BIT_SHR = 23
+VAR `key_token_BIT_XOR = 24
+VAR `key_token_COMMA = 25
+VAR `key_token_COMMENT = 26
+VAR `key_token_CSVAR = 27
+VAR `key_token_DEBUGL = 28
+VAR `key_token_DECIMAL = 29
+VAR `key_token_DIV = 30
+VAR `key_token_ELSE = 31
+VAR `key_token_ELSIF = 32
+VAR `key_token_EMPTY = 33
+VAR `key_token_ENDIF = 34
+VAR `key_token_ENDREP = 35
+VAR `key_token_EQ = 36
+VAR `key_token_ERROR = 37
+VAR `key_token_GE = 38
+VAR `key_token_GT = 39
+VAR `key_token_HEXADECIMAL = 40
+VAR `key_token_IDV = 41
+VAR `key_token_IF = 42
+VAR `key_token_INDENT = 43
+VAR `key_token_INDEXOF = 44
+VAR `key_token_IS = 45
+VAR `key_token_IS_NOT = 46
+VAR `key_token_LE = 47
+VAR `key_token_LENGTH = 48
+VAR `key_token_LIST = 49
+VAR `key_token_LPAR = 50
+VAR `key_token_LSIZE = 51
+VAR `key_token_LSQR = 52
+VAR `key_token_LT = 53
+VAR `key_token_MATHSYMB = 54
+VAR `key_token_MINUS = 55
+VAR `key_token_MOD = 56
+VAR `key_token_MODULE_NAME = 57
+VAR `key_token_MUL = 58
+VAR `key_token_NE = 59
+VAR `key_token_NEWLINE = 60
+VAR `key_token_NOT = 61
+VAR `key_token_NSIZE = 62
+VAR `key_token_NUMBER = 63
+VAR `key_token_OR = 64
+VAR `key_token_PLUS = 65
+VAR `key_token_POP = 66
+VAR `key_token_POSTERROR = 67
+VAR `key_token_PROCEDURE = 68
+VAR `key_token_PUSH = 69
+VAR `key_token_QUALVAR = 70
+VAR `key_token_QUEUE = 71
+VAR `key_token_RANDOM = 72
+VAR `key_token_REPEAT = 73
+VAR `key_token_REPNEXT = 74
+VAR `key_token_REPSTOP = 75
+VAR `key_token_RPAR = 76
+VAR `key_token_RSQR = 77
+VAR `key_token_SIZE = 78
+VAR `key_token_SPACES = 79
+VAR `key_token_STRING = 80
+VAR `key_token_SUFFIX = 81
+VAR `key_token_UNASSIGN = 82
+VAR `key_token_UNDEFINED = 83
+VAR `key_token_UNQUEUE = 84
+VAR `key_token_VAR = 85
 
 VAR `SUFFIX_ = 0
 VAR `SUFFIX_LENGTH = 1
@@ -648,6 +650,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "ASSIGN"+"_"+"OP"+"_"+"PLUS")
     `push(THIS.`_token_strs, "ASSIGN"+"_"+"OP"+"_"+"RANDOM")
     `push(THIS.`_token_strs, "ASSIGN"+"_"+"OP"+"_"+"TOGGLE")
+    `push(THIS.`_token_strs, "BINARY")
     `push(THIS.`_token_strs, "BIT"+"_"+"AND")
     `push(THIS.`_token_strs, "BIT"+"_"+"NOT")
     `push(THIS.`_token_strs, "BIT"+"_"+"OR")
@@ -658,6 +661,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "COMMENT")
     `push(THIS.`_token_strs, "CSVAR")
     `push(THIS.`_token_strs, "DEBUGL")
+    `push(THIS.`_token_strs, "DECIMAL")
     `push(THIS.`_token_strs, "DIV")
     `push(THIS.`_token_strs, "ELSE")
     `push(THIS.`_token_strs, "ELSIF")
@@ -668,6 +672,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "ERROR")
     `push(THIS.`_token_strs, "GE")
     `push(THIS.`_token_strs, "GT")
+    `push(THIS.`_token_strs, "HEXADECIMAL")
     `push(THIS.`_token_strs, "IDV")
     `push(THIS.`_token_strs, "IF")
     `push(THIS.`_token_strs, "INDENT")
@@ -677,7 +682,6 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "LE")
     `push(THIS.`_token_strs, "LENGTH")
     `push(THIS.`_token_strs, "LIST")
-    `push(THIS.`_token_strs, "LITERAL")
     `push(THIS.`_token_strs, "LPAR")
     `push(THIS.`_token_strs, "LSIZE")
     `push(THIS.`_token_strs, "LSQR")
@@ -1530,7 +1534,7 @@ CLASS `Lexer:
           ENDWHILE
           `literal[0] += `parse_int(`literal[1], 16)/65536.0
         ENDIF
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal[0])])
+        `push(`tokens, [`key_token_HEXADECIMAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal[0])])
         continue
       ENDIF
       IF (`line[`col] == "0") AND (`lowercase(`line[`col+1]) == "b") AND (`line[`col+2] >= "0") AND (`line[`col+2] <= "1"):
@@ -1563,7 +1567,7 @@ CLASS `Lexer:
           ENDWHILE
           `literal[0] += `parse_int(`literal[1], 2)/65536.0
         ENDIF
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal[0])])
+        `push(`tokens, [`key_token_BINARY, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal[0])])
         continue
       ENDIF
       IF (`line[`col] >= "0") AND (`line[`col] <= "9"):
@@ -1596,7 +1600,7 @@ CLASS `Lexer:
           ENDWHILE
         ENDIF
         `literal = `parse_float(`substring(`line, `start, `col))
-        `push(`tokens, [`key_token_LITERAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal)])
+        `push(`tokens, [`key_token_DECIMAL, `start, `substring(`line, `start, `col), `fp[0].FromFloat(`literal)])
         continue
       ENDIF
       IF `ic == "C":
@@ -3386,7 +3390,13 @@ CLASS `Parser:
     VAR `lidx_mathexprs
     VAR `vmod
     VAR `indexof_csvar
-    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LITERAL:
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_DECIMAL:
+      return [`lidx+1, [`OPCODE_NUMBER, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]]
+    ENDIF
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_BINARY:
+      return [`lidx+1, [`OPCODE_NUMBER, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]]
+    ENDIF
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_HEXADECIMAL:
       return [`lidx+1, [`OPCODE_NUMBER, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])]]
     ENDIF
     IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_LENGTH:
