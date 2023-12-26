@@ -514,65 +514,65 @@ VAR `key_token_INDENT = 44
 VAR `key_token_INDEXOF = 45
 VAR `key_token_IS = 46
 VAR `key_token_IS_NOT = 47
-VAR `key_token_LE = 48
-VAR `key_token_LENGTH = 49
-VAR `key_token_LIST = 50
-VAR `key_token_LPAR = 51
-VAR `key_token_LSIZE = 52
-VAR `key_token_LSQR = 53
-VAR `key_token_LT = 54
-VAR `key_token_MATH_ABS = 55
-VAR `key_token_MATH_ACOS = 56
-VAR `key_token_MATH_ASIN = 57
-VAR `key_token_MATH_ATAN = 58
-VAR `key_token_MATH_ATAN2 = 59
-VAR `key_token_MATH_CEIL = 60
-VAR `key_token_MATH_COS = 61
-VAR `key_token_MATH_E = 62
-VAR `key_token_MATH_EXP = 63
-VAR `key_token_MATH_EXP2 = 64
-VAR `key_token_MATH_FLOOR = 65
-VAR `key_token_MATH_LOG = 66
-VAR `key_token_MATH_LOG2 = 67
-VAR `key_token_MATH_MAX = 68
-VAR `key_token_MATH_MIN = 69
-VAR `key_token_MATH_PI = 70
-VAR `key_token_MATH_POW = 71
-VAR `key_token_MATH_ROUND = 72
-VAR `key_token_MATH_SIGN = 73
-VAR `key_token_MATH_SIN = 74
-VAR `key_token_MATH_SQRT = 75
-VAR `key_token_MATH_TAN = 76
-VAR `key_token_MINUS = 77
-VAR `key_token_MOD = 78
-VAR `key_token_MODULE_NAME = 79
-VAR `key_token_MUL = 80
-VAR `key_token_NE = 81
-VAR `key_token_NEWLINE = 82
-VAR `key_token_NOT = 83
-VAR `key_token_NSIZE = 84
-VAR `key_token_NUMBER = 85
-VAR `key_token_OR = 86
-VAR `key_token_PLUS = 87
-VAR `key_token_POP = 88
-VAR `key_token_POSTERROR = 89
-VAR `key_token_PROCEDURE = 90
-VAR `key_token_PUSH = 91
-VAR `key_token_QUEUE = 92
-VAR `key_token_RANDOM = 93
-VAR `key_token_REPEAT = 94
-VAR `key_token_REPNEXT = 95
-VAR `key_token_REPSTOP = 96
-VAR `key_token_RPAR = 97
-VAR `key_token_RSQR = 98
-VAR `key_token_SIZE = 99
-VAR `key_token_SPACES = 100
-VAR `key_token_STRING = 101
-VAR `key_token_SUFFIX = 102
-VAR `key_token_UNASSIGN = 103
-VAR `key_token_UNDEFINED = 104
-VAR `key_token_UNQUEUE = 105
-VAR `key_token_VAR = 106
+VAR `key_token_IVAR = 48
+VAR `key_token_LE = 49
+VAR `key_token_LENGTH = 50
+VAR `key_token_LIST = 51
+VAR `key_token_LPAR = 52
+VAR `key_token_LSIZE = 53
+VAR `key_token_LSQR = 54
+VAR `key_token_LT = 55
+VAR `key_token_MATH_ABS = 56
+VAR `key_token_MATH_ACOS = 57
+VAR `key_token_MATH_ASIN = 58
+VAR `key_token_MATH_ATAN = 59
+VAR `key_token_MATH_ATAN2 = 60
+VAR `key_token_MATH_CEIL = 61
+VAR `key_token_MATH_COS = 62
+VAR `key_token_MATH_E = 63
+VAR `key_token_MATH_EXP = 64
+VAR `key_token_MATH_EXP2 = 65
+VAR `key_token_MATH_FLOOR = 66
+VAR `key_token_MATH_LOG = 67
+VAR `key_token_MATH_LOG2 = 68
+VAR `key_token_MATH_MAX = 69
+VAR `key_token_MATH_MIN = 70
+VAR `key_token_MATH_PI = 71
+VAR `key_token_MATH_POW = 72
+VAR `key_token_MATH_ROUND = 73
+VAR `key_token_MATH_SIGN = 74
+VAR `key_token_MATH_SIN = 75
+VAR `key_token_MATH_SQRT = 76
+VAR `key_token_MATH_TAN = 77
+VAR `key_token_MINUS = 78
+VAR `key_token_MOD = 79
+VAR `key_token_MODULE_NAME = 80
+VAR `key_token_MUL = 81
+VAR `key_token_NE = 82
+VAR `key_token_NEWLINE = 83
+VAR `key_token_NOT = 84
+VAR `key_token_NSIZE = 85
+VAR `key_token_NUMBER = 86
+VAR `key_token_OR = 87
+VAR `key_token_PLUS = 88
+VAR `key_token_POP = 89
+VAR `key_token_POSTERROR = 90
+VAR `key_token_PROCEDURE = 91
+VAR `key_token_PUSH = 92
+VAR `key_token_QUEUE = 93
+VAR `key_token_RANDOM = 94
+VAR `key_token_REPEAT = 95
+VAR `key_token_REPNEXT = 96
+VAR `key_token_REPSTOP = 97
+VAR `key_token_RPAR = 98
+VAR `key_token_RSQR = 99
+VAR `key_token_SIZE = 100
+VAR `key_token_SPACES = 101
+VAR `key_token_STRING = 102
+VAR `key_token_SUFFIX = 103
+VAR `key_token_UNASSIGN = 104
+VAR `key_token_UNDEFINED = 105
+VAR `key_token_UNQUEUE = 106
 
 VAR `SUFFIX_ = 0
 VAR `SUFFIX_LENGTH = 1
@@ -677,6 +677,7 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "INDEXOF")
     `push(THIS.`_token_strs, "IS")
     `push(THIS.`_token_strs, "IS"+"_"+"NOT")
+    `push(THIS.`_token_strs, "IVAR")
     `push(THIS.`_token_strs, "LE")
     `push(THIS.`_token_strs, "LENGTH")
     `push(THIS.`_token_strs, "LIST")
@@ -735,7 +736,6 @@ CLASS `Lexer:
     `push(THIS.`_token_strs, "UNASSIGN")
     `push(THIS.`_token_strs, "UNDEFINED")
     `push(THIS.`_token_strs, "UNQUEUE")
-    `push(THIS.`_token_strs, "VAR")
 
   METHOD `tokenStringToId(`token_str):
     return `indexof(THIS.`_token_strs, `token_str)
@@ -1845,7 +1845,7 @@ CLASS `Lexer:
               `var_op = `key_token_EVAR
               `textra = `uppercase(`textra)
             ELSE:
-              `var_op = `key_token_VAR
+              `var_op = `key_token_IVAR
               `textra = `lowercase(`textra)
               IF `indexof(THIS.`_reserved_words, `subtextras[0]) >= 0:
                 `error_msg = "RESERVED"+" "+"WORD"
@@ -2006,7 +2006,7 @@ CLASS `Parser:
       ENDIF
     ENDIF
     VAR `token_id = `lexer.`tokenId(`tokens[`lidxs[0]])
-    IF (`token_id == `key_token_VAR) OR (`token_id == `key_token_CSVAR):
+    IF (`token_id == `key_token_IVAR) OR (`token_id == `key_token_CSVAR):
       return THIS.`_parseAssign(`tokens, `lidxs)
     ELSIF `token_id == `key_token_IF:
       return THIS.`_parseIf(`tokens, `lidxs)
@@ -2060,7 +2060,7 @@ CLASS `Parser:
     VAR `vvar2
     VAR `vmod2
     `vvar = `lexer.`tokenExtra(`tokens[`lidxs[0]])
-    IF `lexer.`tokenId(`tokens[`lidxs[0]]) == `key_token_VAR:
+    IF `lexer.`tokenId(`tokens[`lidxs[0]]) == `key_token_IVAR:
       `vmod = NULL
     ELSE:
       `indexof_csvar = `indexof(`vvar, "@")
@@ -2103,7 +2103,7 @@ CLASS `Parser:
             `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
           ENDIF
           `byref_exprs = [`vvar_ref, `vmod_ref]
-        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_VAR:
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) != `key_token_IVAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"PROCEDURE"+" "+"CALL", `lexer.`tokenColumn(`tokens[`lidxs[`lidx]]), []]
         ELSE:
           `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx]]), NULL]
@@ -2151,7 +2151,7 @@ CLASS `Parser:
             `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
           ENDIF
           `byref_exprs = [`vvar_ref, `vmod_ref]
-        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_IVAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ELSE:
           `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]]), NULL]
@@ -2200,7 +2200,7 @@ CLASS `Parser:
               `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
             ENDIF
             `byref_exprs = [`vvar_ref, `vmod_ref]
-          ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
+          ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_IVAR:
             return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
           ELSE:
             `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]]), NULL]
@@ -2612,7 +2612,7 @@ CLASS `Parser:
             `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
           ENDIF
           `byref_exprs = [`vvar_ref, `vmod_ref]
-        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_IVAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
         ELSE:
           `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]]), NULL]
@@ -2661,7 +2661,7 @@ CLASS `Parser:
               `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
             ENDIF
             `byref_exprs = [`vvar_ref, `vmod_ref]
-          ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
+          ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_IVAR:
             return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
           ELSE:
             `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]]), NULL]
@@ -2828,10 +2828,10 @@ CLASS `Parser:
     return [`OPCODE_ENDIF, NULL]
 
   METHOD `_parseRepeat(`tokens `lidxs):
-    IF `length(`lidxs) == 3 AND `lexer.`tokenId(`tokens[`lidxs[1]]) == `key_token_VAR:
+    IF `length(`lidxs) == 3 AND `lexer.`tokenId(`tokens[`lidxs[1]]) == `key_token_IVAR:
       return [`OPCODE_REPEAT, NULL, NULL, `lexer.`tokenExtra(`tokens[`lidxs[1]])]
     ENDIF
-    IF `length(`lidxs) < 3 OR `lexer.`tokenId(`tokens[`lidxs[1]]) != `key_token_VAR:
+    IF `length(`lidxs) < 3 OR `lexer.`tokenId(`tokens[`lidxs[1]]) != `key_token_IVAR:
       return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[1]]), []]
     ENDIF
     return [`OPCODE_ERROR, NULL, "UNEXPECTED"+" "+"TOKEN"+" "+"AFTER"+" "+"REPEAT", `lexer.`tokenColumn(`tokens[`lidxs[2]]), []]
@@ -2885,7 +2885,7 @@ CLASS `Parser:
           `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
         ENDIF
         `byref_exprs = [`vvar_ref, `vmod_ref]
-      ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_VAR:
+      ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+3]]) != `key_token_IVAR:
         return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+3]]), []]
       ELSE:
         `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+3]]), NULL]
@@ -2934,7 +2934,7 @@ CLASS `Parser:
             `vvar_ref = `substring(`vvar_ref, 0, `indexof_csvar)
           ENDIF
           `byref_exprs = [`vvar_ref, `vmod_ref]
-        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_VAR:
+        ELSIF `lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) != `key_token_IVAR:
           return [`OPCODE_ERROR, NULL, "EXPECTED"+" "+"VARIABLE"+" "+"NAME"+" "+"IN"+" "+"CALL"+" "+"BY"+" "+"REFERENCE", `lexer.`tokenColumn(`tokens[`lidxs[`lidx+2]]), []]
         ELSE:
           `byref_exprs = [`lexer.`tokenExtra(`tokens[`lidxs[`lidx+2]]), NULL]
@@ -3291,7 +3291,7 @@ CLASS `Parser:
 
   METHOD `_parseRelationalExpression(`tokens `lidxs `lidx):
     VAR `rel_op_opcode
-    IF (`lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_VAR) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS_NOT)):
+    IF (`lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_IVAR) AND ((`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS_NOT)):
       IF (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_NUMBER) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_LIST) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_EMPTY) OR (`lexer.`tokenId(`tokens[`lidxs[`lidx+2]]) == `key_token_UNDEFINED):
         return [`lidx+3, [TERNARY{`lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) == `key_token_IS}{`OPCODE_IS_VAR}{`OPCODE_IS_NOT_VAR}, [`OPCODE_VAR, `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])], `lexer.`tokenId(`tokens[`lidxs[`lidx+2]])]]
       ENDIF
@@ -3913,7 +3913,7 @@ CLASS `Parser:
     VAR `suffix
     VAR `lidx_expr
     VAR `qualvar
-    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_VAR:
+    IF `lexer.`tokenId(`tokens[`lidxs[`lidx]]) == `key_token_IVAR:
       `vvar = `lexer.`tokenExtra(`tokens[`lidxs[`lidx]])
       IF `lexer.`tokenId(`tokens[`lidxs[`lidx+1]]) != `key_token_LSQR:
         return [`lidx+1, [`OPCODE_SUFFIX, `SUFFIX_, [`OPCODE_VAR, `vvar]]]
