@@ -10,7 +10,7 @@
 %left       "&"
 %precedence "~"
 %left       "<<" ">>"
-%nonassoc   "=" "<>"
+%nonassoc   "==" "<>"
 %nonassoc   "<" "<=" ">" ">="
 %left       "+" "-"
 %left       "*" "/" "%" "//"
@@ -74,10 +74,10 @@ instruction
   ;
 
 assignment
-  : retvars ":=" expr                                                        {}
-  | retvars ":=" mvar opt_indexes ".pop" "(" opt_expr ")"                    {}
-  | retvars ":=" mvar opt_indexes ".unqueue" "(" ")"                         {}
-  | retvars ":=" procedure_name "(" opt_args ")"                             {}
+  : retvars "=" expr                                                         {}
+  | retvars "=" mvar opt_indexes ".pop" "(" opt_expr ")"                     {}
+  | retvars "=" mvar opt_indexes ".unqueue" "(" ")"                          {}
+  | retvars "=" procedure_name "(" opt_args ")"                              {}
   | mvar opt_indexes "++"                                                    {}
   | mvar opt_indexes "--"                                                    {}
   | mvar opt_indexes "~~"                                                    {}
@@ -95,8 +95,8 @@ assignment
   ;
 
 assignment_random
-  : mvar opt_indexes ":~" "random"                                           {}
-  | mvar opt_indexes ":~" expr                                               {}
+  : mvar opt_indexes "~=" "random"                                           {}
+  | mvar opt_indexes "~=" expr                                               {}
   ;
 
 unassign
@@ -138,7 +138,7 @@ elsifs
   ;
 
 elsif
-  : "elsif" expr "\n"
+  : "elif" expr "\n"
      opt_instructions                                                        {}
   ;
 
@@ -166,9 +166,9 @@ opt_instructions_repeat
 instructions_repeat
   : instruction "\n"
     opt_instructions_repeat                                                  {}
-  | "repnext" "\n"
+  | "continue" "\n"
     opt_instructions_repeat                                                  {}
-  | "repstop" "\n"
+  | "break" "\n"
     opt_instructions_repeat                                                  {}
   ;
 
@@ -177,7 +177,7 @@ procedure_call
   ;
 
 debugl
-  : "debugl" "(" debugl_args ")"                                             {}
+  : "print" "(" debugl_args ")"                                             {}
   ;
 
 opt_indexes
@@ -200,7 +200,7 @@ expr
   | "not" expr                                                               {}
   | expr "is" expr_type                                                      {}
   | expr "is_not" expr_type                                                  {}
-  | expr "=" expr                                                            {}
+  | expr "==" expr                                                           {}
   | expr "<>" expr                                                           {}
   | expr "<" expr                                                            {}
   | expr "<=" expr                                                           {}
