@@ -1187,6 +1187,8 @@ CLASS `Lexer:
     `push(THIS.`_reserved_words, "ELSE")
     `push(THIS.`_reserved_words, "ENDIF")
     `push(THIS.`_reserved_words, "REPEAT")
+    `push(THIS.`_reserved_words, "REPSTOP")
+    `push(THIS.`_reserved_words, "REPNEXT")
     `push(THIS.`_reserved_words, "BREAK")
     `push(THIS.`_reserved_words, "CONTINUE")
     `push(THIS.`_reserved_words, "ENDREP")
@@ -1205,7 +1207,6 @@ CLASS `Lexer:
     THIS.`_reserved_vlast_words = []
     `push(THIS.`_reserved_vlast_words, "UNASSIGN")
     `push(THIS.`_reserved_vlast_words, "LENGTH")
-    `push(THIS.`_reserved_vlast_words, "SIZE")
     `push(THIS.`_reserved_vlast_words, "PUSH")
     `push(THIS.`_reserved_vlast_words, "QUEUE")
     `push(THIS.`_reserved_vlast_words, "POP")
@@ -1214,7 +1215,6 @@ CLASS `Lexer:
 
     THIS.`_reserved_qlast_words = []
     `push(THIS.`_reserved_qlast_words, "LENGTH")
-    `push(THIS.`_reserved_qlast_words, "SIZE")
     `push(THIS.`_reserved_qlast_words, "INDEXOF")
 
   METHOD `isModuleNameCharStart(`c):
@@ -1454,17 +1454,15 @@ CLASS `Lexer:
         ENDIF
         `tname = "IS"
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
-          `tname = "NOT"
-          IF (`uppercase(`line[`col+3]) == "N") AND THIS.`isTokenEndSpace(`line, `col+3, `tname):
-            `tname = "IS_NOT"
-            `tlen = `length(`tname)
-            `push(`tokens, [`key_token_IS_NOT, `col, `substring(`line, `col, `col+`tlen)])
-            `col += `tlen
-            continue
-          ENDIF
-          `tname = "IS"
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_IS, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "ISNOT"
+        IF THIS.`isTokenEndSpace(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_IS_NOT, `col, `substring(`line, `col, `col+`tlen)])
           `col += `tlen
           continue
         ENDIF
@@ -1474,6 +1472,20 @@ CLASS `Lexer:
         IF THIS.`isTokenEndSpace(`line, `col, `tname):
           `tlen = `length(`tname)
           `push(`tokens, [`key_token_REPEAT, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "REPSTOP"
+        IF THIS.`isTokenEndSpace(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_REPSTOP, `col, `substring(`line, `col, `col+`tlen)])
+          `col += `tlen
+          continue
+        ENDIF
+        `tname = "REPNEXT"
+        IF THIS.`isTokenEndSpace(`line, `col, `tname):
+          `tlen = `length(`tname)
+          `push(`tokens, [`key_token_REPNEXT, `col, `substring(`line, `col, `col+`tlen)])
           `col += `tlen
           continue
         ENDIF
@@ -4163,9 +4175,9 @@ CLASS `UtilsEditorM:
     ELSIF `set_control[0][1] == `key_token_ENDIF:
       `error_message = "ENDIF"+" "+"WITHOUT"+" "+"IF"
     ELSIF `set_control[0][1] == `key_token_REPNEXT:
-      `error_message = "CONTINUE"+" "+"WITHOUT"+" "+"REPEAT"
+      `error_message = "REPNEXT"+" "+"WITHOUT"+" "+"REPEAT"
     ELSIF `set_control[0][1] == `key_token_REPSTOP:
-      `error_message = "BREAK"+" "+"WITHOUT"+" "+"REPEAT"
+      `error_message = "REPSTOP"+" "+"WITHOUT"+" "+"REPEAT"
     ELSE:
       `error_message = "ENDREP"+" "+"WITHOUT"+" "+"REPEAT"
     ENDIF
