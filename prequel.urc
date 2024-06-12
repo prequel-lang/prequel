@@ -6872,6 +6872,9 @@ CLASS `InterpM:
     IF `length(`expression[1]) == 1:
       `expr1 = `expression[1][0]
       `evalue1 = THIS.`_interpExpr(`expr1)
+      IF `isnull(`evalue1):
+        return NULL
+      ENDIF
       IF `evalue1[0] != `key_interp_number:
         THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
         return NULL
@@ -6886,6 +6889,9 @@ CLASS `InterpM:
     IF `length(`expression[1]) == 2:
       `expr1 = `expression[1][0]
       `evalue1 = THIS.`_interpExpr(`expr1)
+      IF `isnull(`evalue1):
+        return NULL
+      ENDIF
       IF `evalue1[0] != `key_interp_number:
         THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
         return NULL
@@ -6893,6 +6899,9 @@ CLASS `InterpM:
       `evalue1n = `evalue1[1]
       `expr2 = `expression[1][1]
       `evalue2 = THIS.`_interpExpr(`expr2)
+      IF `isnull(`evalue2):
+        return NULL
+      ENDIF
       IF `evalue2[0] != `key_interp_number:
         THIS.`_setRuntimeError("EXPECTED"+" "+"NUMBER")
         return NULL
